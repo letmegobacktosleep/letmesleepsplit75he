@@ -13,3 +13,9 @@ DEBOUNCE_TYPE = sym_eager_pk
 
 DEFERRED_EXEC_ENABLE = yes
 # enable deferred exec for recalibration
+
+JOYSTICK_ENABLE = yes
+# enable joystick
+
+POINTING_DEVICE_ENABLE = yes
+# enable pointing device
