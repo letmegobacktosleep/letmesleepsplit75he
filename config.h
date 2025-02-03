@@ -8,7 +8,7 @@
 // number of ADC channels (whichever has more * 2)
 #define MATRIX_ROWS 8
 
-// max number of multiplexers per ADC (cannot be greater than 5) 
+// max number of multiplexers per ADC
 /* any changes to this definition also requires modifying custom_analog.c */
 #define MAX_MUXES_PER_ADC 1
 
@@ -44,12 +44,22 @@
     NO_PIN, \
     NO_PIN  \
 }
+/* LEFT
+row 0 = mux 1 = ADC4_IN3
+row 1 = mux 2 = ADC1_IN4
+row 2 = DIRECT_ROW
+row 3 = DKS, left hand */
 #define MATRIX_ROW_PINS_RIGHT { \
     PB12,   \
     PA7,    \
     PA3,    \
     NO_PIN  \
 }
+/* RIGHT
+row 4 = mux 3 = ADC4_IN3
+row 5 = mux 4 = ADC3_IN1
+row 6 = mux 5 = ADC1_IN4
+row 7 = DKS, right hand */
 // ADC pins for direct pins // DIRECT_PINS_RIGHT
 #define DIRECT_PINS { \
     PA6   \
@@ -57,17 +67,7 @@
     PA5,  \
     PA4   \
 }
-/* LEFT
-row 0 = mux 1 = ADC4_IN3
-row 1 = mux 2 = ADC1_IN4
-row 2 = WASD  = ADC2_IN3, ADC2_IN4, ADC2_IN2, ADC2_IN1
-row 3 = DKS, left hand
-// RIGHT
-row 4 = mux 3 = ADC4_IN3
-row 5 = mux 4 = ADC3_IN1
-row 6 = mux 5 = ADC1_IN4
-row 7 = DKS, right hand
-*/
+/* DIRECT_ROW = WASD = ADC2_IN3, ADC2_IN4, ADC2_IN2, ADC2_IN1 */
 
 // bit array of whether key is valid
 #define CUSTOM_MATRIX_MASK { \
@@ -81,9 +81,10 @@ row 7 = DKS, right hand
     {0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0}  \
 }
 
-// joystick shit
-#define ANALOG_KEY_VIRTUAL_AXES
-
+// Set ADC resolution and sampling time
+#define ADC_RESOLUTION      ADC_CFGR_RES_12BITS
+#define ADC_SAMPLING_TIME   ADC_SMPR_SMP_2P5
+#define ADC_RESOLUTION_MAX  1 << 12
 
 
 
@@ -97,17 +98,20 @@ row 7 = DKS, right hand
 // Set size of EECONFIG for calibration (global)
 #define EECONFIG_KB_DATA_SIZE (35 * 3)
 
-// Set ADC resolution and sampling time
-#define ADC_RESOLUTION      ADC_CFGR_RES_12BITS
-#define ADC_SAMPLING_TIME   ADC_SMPR_SMP_2P5
-#define ADC_RESOLUTION_MAX  1 << 12
 
 
-
+// joystick shit
+#define ANALOG_KEY_VIRTUAL_AXES
 
 // only define these other things if ANALOG_KEY_VIRTUAL_AXES was defined (make it easier to disable)
 #ifdef ANALOG_KEY_VIRTUAL_AXES
+// mouse layer
 # define MOUSE_LAYER 3
+// qmk requires these
+# define JOYSTICK_BUTTON_COUNT 0
+# define JOYSTICK_AXIS_COUNT 4
+# define JOYSTICK_AXIS_RESOLUTION 8
+// add {row, col} which make up the virtual axes
 # define JOYSTICK_COORDINATES_ONE { \
     {2, 1},  \
     {2, 3},  \
@@ -146,13 +150,15 @@ row 7 = DKS, right hand
 }
 #endif
 
+// Only define custom sync if is split keyboard
+#ifdef SPLIT_KEYBOARD
 // Master to slave:
-#define RPC_M2S_BUFFER_SIZE 32
+# define RPC_M2S_BUFFER_SIZE 32
 // Slave to master:
-#define RPC_S2M_BUFFER_SIZE 32
+# define RPC_S2M_BUFFER_SIZE 32
 // Keyboard level data sync:
-#define SPLIT_TRANSACTION_IDS_KB KEYBOARD_SYNC_A
-
+# define SPLIT_TRANSACTION_IDS_KB KEYBOARD_SYNC_A
+#endif
 
 
 

@@ -19,28 +19,6 @@
 
 ////////////////////////////////////////////////////////////////
 
-#define JOYSTICK_BUTTON_COUNT 0
-#define JOYSTICK_AXIS_COUNT 4
-#define JOYSTICK_AXIS_RESOLUTION 8
-
-joystick_config_t joystick_axes[JOYSTICK_AXIS_COUNT] = {
-    JOYSTICK_AXIS_VIRTUAL, // x
-    JOYSTICK_AXIS_VIRTUAL, // y
-    JOYSTICK_AXIS_VIRTUAL, // Rx
-    JOYSTICK_AXIS_VIRTUAL, // Ry
-};
-
-// I have this array already, and theres stuff to modify the values
-int8_t virtual_axes_combined[2][2];
-
-// Left joystick
-joystick_set_axis(0, virtual_axes_combined[0][0]);
-joystick_set_axis(1, virtual_axes_combined[0][1]);
-// Right joystick
-joystick_set_axis(2, virtual_axes_combined[1][0]);
-joystick_set_axis(3, virtual_axes_combined[1][1]);
-// Send joystick report
-joystick_flush();
 
 
 ///////////////////////////////
