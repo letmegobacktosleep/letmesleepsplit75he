@@ -84,10 +84,10 @@ uint8_t mouse_coordinates_two[4][2] = MOUSE_COORDINATES_ONE;
 uint8_t mouse_coordinates_two[4][2] = MOUSE_COORDINATES_TWO;
 # endif
 # ifdef SCROLL_COORDINATES_ONE
-uint8_t scroll_coordinates_one[2][2] = MOUSE_COORDINATES_TWO;
+uint8_t scroll_coordinates_one[4][2] = MOUSE_COORDINATES_TWO;
 # endif
 # ifdef SCROLL_COORDINATES_TWO
-uint8_t scroll_coordinates_two[2][2] = MOUSE_COORDINATES_TWO;
+uint8_t scroll_coordinates_two[4][2] = MOUSE_COORDINATES_TWO;
 # endif
 #endif
 
@@ -331,17 +331,13 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]) {
                             }
 #                        endif
 #                        ifdef SCROLL_COORDINATES_ONE
-                            if (k < 2){
-                                if (this_row == scroll_coordinates_one[k][0] && this_col == scroll_coordinates_one[k][1]){
-                                    virtual_axes_from_self[4][k] = lut_joystick[calibrated];
-                                }
+                            if (this_row == scroll_coordinates_one[k][0] && this_col == scroll_coordinates_one[k][1]){
+                                virtual_axes_from_self[4][k] = lut_joystick[calibrated];
                             }
 #                        endif
 #                        ifdef SCROLL_COORDINATES_TWO
-                            if (k < 2){
-                                if (this_row == scroll_coordinates_two[k][0] && this_col == scroll_coordinates_two[k][1]){
-                                    virtual_axes_from_self[5][k] = lut_joystick[calibrated];
-                                }
+                            if (this_row == scroll_coordinates_two[k][0] && this_col == scroll_coordinates_two[k][1]){
+                                virtual_axes_from_self[5][k] = lut_joystick[calibrated];
                             }
 #                        endif
                         }

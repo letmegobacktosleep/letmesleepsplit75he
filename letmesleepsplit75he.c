@@ -116,6 +116,7 @@ void housekeeping_task_user(void) {
         
 #    if (defined(JOYSTICK_COORDINATES_ONE) || defined(JOYSTICK_COORDINATES_TWO))
         // Only run joystick if toggled on
+        // https://docs.qmk.fm/features/joystick#virtual-axes
         if (virtual_joystick_toggle){
 #        ifdef JOYSTICK_COORDINATES_ONE
             // Left joystick
@@ -133,6 +134,7 @@ void housekeeping_task_user(void) {
 #    endif
 #    if (defined(MOUSE_COORDINATES_ONE) || defined(MOUSE_COORDINATES_TWO) || defined(SCROLL_COORDINATES_ONE) || defined(SCROLL_COORDINATES_TWO))
         // Only run mouse if toggled on
+        // https://docs.qmk.fm/features/pointing_device#manipulating-mouse-reports
         if (virtual_mouse_toggle){
             // Get current report
             report_mouse_t currentReport = pointing_device_get_report()
@@ -215,17 +217,13 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
                     }
 #                endif
 #                ifdef SCROLL_COORDINATES_ONE
-                    if (k < 2){
-                        if (record->event.key.row == scroll_coordinates_one[k][0] && record->event.key.col == scroll_coordinates_one[k][1]){
-                            return false;
-                        }
+                    if (record->event.key.row == scroll_coordinates_one[k][0] && record->event.key.col == scroll_coordinates_one[k][1]){
+                        return false;
                     }
 #                endif
 #                ifdef SCROLL_COORDINATES_TWO
-                    if (k < 2){
-                        if (record->event.key.row == scroll_coordinates_two[k][0] && record->event.key.col == scroll_coordinates_two[k][1]){
-                            return false;
-                        }
+                    if (record->event.key.row == scroll_coordinates_two[k][0] && record->event.key.col == scroll_coordinates_two[k][1]){
+                        return false;
                     }
 #                endif
                 }

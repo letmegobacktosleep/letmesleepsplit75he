@@ -134,11 +134,15 @@ row 7 = DKS, right hand
 }
 # define SCROLL_COORDINATES_ONE {
     {1, 10}, \
-    {1, 8}   \
+    {1, 8},  \
+    {3, 0},  \
+    {3, 0}   \
 }
 # define SCROLL_COORDINATES_TWO {
     {6, 15}, \
-    {6, 14}  \
+    {6, 14}, \
+    {7, 0},  \
+    {7, 0}   \
 }
 #endif
 
