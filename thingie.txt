@@ -1,0 +1,76 @@
+// master sends: full matrix state & layer state & indicator state & lookup table values for generating lookup tables
+// there is a set of (calibration, displacement) lookup tables for each switch type because the magnets aren't always the same
+// these are generated upon startup using an exponential curve
+
+
+// also write an additional application which can set per-key actuation settings & switch type
+
+// NEED TO CHECK REPHLEX'S CODE FOR THE ADC SCANNING
+// https://github.com/RephlexZero/qmk_firmware/blob/adc_testing/keyboards/rephlex/moonboard/
+// also this
+// https://docs.qmk.fm/custom_matrix https://github.com/qmk/qmk_firmware/blob/master/quantum/matrix.c 
+
+
+
+// https://discord.com/channels/1155086054622244904/1155145292119805963/1263077167995158629
+// https://discord.com/channels/1155086054622244904/1155145292119805963/1265214808350003311
+// ^^^^^ can guess down position from rest only
+
+
+////////////////////////////////////////////////////////////////
+
+#define JOYSTICK_BUTTON_COUNT 0
+#define JOYSTICK_AXIS_COUNT 4
+#define JOYSTICK_AXIS_RESOLUTION 8
+
+joystick_config_t joystick_axes[JOYSTICK_AXIS_COUNT] = {
+    JOYSTICK_AXIS_VIRTUAL, // x
+    JOYSTICK_AXIS_VIRTUAL, // y
+    JOYSTICK_AXIS_VIRTUAL, // Rx
+    JOYSTICK_AXIS_VIRTUAL, // Ry
+};
+
+// I have this array already, and theres stuff to modify the values
+int8_t virtual_axes_combined[2][2];
+
+// Left joystick
+joystick_set_axis(0, virtual_axes_combined[0][0]);
+joystick_set_axis(1, virtual_axes_combined[0][1]);
+// Right joystick
+joystick_set_axis(2, virtual_axes_combined[1][0]);
+joystick_set_axis(3, virtual_axes_combined[1][1]);
+// Send joystick report
+joystick_flush();
+
+
+///////////////////////////////
+
+void pointing_device_driver_init(void) {
+    return; // nothing to initialize here
+}
+uint16_t pointing_device_driver_get_cpi(void) {
+    return 0; // no cpi to set
+}
+void pointing_device_driver_set_cpi(uint16_t cpi) {
+    return; // no cpi to set
+}
+
+// https://docs.qmk.fm/features/pointing_device#analog-joystick
+// https://docs.qmk.fm/features/pointing_device#custom-driver
+
+report_mouse_t pointing_device_driver_get_report(report_mouse_t mouse_report) {
+    mouse_report.x = 69;
+    mouse_report.y = 42;
+    mouse_report.buttons = pointing_device_handle_buttons(mouse_report.buttons, data.button, POINTING_DEVICE_BUTTON1);
+    return mouse_report;
+}
+
+
+// Mouse (brute force method)
+report_mouse_t currentReport = pointing_device_get_report()
+currentReport.x = MAX(-127, MIN(virtual_axes_combined[2][0] + virtual_axes_combined[3][0])); // x
+currentReport.y = MAX(-127, MIN(virtual_axes_combined[2][1] + virtual_axes_combined[3][1])); // y
+currentReport.v = MAX(-127, MIN(virtual_axes_combined[4][0] + virtual_axes_combined[5][0])); // vertical scroll
+currentReport.h = MAX(-127, MIN(virtual_axes_combined[4][1] + virtual_axes_combined[5][1])); // horizontal scroll
+pointing_device_set_report(report_mouse_t currentReport)
+pointing_device_send()
