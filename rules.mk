@@ -19,3 +19,6 @@ JOYSTICK_ENABLE = yes
 
 POINTING_DEVICE_ENABLE = yes
 # enable pointing device
+
+BOOTMAGIC_ENABLE = yes
+# enable bootmagic

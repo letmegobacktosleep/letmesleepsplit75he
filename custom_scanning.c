@@ -1,4 +1,9 @@
+#include <config.h>
+
 #include <custom_scanning.h>
+
+// External definitions
+static uint8_t multiplexer_number_of_bits = 0;
 
 void multiplexer_init(void){
     multiplexer_number_of_bits = 0;
@@ -32,7 +37,7 @@ bool actuation(struct analog_config_t *config, struct analog_key_t *key, uint8_t
             }
 
         case 1: // normal, pressed
-            if (current < config->upper){
+            if (current < config->lower - config->upper){
                 key->mode = 0;
                 return 0;
             }
@@ -85,6 +90,6 @@ bool actuation(struct analog_config_t *config, struct analog_key_t *key, uint8_t
             }
 
         default: // invalid mode
-        return 0;
+            return 0;
     }
 }

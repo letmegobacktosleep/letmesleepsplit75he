@@ -14,6 +14,8 @@
 
 // is_keyboard_left()
 // returns a bool of whether it is left or right
+// is_keyboard_master()
+// returns a bool of whether it is connected by usb
 
 // Redefine rows per hand
 #ifdef SPLIT_KEYBOARD
@@ -55,39 +57,36 @@ const bool custom_matrix_mask[MATRIX_ROWS][MATRIX_COLS] = CUSTOM_MATRIX_MASK;
 extern ADCManager adcManager;
 
 // Initialize everything to zero
-analog_key_t analog_key[MATRIX_ROWS][MATRIX_COLS]   = { 0 };
+analog_key_t analog_key[MATRIX_ROWS][MATRIX_COLS]    = { 0 };
 analog_key_t analog_config[MATRIX_ROWS][MATRIX_COLS] = { 0 };
-lookup_table_parameters_t calibration_parameters     = { 0 };
+calibration_parameters_t calibration_parameters      = { 0 };
 
 // Define lookup tables
 static uint8_t lut_displacement[ANALOG_CAL_MAX_VALUE+1] = { 0 };
 static uint8_t lut_joystick[ANALOG_CAL_MAX_VALUE+1]     = { 0 };
 static uint16_t lut_multiplier[ANALOG_RAW_MAX_VALUE+1]  = { 0 };
 
-// Create counter for number of multiplexer bits
-static uint8_t multiplexer_number_of_bits = 0;
-
 // Create global joystick variables
 #ifdef ANALOG_KEY_VIRTUAL_AXES
 int8_t virtual_axes_from_self[6][4]  = { 0 };
 int8_t virtual_axes_from_slave[6][4] = { 0 };
 # ifdef JOYSTICK_COORDINATES_ONE
-uint8_t joystick_coordinates_one[4][2] = JOYSTICK_COORDINATES_ONE;
+const uint8_t joystick_coordinates_one[4][2] = JOYSTICK_COORDINATES_ONE;
 # endif
 # ifdef JOYSTICK_COORDINATES_TWO
-uint8_t joystick_coordinates_two[4][2] = JOYSTICK_COORDINATES_TWO;
+const uint8_t joystick_coordinates_two[4][2] = JOYSTICK_COORDINATES_TWO;
 # endif
 # ifdef MOUSE_COORDINATES_ONE
-uint8_t mouse_coordinates_two[4][2] = MOUSE_COORDINATES_ONE;
+const uint8_t mouse_coordinates_two[4][2] = MOUSE_COORDINATES_ONE;
 # endif
 # ifdef MOUSE_COORDINATES_TWO
-uint8_t mouse_coordinates_two[4][2] = MOUSE_COORDINATES_TWO;
+const uint8_t mouse_coordinates_two[4][2] = MOUSE_COORDINATES_TWO;
 # endif
 # ifdef SCROLL_COORDINATES_ONE
-uint8_t scroll_coordinates_one[4][2] = MOUSE_COORDINATES_TWO;
+const uint8_t scroll_coordinates_one[4][2] = MOUSE_COORDINATES_TWO;
 # endif
 # ifdef SCROLL_COORDINATES_TWO
-uint8_t scroll_coordinates_two[4][2] = MOUSE_COORDINATES_TWO;
+const uint8_t scroll_coordinates_two[4][2] = MOUSE_COORDINATES_TWO;
 # endif
 #endif
 
@@ -248,11 +247,8 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]) {
                         raw = raw - 2048;
                     }
 
-                    // save raw value as new rest value if timer has elapsed
-                    if (save_rest_values){
-                        analog_key[this_row][this_col].rest = raw;
-                    }
-                    else { // run actuation code
+                    // process keys
+                    if (!save_rest_values){
 
                         // run calibration (output 0-1023)
                         uint16_t calibrated = scale_raw_value(raw, analog_key[this_row][this_col].rest, lut_multiplier);
@@ -279,12 +275,7 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]) {
 
                         // handle DKS
                         if (analog_config[this_row][this_col].mode > 4){
-                            if (is_keyboard_left()){
-                                this_row = ROWS_PER_HAND - 1; // last row on left hand
-                            }
-                            else {
-                                this_row = MATRIX_ROWS - 1; // last row on right hand
-                            }
+                            this_row = row_offset + ROWS_PER_HAND - 1; // last row on current hand
                             for (uint8_t l = 0; l < 4; l++){ // run actuation on four keys
                                 this_col = l + 4 * (analog_config[this_row][this_col].mode - 5);
                                 
@@ -342,6 +333,10 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]) {
 #                        endif
                         }
 #                    endif
+                    }
+                    // save raw value
+                    else {
+                        analog_key[this_row][this_col].rest = raw;
                     }
                 }
             }

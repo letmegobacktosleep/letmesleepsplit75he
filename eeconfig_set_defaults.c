@@ -2,6 +2,11 @@
 
 #include <matrix.h>
 
+// External definitions
+extern analog_key_t analog_key[MATRIX_ROWS][MATRIX_COLS];
+extern analog_key_t analog_config[MATRIX_ROWS][MATRIX_COLS];
+extern calibration_parameters_t calibration_parameters;
+
 void set_default_analog_config(void){
     // loop through rows and columns
     for (uint8_t row = 0; row < MATRIX_ROWS; row++){

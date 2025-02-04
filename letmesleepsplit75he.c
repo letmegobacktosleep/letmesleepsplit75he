@@ -1,8 +1,19 @@
+#pragma once
+
 #include <stdint.h>
 #include <stdbool.h>
 
 #include <config.h>
 #include <matrix.h>
+
+// External definitions
+extern ADCManager adcManager;
+extern analog_key_t analog_key[MATRIX_ROWS][MATRIX_COLS];
+extern analog_key_t analog_config[MATRIX_ROWS][MATRIX_COLS];
+extern calibration_parameters_t calibration_parameters;
+extern int8_t virtual_axes_from_self[6][4];
+extern int8_t virtual_axes_from_slave[6][4];
+
 
 // https://discord.com/channels/440868230475677696/440868230475677698/1334525203044106241
 // when you modify a struct, 
@@ -20,8 +31,8 @@
 #    define EEPROM_USER_PARTIAL_UPDATE(__struct, __field) eeprom_update_block(&(__struct.__field), (void *)((void *)(EECONFIG_USER_DATABLOCK) + offsetof(typeof(__struct), __field)), sizeof(__struct.__field))
 #endif
 
-bool virtual_joystick_toggle = false;
-bool virtual_mouse_toggle    = false;
+static bool virtual_joystick_toggle = false;
+static bool virtual_mouse_toggle    = false;
 
 enum custom_keycodes {
     KC_JOYSTICK_TOGGLE = QK_KB_0,
@@ -51,12 +62,7 @@ void kb_sync_a_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out
     memcpy(out_data, virtual_axes_from_self, sizeof(virtual_axes_from_self));
 }
 #endif
-/*
-// https://docs.qmk.fm/features/joystick#configuration
-#define JOYSTICK_BUTTON_COUNT 0
-#define JOYSTICK_AXIS_COUNT 4
-#define JOYSTICK_AXIS_RESOLUTION 8
-*/
+
 #if (JOYSTICK_AXIS_COUNT == 4)
 joystick_config_t joystick_axes[JOYSTICK_AXIS_COUNT] = {
     JOYSTICK_AXIS_VIRTUAL, // x
@@ -232,3 +238,53 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             return true;
     }
 }
+
+#define BOOTMAGIC_ROW 0
+#define BOOTMAGIC_COLUMN 4
+#define BOOTMAGIC_ROW_RIGHT 8
+#define BOOTMAGIC_COLUMN_RIGHT 2
+
+#ifdef BOOTMAGIC_ENABLE
+void bootmagic_scan(void) {
+
+    uint16_t bootmagic_key_value = 0;
+
+# if (defined(BOOTMAGIC_ROW) && defined(BOOTMAGIC_COLUMN))
+    if (keyboard_is_left()){
+        uint8_t current_direct_pin = 0;
+#    ifdef MATRIX_DIRECT
+        if (BOOTMAGIC_ROW == MATRIX_DIRECT_ROW && BOOTMAGIC_COLUMN < MATRIX_DIRECT){
+            current_direct_pin = BOOTMAGIC_COLUMN;
+        }
+#    endif
+        select_multiplexer_channel(BOOTMAGIC_COLUMN);
+        adcStartAllConversions(adcManager, current_direct_pin);
+        bootmagic_key_value = getADCSample(BOOTMAGIC_ROW);
+    }
+# endif
+# if (defined(BOOTMAGIC_ROW_RIGHT) && defined(BOOTMAGIC_COLUMN_RIGHT))
+    if (!keyboard_is_left()){
+#    ifdef MATRIX_DIRECT_RIGHT
+        if (BOOTMAGIC_ROW_RIGHT == MATRIX_DIRECT_ROW_RIGHT && BOOTMAGIC_COLUMN_RIGHT < MATRIX_DIRECT_RIGHT){
+            current_direct_pin = BOOTMAGIC_COLUMN_RIGHT;
+        }
+#    endif
+        select_multiplexer_channel(BOOTMAGIC_COLUMN_RIGHT);
+        adcStartAllConversions(adcManager, current_direct_pin);
+        bootmagic_key_value = getADCSample(BOOTMAGIC_ROW_RIGHT);
+    }
+#endif
+
+    if (bootmagic_key_value < 2048){
+        bootmagic_key_value = 2047 - bootmagic_key_value ;
+    }
+    else { // bootmagic_key_value > 2047
+        bootmagic_key_value = bootmagic_key_value - 2048;
+    }
+
+    // arbitrary value
+    if (bootmagic_key_value > 500) {
+        bootloader_jump();
+    }
+}
+#endif

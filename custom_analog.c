@@ -7,6 +7,9 @@ SPDX-License-Identifier: GPL-2.0-or-later */
 // Define the global ADC manager instance
 ADCManager adcManager;
 
+// External definitions
+extern row_pins[ROWS_PER_HAND];
+
 static void adcCompleteCallback(ADCDriver *adcp) {
     (void)adcp; // Unused parameter
     osalSysLockFromISR();
@@ -222,13 +225,14 @@ msg_t adcStartAllConversions(ADCManager *adcManager, uint8_t current_direct_pin)
 
 adcsample_t getADCSample(const ADCManager *adcManager, uint8_t current_row, uint8_t current_direct_pin) {
     switch (current_row) {
+
         // Left
         case 0:
             return adcManager->sampleBuffer0[0];
         case 1:
             return adcManager->sampleBuffer1[0];
         case 2:
-            switch (current_direct_pin) {
+            switch (current_direct_pin){
                 case 0: // W
                     return adcManager->sampleBuffer2[0];
                 case 1: // A
@@ -238,15 +242,21 @@ adcsample_t getADCSample(const ADCManager *adcManager, uint8_t current_row, uint
                 case 3: // D
                     return adcManager->sampleBuffer8[0];
             }
-        // Right
         case 3:
-            return adcManager->sampleBuffer3[0];
+            return 2047; // This row is used for DKS
+
+        // Right
         case 4:
-            return adcManager->sampleBuffer4[0];
+            return adcManager->sampleBuffer3[0];
         case 5:
+            return adcManager->sampleBuffer4[0];
+        case 6:
             return adcManager->sampleBuffer5[0];
+        case 7:
+            return 2047; // This row is used for DKS
+
         // Invalid index
         default:
-            return 0;
+            return 2047;
     }
 }

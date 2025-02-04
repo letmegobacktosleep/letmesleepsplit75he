@@ -3,9 +3,9 @@
 typedef struct PACKED { 
 
     // All the settings
-    uint8_t mode;   // actuation mode
-    uint8_t lower;  // where key is pressed
-    uint8_t upper;  // where key is released, or deadzone if rapid trigger
+    uint8_t mode;   // actuation mode // 0 = normal // 2 = rapid trigger // 5,6,7,8 = DKS
+    uint8_t lower;  // actuation point
+    uint8_t upper;  // deadzone
     uint8_t down;   // rapid trigger sensitivity
     uint8_t up;     // rapid trigger sensitivity
 
