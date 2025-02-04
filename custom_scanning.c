@@ -9,7 +9,7 @@ void multiplexer_init(void){
     multiplexer_number_of_bits = 0;
     for (uint8_t i = 0; i < MATRIX_COLS; i++){
         if (col_pins[i] != NO_PIN){
-            setPinOutput(pin)
+            gpio_set_pin_output(pin)
             multiplexer_number_of_bits += 1;
         }
     }
@@ -20,7 +20,7 @@ bool select_multiplexer_channel(uint8_t channel){
         return 0;
     }
     for (uint8_t i = 0; i < multiplexer_number_of_bits; i++){
-        writePin(col_pins[i], channel & (1 << i));
+        gpio_write_pin(col_pins[i], channel & (1 << i));
     }
     return 1
 }

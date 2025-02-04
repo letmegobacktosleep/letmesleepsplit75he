@@ -14,6 +14,35 @@ extern calibration_parameters_t calibration_parameters;
 extern int8_t virtual_axes_from_self[6][4];
 extern int8_t virtual_axes_from_slave[6][4];
 
+static bool virtual_joystick_toggle = false;
+static bool virtual_mouse_toggle    = false;
+
+enum custom_keycodes {
+    KC_JS_TG = QK_KB_0,
+    KC_MS_TG,
+    KC_MS_MO,
+}
+/* This goes in the vial.json
+"customKeycodes": [
+    {"name": "Analog Joystick Toggle",
+    "title": "Toggle use of WASD & PL;' as a joystick",
+    "shortName": "KC_JS_TG"
+    },
+    {"name": "Analog Mouse Toggle",
+    "title": "Toggle use of WASD & Arrow Keys to control your mouse",
+    "shortName": "KC_MS_TG"
+    },
+    {"name": "Analog Mouse Momentary",
+    "title": "Momentarily use WASD & Arrow Keys to control your mouse",
+    "shortName": "KC_MS_MO"
+    }
+],
+*/
+
+#ifdef RGB_MATRIX_ENABLE
+const pin_t rgb_enable_pin = CUSTOM_RGB_ENABLE_PIN;
+#endif
+
 
 // https://discord.com/channels/440868230475677696/440868230475677698/1334525203044106241
 // when you modify a struct, 
@@ -30,31 +59,6 @@ extern int8_t virtual_axes_from_slave[6][4];
 #    define EEPROM_USER_PARTIAL_READ(__struct, __field) eeprom_read_block(&(__struct.__field), (void *)((void *)(EECONFIG_USER_DATABLOCK) + offsetof(typeof(__struct), __field)), sizeof(__struct.__field))
 #    define EEPROM_USER_PARTIAL_UPDATE(__struct, __field) eeprom_update_block(&(__struct.__field), (void *)((void *)(EECONFIG_USER_DATABLOCK) + offsetof(typeof(__struct), __field)), sizeof(__struct.__field))
 #endif
-
-static bool virtual_joystick_toggle = false;
-static bool virtual_mouse_toggle    = false;
-
-enum custom_keycodes {
-    KC_JOYSTICK_TOGGLE = QK_KB_0,
-    KC_MOUSE_TOGGLE,
-    KC_MOUSE_MOMENTARY,
-}
-/* This goes in the vial.json
-"customKeycodes": [
-	{"name": "JoystickTG",
-	 "title": "Toggle use of WASD & PL;' as a joystick",
-	 "shortName": "KC_JOYSTICK_TOGGLE"
-	},
-	{"name": "MouseTG",
-	 "title": "Toggle use of WASD & Arrow Keys to control your mouse",
-	 "shortName": "KC_MOUSE_TOGGLE"
-	},
-	{"name": "MouseMO",
-	 "title": "Momentarily use WASD & Arrow Keys to control your mouse",
-	 "shortName": "KC_MOUSE_MOMENTARY"
-	}
-],
-*/
 
 #ifdef SPLIT_KEYBOARD
 void kb_sync_a_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
@@ -85,6 +89,9 @@ void eeconfig_init_kb(void) {
 void keyboard_post_init_user(void) {
 #if (EECONFIG_USER_DATA_SIZE) > 0
     eeconfig_read_user_datablock(&analog_config);
+#endif
+#ifdef RGB_MATRIX_ENABLE
+    gpio_set_pin_output(rgb_enable_pin);
 #endif
 }
 
@@ -167,13 +174,13 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
     switch (keycode){
 #    ifdef ANALOG_KEY_VIRTUAL_AXES
         // check for keycodes which toggle joystick or mouse
-        case KC_JOYSTICK_TOGGLE:
+        case KC_JS_TG:
             if (record->event.pressed){ // only change state on key press
                 virtual_joystick_toggle = !virtual_joystick_toggle;
             }
             return false;
 
-        case KC_MOUSE_TOGGLE:
+        case KC_MS_TG:
             if (record->event.pressed){ // only change state on key press
                 virtual_mouse_toggle = !virtual_mouse_toggle;
             }
@@ -185,7 +192,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             }
             return false;
             
-        case KC_MOUSE_MOMENTARY:
+        case KC_MS_MO:
             if (record->event.pressed){
                 virtual_mouse_toggle = true;
                 SEND_STRING(SS_DOWN(MO(MOUSE_LAYER))); // turn on mouse layer
@@ -196,7 +203,13 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             }
             return false;
 #    endif
-        default: // ignore keypresses on keys used for virtual axes
+        default: 
+            // press caps instead of esc if caps is on
+            if (host_keyboard_led_state().caps_lock && record->event.pressed && record->event.key.row == 0 && record->event.key.col == 4){
+                SEND_STRING(SS_TAP(KC_CAPS));
+                return false;
+            }
+            // ignore keys with virtual axes
 #        ifdef ANALOG_KEY_VIRTUAL_AXES
             for (uint8_t k = 0; k < 4; k++){ // ignore keys if joystick or mouse is toggled
                 if (virtual_joystick_toggle){
@@ -286,5 +299,31 @@ void bootmagic_scan(void) {
     if (bootmagic_key_value > 500) {
         bootloader_jump();
     }
+}
+#endif
+
+#ifdef RGB_MATRIX_ENABLE
+bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
+    static bool value_was_zero = false;
+
+    // Light up Esc if CapsLock
+    if (host_keyboard_led_state().caps_lock){
+        // Always make brightness brighter than current brightness
+        uint8_t brightness = MIN(255, rgb_matrix_get_val() + 128);
+        rgb_matrix_set_color(0, brightness, brightness, brightness);
+    }
+
+    // Cut power to most LEDs if brightness is zero
+    if (!value_was_zero && hsv.v == 0){
+        gpio_write_pin_low(rgb_enable_pin);
+        value_was_zero = true;
+    }
+    else if (value_was_zero && hsv.v != 0){
+        gpio_write_pin_high(rgb_enable_pin);
+        value_was_zero = false;
+    }
+
+    // Always return false
+    return false;
 }
 #endif
