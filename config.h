@@ -90,17 +90,14 @@ row 7 = DKS, right hand */
 #define ADC_SAMPLING_TIME   ADC_SMPR_SMP_2P5
 #define ADC_RESOLUTION_MAX  1 << 12
 
-// Set UART pins
+// Set USART pins and driver
 #define SERIAL_USART_FULL_DUPLEX
+#define SERIAL_USART_DRIVER SD2
 #define SERIAL_USART_TX_PIN B3
 #define SERIAL_USART_RX_PIN B4
 #define SERIAL_USART_TX_PAL_MODE 7
 #define SERIAL_USART_RX_PAL_MODE 7
-// Set driver
-#define SERIAL_USART_DRIVER SD2
-// Enable sync of some stuff
-#define SPLIT_TRANSPORT_MIRROR
-#define SPLIT_LED_STATE_ENABLE
+
 
 
 // Change emulated flash size
@@ -187,12 +184,13 @@ row 7 = DKS, right hand */
 // https://docs.qmk.fm/features/rgb_matrix#common-configuration
 
 #ifdef RGB_MATRIX_ENABLE
+// Set PWM driver, channel, mode
 #define WS2812_PWM_DRIVER PWMD2
 #define WS2812_PWM_CHANNEL 4
 #define WS2812_PWM_PAL_MODE 10
-// NOT SURE IF THE NEXT TWO ARE CORRECT
+// Set DMA stream, channel
 #define WS2812_DMA_STREAM STM32_DMA1_STREAM2 
 #define WS2812_PWM_DMA_CHANNEL 2
-// Set my custom enable pin
+// Set custom enable pin
 #define CUSTOM_RGB_ENABLE_PIN A9
 #endif

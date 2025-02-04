@@ -52,6 +52,20 @@
                     {"pin_a": "B11", "pin_b": "B10", "resolution": 4}
                 ]
             }
+        },
+        "transport": {
+            "protocol": "serial",
+            "sync": {
+                "indicators": true,
+                "matrix_state": true
+            },
+            "watchdog": true,
+            "watchdog_timeout": 3000
+        },
+        "usb_detect": {
+            "enabled": true,
+            "polling_interval": 10,
+            "timeout": 2000
         }
     },
     "ws2812": {
