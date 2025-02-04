@@ -98,6 +98,9 @@ row 7 = DKS, right hand */
 #define SERIAL_USART_RX_PAL_MODE 7
 // Set driver
 #define SERIAL_USART_DRIVER SD2
+// Enable sync of some stuff
+#define SPLIT_TRANSPORT_MIRROR
+#define SPLIT_LED_STATE_ENABLE
 
 
 // Change emulated flash size

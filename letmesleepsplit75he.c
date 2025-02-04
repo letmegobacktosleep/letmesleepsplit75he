@@ -252,11 +252,6 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
     }
 }
 
-#define BOOTMAGIC_ROW 0
-#define BOOTMAGIC_COLUMN 4
-#define BOOTMAGIC_ROW_RIGHT 8
-#define BOOTMAGIC_COLUMN_RIGHT 2
-
 #ifdef BOOTMAGIC_ENABLE
 void bootmagic_scan(void) {
 

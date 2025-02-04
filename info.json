@@ -19,6 +19,10 @@
         "encoder": true,
         "rgb_matrix": true
     },
+    "bootmagic": {
+        "enabled": true,
+        "matrix": [0, 4]
+    },
     "qmk": {
         "tap_keycode_delay": 10
     },
@@ -33,6 +37,12 @@
     "split": {
         "enabled": true,
         "soft_serial_speed": 0,
+        "serial": {
+            "driver": "usart"
+        },
+        "bootmagic": {
+            "matrix": [6, 2]
+        },
         "handedness": {
             "pin": "C13"
         },
