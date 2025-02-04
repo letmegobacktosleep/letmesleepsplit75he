@@ -240,11 +240,11 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]) {
                     // get raw adc value
                     uint16_t raw = getADCSample(*adcManager, this_row, current_direct_pin);
                     // account for magnet polarity (bipolar sensor, 12-bit reading)
-                    if (raw < 2048){
-                        raw = 2047 - raw;
+                    if (raw < ANALOG_RAW_MAX_VALUE + 1){
+                        raw = ANALOG_RAW_MAX_VALUE - raw;
                     }
-                    else { // raw > 2047
-                        raw = raw - 2048;
+                    else { // raw > ANALOG_RAW_MAX_VALUE
+                        raw = raw - ANALOG_RAW_MAX_VALUE - 1;
                     }
 
                     // process keys

@@ -11,24 +11,19 @@
 #define MATRIX_COLS 16
 // number of ADC channels (whichever has more * 2)
 #define MATRIX_ROWS 8
-
-// max number of multiplexers per ADC
-/* any changes to this definition also requires modifying custom_analog.c */
-#define MAX_MUXES_PER_ADC 1
-
 // number of direct pins (cannot be greater than 16) // MATRIX_DIRECT_RIGHT
 /* any changes to this definition also requires modifying custom_analog.c */
 #define MATRIX_DIRECT 4
 // the row which contains the direct pins // MATRIX_DIRECT_ROW_RIGHT
 /* any changes to this definition also requires modifying custom_analog.c */
 #define MATRIX_DIRECT_ROW 2
+// max number of multiplexers per ADC
+/* any changes to this definition also requires modifying custom_analog.c */
+#define MAX_MUXES_PER_ADC 1
 
-// max value of raw
-#define ANALOG_RAW_MAX_VALUE 2047
-// max value of calibrated
-#define ANALOG_CAL_MAX_VALUE 1023
 
-// channel select pins
+
+// Channel select pins
 #define MATRIX_COL_PINS { \
     A8,     B15,    B14,    B13,    \
     NO_PIN, NO_PIN, NO_PIN, NO_PIN, \
@@ -42,36 +37,48 @@
     NO_PIN, NO_PIN, NO_PIN, NO_PIN  \
 }
 // ADC pins
+/* LEFT
+row 0 = mux 1 = ADC4_IN3
+row 1 = mux 2 = ADC1_IN4
+row 2 = DIRECT_ROW
+row 3 = DKS, left hand */
 #define MATRIX_ROW_PINS { \
     B12,   \
     A3,    \
     NO_PIN, \
     NO_PIN  \
 }
-/* LEFT
-row 0 = mux 1 = ADC4_IN3
-row 1 = mux 2 = ADC1_IN4
-row 2 = DIRECT_ROW
-row 3 = DKS, left hand */
+/* RIGHT
+row 4 = mux 3 = ADC4_IN3
+row 5 = mux 4 = ADC3_IN1
+row 6 = mux 5 = ADC1_IN4
+row 7 = DKS, right hand */
 #define MATRIX_ROW_PINS_RIGHT { \
     B12,   \
     A7,    \
     A3,    \
     NO_PIN \
 }
-/* RIGHT
-row 4 = mux 3 = ADC4_IN3
-row 5 = mux 4 = ADC3_IN1
-row 6 = mux 5 = ADC1_IN4
-row 7 = DKS, right hand */
-// ADC pins for direct pins // DIRECT_PINS_RIGHT
-#define DIRECT_PINS { \
-    A6   \
+// ADC pins for direct pins
+/* DIRECT_ROW = WASD = ADC2_IN3, ADC2_IN4, ADC2_IN2, ADC2_IN1 */
+#ifdef MATRIX_DIRECT
+# define DIRECT_PINS { \
+    A6,  \
     A7,  \
     A5,  \
     A4   \
 }
-/* DIRECT_ROW = WASD = ADC2_IN3, ADC2_IN4, ADC2_IN2, ADC2_IN1 */
+#endif
+#ifdef MATRIX_DIRECT_RIGHT
+# define DIRECT_PINS_RIGHT { \
+    NO_PIN, \
+    NO_PIN, \
+    NO_PIN, \
+    NO_PIN  \
+}
+#endif
+
+
 
 // bit array of whether key is valid
 #define CUSTOM_MATRIX_MASK { \
@@ -85,10 +92,19 @@ row 7 = DKS, right hand */
     {0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0}  \
 }
 
+
+
+
 // Set ADC resolution and sampling time
 #define ADC_RESOLUTION      ADC_CFGR_RES_12BITS
 #define ADC_SAMPLING_TIME   ADC_SMPR_SMP_2P5
 #define ADC_RESOLUTION_MAX  1 << 12
+// Max value of raw
+#define ANALOG_RAW_MAX_VALUE 2047
+// Max value of calibrated
+#define ANALOG_CAL_MAX_VALUE 1023
+
+
 
 // Set USART pins and driver
 #define SERIAL_USART_FULL_DUPLEX
@@ -112,10 +128,8 @@ row 7 = DKS, right hand */
 
 
 
-// joystick shit
+// comment out the next line to disable all joystick/mouse related code
 #define ANALOG_KEY_VIRTUAL_AXES
-
-// only define these other things if ANALOG_KEY_VIRTUAL_AXES was defined (make it easier to disable)
 #ifdef ANALOG_KEY_VIRTUAL_AXES
 // mouse layer
 # define MOUSE_LAYER 3
@@ -162,7 +176,9 @@ row 7 = DKS, right hand */
 }
 #endif
 
-// Only define custom sync if is split keyboard
+
+
+// Custom sync
 #ifdef SPLIT_KEYBOARD
 // Master to slave:
 # define RPC_M2S_BUFFER_SIZE 32
@@ -174,23 +190,16 @@ row 7 = DKS, right hand */
 
 
 
-
-
-
-
-
-#define WS2812_EXTERNAL_PULLUP
-// fuck, deal with it later
-// https://docs.qmk.fm/features/rgb_matrix#common-configuration
-
 #ifdef RGB_MATRIX_ENABLE
-// Set PWM driver, channel, mode
-#define WS2812_PWM_DRIVER PWMD2
-#define WS2812_PWM_CHANNEL 4
-#define WS2812_PWM_PAL_MODE 10
-// Set DMA stream, channel
-#define WS2812_DMA_STREAM STM32_DMA1_STREAM2 
-#define WS2812_PWM_DMA_CHANNEL 2
+// Set to open-drain, with external pullup to 5v
+# define WS2812_EXTERNAL_PULLUP
 // Set custom enable pin
-#define CUSTOM_RGB_ENABLE_PIN A9
+# define CUSTOM_RGB_ENABLE_PIN A9
+// Set PWM driver, channel, mode
+# define WS2812_PWM_DRIVER PWMD2
+# define WS2812_PWM_CHANNEL 4
+# define WS2812_PWM_PAL_MODE 10
+// Set DMA stream, channel
+# define WS2812_DMA_STREAM STM32_DMA1_STREAM2 
+# define WS2812_PWM_DMA_CHANNEL 2
 #endif
