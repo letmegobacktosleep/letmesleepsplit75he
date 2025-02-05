@@ -43,8 +43,8 @@ row 1 = mux 2 = ADC1_IN4
 row 2 = DIRECT_ROW
 row 3 = DKS, left hand */
 #define MATRIX_ROW_PINS { \
-    B12,   \
-    A3,    \
+    B12,    \
+    A3,     \
     NO_PIN, \
     NO_PIN  \
 }
@@ -54,25 +54,23 @@ row 5 = mux 4 = ADC3_IN1
 row 6 = mux 5 = ADC1_IN4
 row 7 = DKS, right hand */
 #define MATRIX_ROW_PINS_RIGHT { \
-    B12,   \
-    A7,    \
-    A3,    \
-    NO_PIN \
+    B12,    \
+    A7,     \
+    A3,     \
+    NO_PIN  \
 }
 // ADC pins for direct pins
 /* DIRECT_ROW = WASD = ADC2_IN3, ADC2_IN4, ADC2_IN2, ADC2_IN1 */
 #ifdef MATRIX_DIRECT
 # define DIRECT_PINS { \
-    A6,  \
-    A7,  \
-    A5,  \
-    A4   \
+    A6,     \
+    A7,     \
+    A5,     \
+    A4      \
 }
 #endif
 #ifdef MATRIX_DIRECT_RIGHT
 # define DIRECT_PINS_RIGHT { \
-    NO_PIN, \
-    NO_PIN, \
     NO_PIN, \
     NO_PIN  \
 }
@@ -181,9 +179,9 @@ row 7 = DKS, right hand */
 // Custom sync
 #ifdef SPLIT_KEYBOARD
 // Master to slave:
-# define RPC_M2S_BUFFER_SIZE 32
+# define RPC_M2S_BUFFER_SIZE 24
 // Slave to master:
-# define RPC_S2M_BUFFER_SIZE 32
+# define RPC_S2M_BUFFER_SIZE 24
 // Keyboard level data sync:
 # define SPLIT_TRANSACTION_IDS_KB KEYBOARD_SYNC_A
 #endif

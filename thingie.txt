@@ -64,7 +64,8 @@ transaction_register_rpc(USER_SYNC_A, kb_sync_b_slave_handler);
 // housekeeping_task_kb
 // inside loop that runs every 500ms
 if (is_keyboard_master() && new_config_yes != 0){
-    transaction_rpc_exec(
+    transaction_rpc_exec
+    (
         USER_SYNC_A, 
         sizeof(new_config), 
         &new_config, 

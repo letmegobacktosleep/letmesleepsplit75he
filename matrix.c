@@ -47,8 +47,10 @@ static SPLIT_MUTABLE_COL pin_t col_pins[MATRIX_COLS]   = MATRIX_COL_PINS;
 #    endif // MATRIX_COL_PINS
 #endif
 
-// Offset rows
-uint8_t row_offset = 0;
+// row offset
+static uint8_t row_offset = 0;
+// number of loops
+static uint8_t number_of_loops = MATRIX_COLS;
 
 // Create array for custom matrix mask
 const bool custom_matrix_mask[MATRIX_ROWS][MATRIX_COLS] = CUSTOM_MATRIX_MASK;
@@ -90,6 +92,14 @@ const uint8_t scroll_coordinates_two[4][2] = MOUSE_COORDINATES_TWO;
 # endif
 #endif
 
+// no clue how these work...
+void register_key(matrix_row_t *current_row, uint8_t current_col) {
+    *current_row |= (1 << current_col);
+}
+void deregister_key(matrix_row_t *current_row, uint8_t current_col) {
+    *current_row &= ~(1 << current_col);
+}
+
 // Initialise matrix
 void matrix_init_custom(void) {
 #ifdef SPLIT_KEYBOARD
@@ -124,28 +134,33 @@ void matrix_init_custom(void) {
         // rest -> fully pressed value
         lut_multiplier[i] = rest_to_absolute_change(i, &calibration_parameters.multiplier);
     }
+
+    // modify number of times to loop
+#ifdef MATRIX_DIRECT
+    if (is_keyboard_left()){
+        number_of_loops = MATRIX_DIRECT / MAX_MUXES_PER_ADC;
+    }
+#endif
+#ifdef MATRIX_DIRECT_RIGHT
+    if (!is_keyboard_left()) {
+        number_of_loops = MATRIX_DIRECT_RIGHT / MAX_MUXES_PER_ADC;
+    }
+#endif
     
+    // Load default values (before real values are loaded)
+    set_default_calibration_parameters();
+    set_default_analog_config();
+    set_default_analog_key();
+
     // Initialize multiplexer GPIO pins
     multiplexer_init();
     // Initialize ADC pins
     initADCGroups(&adcManager);
     // Wait some time for ADCs to start
     wait_ms(100);
-    // Load default values (before real values are loaded)
-    set_default_calibration_parameters();
-    set_default_analog_config();
-    set_default_analog_key();
-
+    return;
 }
 
-// functions to register/deregister keys
-// no clue how it works though...
-void register_key(matrix_row_t *current_row, uint8_t current_col) {
-    *current_row |= (1 << current_col);
-}
-void deregister_key(matrix_row_t *current_row, uint8_t current_col) {
-    *current_row &= ~(1 << current_col);
-}
 // create a previous matrix
 matrix_row_t previous_matrix[MATRIX_ROWS];
 // do a "lite" custom matrix
@@ -160,19 +175,6 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]) {
     static uint8_t current_col = 0;
     // store channel
     static uint8_t current_direct_pin = 0;
-
-    // determine number of times to loop
-    static uint8_t number_of_loops = MATRIX_COLS;
-    if (is_keyboard_left()){
-#    ifdef MATRIX_DIRECT
-        number_of_loops = MATRIX_DIRECT / MAX_MUXES_PER_ADC;
-#    endif
-    }
-    else {
-#    ifdef MATRIX_DIRECT_RIGHT
-        number_of_loops = MATRIX_DIRECT_RIGHT / MAX_MUXES_PER_ADC;
-#    endif
-    }
 
     // create variables to track time
     static bool save_rest_values = false;

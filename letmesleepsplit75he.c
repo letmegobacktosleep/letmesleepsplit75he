@@ -40,7 +40,7 @@ enum custom_keycodes {
 */
 
 #ifdef RGB_MATRIX_ENABLE
-const pin_t rgb_enable_pin = CUSTOM_RGB_ENABLE_PIN;
+static const pin_t rgb_enable_pin = CUSTOM_RGB_ENABLE_PIN;
 #endif
 
 
@@ -77,7 +77,7 @@ joystick_config_t joystick_axes[JOYSTICK_AXIS_COUNT] = {
 
 void eeconfig_init_user(void) {
     set_default_analog_config(); // set default values
-    eeconfig_update_user_datablock(&analog_config) // write it to eeprom
+    eeconfig_update_user_datablock(&analog_config); // write it to eeprom
 }
 
 void eeconfig_init_kb(void) {
@@ -251,51 +251,6 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
     }
 }
 
-#ifdef BOOTMAGIC_ENABLE
-void bootmagic_scan(void) {
-
-    uint16_t bootmagic_key_value = 0;
-
-# if (defined(BOOTMAGIC_ROW) && defined(BOOTMAGIC_COLUMN))
-    if (keyboard_is_left()){
-        uint8_t current_direct_pin = 0;
-#    ifdef MATRIX_DIRECT
-        if (BOOTMAGIC_ROW == MATRIX_DIRECT_ROW && BOOTMAGIC_COLUMN < MATRIX_DIRECT){
-            current_direct_pin = BOOTMAGIC_COLUMN;
-        }
-#    endif
-        select_multiplexer_channel(BOOTMAGIC_COLUMN);
-        adcStartAllConversions(adcManager, current_direct_pin);
-        bootmagic_key_value = getADCSample(BOOTMAGIC_ROW);
-    }
-# endif
-# if (defined(BOOTMAGIC_ROW_RIGHT) && defined(BOOTMAGIC_COLUMN_RIGHT))
-    if (!keyboard_is_left()){
-#    ifdef MATRIX_DIRECT_RIGHT
-        if (BOOTMAGIC_ROW_RIGHT == MATRIX_DIRECT_ROW_RIGHT && BOOTMAGIC_COLUMN_RIGHT < MATRIX_DIRECT_RIGHT){
-            current_direct_pin = BOOTMAGIC_COLUMN_RIGHT;
-        }
-#    endif
-        select_multiplexer_channel(BOOTMAGIC_COLUMN_RIGHT);
-        adcStartAllConversions(adcManager, current_direct_pin);
-        bootmagic_key_value = getADCSample(BOOTMAGIC_ROW_RIGHT);
-    }
-#endif
-
-    if (bootmagic_key_value < 2048){
-        bootmagic_key_value = 2047 - bootmagic_key_value ;
-    }
-    else { // bootmagic_key_value > 2047
-        bootmagic_key_value = bootmagic_key_value - 2048;
-    }
-
-    // arbitrary value
-    if (bootmagic_key_value > 500) {
-        bootloader_jump();
-    }
-}
-#endif
-
 #ifdef RGB_MATRIX_ENABLE
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     static bool value_was_zero = false;
@@ -358,5 +313,50 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 
     // Always return false
     return false;
+}
+#endif
+
+#ifdef BOOTMAGIC_ENABLE
+void bootmagic_scan(void) {
+
+    uint16_t bootmagic_key_value = 0;
+
+# if (defined(BOOTMAGIC_ROW) && defined(BOOTMAGIC_COLUMN))
+    if (keyboard_is_left()){
+        uint8_t current_direct_pin = 0;
+#    ifdef MATRIX_DIRECT
+        if (BOOTMAGIC_ROW == MATRIX_DIRECT_ROW && BOOTMAGIC_COLUMN < MATRIX_DIRECT){
+            current_direct_pin = BOOTMAGIC_COLUMN;
+        }
+#    endif
+        select_multiplexer_channel(BOOTMAGIC_COLUMN);
+        adcStartAllConversions(adcManager, current_direct_pin);
+        bootmagic_key_value = getADCSample(BOOTMAGIC_ROW);
+    }
+# endif
+# if (defined(BOOTMAGIC_ROW_RIGHT) && defined(BOOTMAGIC_COLUMN_RIGHT))
+    if (!keyboard_is_left()){
+#    ifdef MATRIX_DIRECT_RIGHT
+        if (BOOTMAGIC_ROW_RIGHT == MATRIX_DIRECT_ROW_RIGHT && BOOTMAGIC_COLUMN_RIGHT < MATRIX_DIRECT_RIGHT){
+            current_direct_pin = BOOTMAGIC_COLUMN_RIGHT;
+        }
+#    endif
+        select_multiplexer_channel(BOOTMAGIC_COLUMN_RIGHT);
+        adcStartAllConversions(adcManager, current_direct_pin);
+        bootmagic_key_value = getADCSample(BOOTMAGIC_ROW_RIGHT);
+    }
+#endif
+
+    if (bootmagic_key_value < 2048){
+        bootmagic_key_value = 2047 - bootmagic_key_value ;
+    }
+    else { // bootmagic_key_value > 2047
+        bootmagic_key_value = bootmagic_key_value - 2048;
+    }
+
+    // arbitrary value
+    if (bootmagic_key_value > 500) {
+        bootloader_jump();
+    }
 }
 #endif
