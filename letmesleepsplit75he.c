@@ -300,13 +300,50 @@ void bootmagic_scan(void) {
 #ifdef RGB_MATRIX_ENABLE
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     static bool value_was_zero = false;
+    static uint8_t current_val;
+    current_val = rgb_matrix_get_val();
 
     // Light up Esc if CapsLock
     if (host_keyboard_led_state().caps_lock){
         // Always make brightness brighter than current brightness
-        uint8_t brightness = MIN(255, rgb_matrix_get_val() + 128);
+        uint8_t brightness = MIN(255, current_val + 128);
         rgb_matrix_set_color(0, brightness, brightness, brightness);
     }
+
+# ifdef ANALOG_KEY_VIRTUAL_AXES
+    // Highlight joystick buttons
+    if (virtual_joystick_toggle){
+        uint8_t brightness = MIN(255, current_val + 64);
+#    ifdef JOYSTICK_COORDINATES_ONE
+        rgb_matrix_set_color(15, brightness, brightness, brightness);
+        rgb_matrix_set_color(20, brightness, brightness, brightness);
+        rgb_matrix_set_color(21, brightness, brightness, brightness);
+        rgb_matrix_set_color(22, brightness, brightness, brightness);
+#    endif
+#    ifdef JOYSTICK_COORDINATES_TWO
+        rgb_matrix_set_color(56, brightness, brightness, brightness);
+        rgb_matrix_set_color(64, brightness, brightness, brightness);
+        rgb_matrix_set_color(65, brightness, brightness, brightness);
+        rgb_matrix_set_color(66, brightness, brightness, brightness);
+#    endif
+    }
+    // Highlight mouse buttons
+    if (virtual_mouse_toggle){
+        uint8_t brightness = MIN(255, current_val + 64);
+#    ifdef MOUSE_COORDINATES_ONE
+        rgb_matrix_set_color(15, brightness, brightness, brightness);
+        rgb_matrix_set_color(20, brightness, brightness, brightness);
+        rgb_matrix_set_color(21, brightness, brightness, brightness);
+        rgb_matrix_set_color(22, brightness, brightness, brightness);
+#    endif
+#    ifdef MOUSE_COORDINATES_TWO
+        rgb_matrix_set_color(75, brightness, brightness, brightness);
+        rgb_matrix_set_color(81, brightness, brightness, brightness);
+        rgb_matrix_set_color(82, brightness, brightness, brightness);
+        rgb_matrix_set_color(83, brightness, brightness, brightness);
+#    endif
+    }
+# endif
 
     // Cut power to most LEDs if brightness is zero
     if (!value_was_zero && hsv.v == 0){
