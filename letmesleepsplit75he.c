@@ -44,21 +44,20 @@ const pin_t rgb_enable_pin = CUSTOM_RGB_ENABLE_PIN;
 #endif
 
 
-// https://discord.com/channels/440868230475677696/440868230475677698/1334525203044106241
-// when you modify a struct, 
-// you should try to save it using these functions
-// it only updates a part of it at a time
-// EEPROM_USER_PARTIAL_READ(analog_config[row][col], name_of_element);
-// EEPROM_USER_PARTIAL_UPDATE(analog_config[row][col], name_of_element);
 
+// field in struct
+// EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, displacement);
 #if (EECONFIG_KB_DATA_SIZE) > 0
 #    define EEPROM_KB_PARTIAL_READ(__struct, __field) eeprom_read_block(&(__struct.__field), (void *)((void *)(EECONFIG_KB_DATABLOCK) + offsetof(typeof(__struct), __field)), sizeof(__struct.__field))
 #    define EEPROM_KB_PARTIAL_UPDATE(__struct, __field) eeprom_update_block(&(__struct.__field), (void *)((void *)(EECONFIG_KB_DATABLOCK) + offsetof(typeof(__struct), __field)), sizeof(__struct.__field))
 #endif
+// struct in array of struct
+// EEPROM_USER_PARTIAL_UPDATE(analog_config[row][col]);
 #if (EECONFIG_USER_DATA_SIZE) > 0
-#    define EEPROM_USER_PARTIAL_READ(__struct, __field) eeprom_read_block(&(__struct.__field), (void *)((void *)(EECONFIG_USER_DATABLOCK) + offsetof(typeof(__struct), __field)), sizeof(__struct.__field))
-#    define EEPROM_USER_PARTIAL_UPDATE(__struct, __field) eeprom_update_block(&(__struct.__field), (void *)((void *)(EECONFIG_USER_DATABLOCK) + offsetof(typeof(__struct), __field)), sizeof(__struct.__field))
+#    define EEPROM_USER_PARTIAL_UPDATE(__struct) eeprom_update_block(&(__struct), (void *)((void *)(EECONFIG_USER_DATABLOCK) + offsetof(typeof(__struct), __struct)), sizeof(__struct))
+#    define EEPROM_USER_PARTIAL_READ(__struct) eeprom_read_block(&(__struct), (void *)((void *)(EECONFIG_USER_DATABLOCK) + offsetof(typeof(__struct), __struct)), sizeof(__struct))
 #endif
+// https://discord.com/channels/440868230475677696/440868230475677698/1334525203044106241
 
 #ifdef SPLIT_KEYBOARD
 void kb_sync_a_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {

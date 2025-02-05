@@ -30,12 +30,12 @@ void pointing_device_driver_set_cpi(uint16_t cpi) {
 //////////////////////////////////////////////////////////////////
 
 // Add to config.h
-KEYBOARD_SYNC_B
+#define SPLIT_TRANSACTION_IDS_USER USER_SYNC_A
 
 uint8_t new_config[7] = { 0 }; // row, col, mode, lower, upper, down, up
 uint8_t new_config_yes = 0;
 
-void kb_sync_b_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
+void user_sync_b_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
     // Cast data to correct type
     const uint8_t *m2s[7] = (const uint8_t*) in_data;
     uint8_t *s2m = (uint8_t*)out_data;
@@ -49,17 +49,23 @@ void kb_sync_b_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out
     analog_config[row][col].down  = m2s[5];
     analog_config[row][col].up    = m2s[6];
 
+    // Save to eeprom
+    EEPROM_USER_PARTIAL_UPDATE(analog_config[row][col]);
+
     // Send something back to master
     *s2m = 1;
 }
 
+
+
 // keyboard_post_init_kb
-transaction_register_rpc(KEYBOARD_SYNC_B, kb_sync_b_slave_handler);
+transaction_register_rpc(USER_SYNC_A, kb_sync_b_slave_handler);
 
 // housekeeping_task_kb
-if (new_config_yes != 0){
+// inside loop that runs every 500ms
+if (is_keyboard_master() && new_config_yes != 0){
     transaction_rpc_exec(
-        KEYBOARD_SYNC_B, 
+        USER_SYNC_A, 
         sizeof(new_config), 
         &new_config, 
         sizeof(new_config_yes), 
