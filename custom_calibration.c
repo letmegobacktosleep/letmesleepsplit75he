@@ -1,8 +1,8 @@
 #include <math.h>
 #include <util.h>
-#include <config.h>
 
-#include <custom_calibration.h>
+#include "config.h"
+#include "custom_calibration.h"
 
 uint16_t distance_to_analog(uint8_t distance, lookup_table_t *lut_params) {
     double intermediate = lut_params->lut_a * exp(lut_params->lut_b * distance + lut_params->lut_c) + lut_params->lut_d;

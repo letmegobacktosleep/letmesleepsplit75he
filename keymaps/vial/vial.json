@@ -2,7 +2,7 @@
     "name": "letmesleepsplit75he",
     "vendorId": "0xFEED",
     "productId": "0xF082",
-    "lighting": "none",
+    "lighting": "vialrgb",
     "customKeycodes": [
         {
             "name": "Analog Joystick Toggle",

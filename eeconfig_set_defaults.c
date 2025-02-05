@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-#include <matrix.h>
+#include "matrix.h"
 
 // External definitions
 extern analog_key_t analog_key[MATRIX_ROWS][MATRIX_COLS];

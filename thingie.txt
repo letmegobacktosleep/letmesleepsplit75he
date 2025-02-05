@@ -1,8 +1,3 @@
-// master sends: full matrix state & layer state & indicator state & lookup table values for generating lookup tables
-// there is a set of (calibration, displacement) lookup tables for each switch type because the magnets aren't always the same
-// these are generated upon startup using an exponential curve
-
-
 // also write an additional application which can set per-key actuation settings & switch type
 
 // NEED TO CHECK REPHLEX'S CODE FOR THE ADC SCANNING
@@ -17,11 +12,7 @@
 // ^^^^^ can guess down position from rest only
 
 
-////////////////////////////////////////////////////////////////
-
-
-
-///////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////
 
 void pointing_device_driver_init(void) {
     return; // nothing to initialize here
@@ -35,3 +26,43 @@ void pointing_device_driver_set_cpi(uint16_t cpi) {
 
 // https://docs.qmk.fm/features/pointing_device#analog-joystick
 // https://docs.qmk.fm/features/pointing_device#custom-driver
+
+//////////////////////////////////////////////////////////////////
+
+// Add to config.h
+KEYBOARD_SYNC_B
+
+uint8_t new_config[7] = { 0 }; // row, col, mode, lower, upper, down, up
+uint8_t new_config_yes = 0;
+
+void kb_sync_b_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
+    // Cast data to correct type
+    const uint8_t *m2s[7] = (const uint8_t*) in_data;
+    uint8_t *s2m = (uint8_t*)out_data;
+
+    // Set config
+    uint8_t row = m2s[0];
+    uint8_t col = m2s[1];
+    analog_config[row][col].mode  = m2s[2];
+    analog_config[row][col].lower = m2s[3];
+    analog_config[row][col].upper = m2s[4];
+    analog_config[row][col].down  = m2s[5];
+    analog_config[row][col].up    = m2s[6];
+
+    // Send something back to master
+    *s2m = 1;
+}
+
+// keyboard_post_init_kb
+transaction_register_rpc(KEYBOARD_SYNC_B, kb_sync_b_slave_handler);
+
+// housekeeping_task_kb
+if (new_config_yes != 0){
+    transaction_rpc_exec(
+        KEYBOARD_SYNC_B, 
+        sizeof(new_config), 
+        &new_config, 
+        sizeof(new_config_yes), 
+        &new_config_yes
+    );
+}

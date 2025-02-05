@@ -1,6 +1,6 @@
-#include <config.h>
+#include "config.h"
 
-#include <custom_scanning.h>
+#include "custom_scanning.h"
 
 // External definitions
 static uint8_t multiplexer_number_of_bits = 0;

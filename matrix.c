@@ -3,14 +3,14 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include <config.h>
+#include "config.h"
 // DELETE THIS ^^^
 
-#include <matrix.h>
-#include <custom_analog.h>
-#include <custom_calibration.h>
-#include <custom_scanning.h>
-#include <eeconfig_set_defaults.h>
+#include "matrix.h"
+#include "custom_analog.h"
+#include "custom_calibration.h"
+#include "custom_scanning.h"
+#include "eeconfig_set_defaults.h"
 
 // is_keyboard_left()
 // returns a bool of whether it is left or right

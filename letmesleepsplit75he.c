@@ -3,8 +3,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include <config.h>
-#include <matrix.h>
+#include "config.h"
+#include "matrix.h"
 
 // External definitions
 extern ADCManager adcManager;
@@ -106,7 +106,7 @@ void keyboard_post_init_kb(void) {
 
 // Tasks that will be run repeatedly
 
-void housekeeping_task_user(void) {
+void housekeeping_task_kb(void) {
     // Sync virtual axes, if enabled https://docs.qmk.fm/features/split_keyboard#custom-data-sync
 #ifdef ANALOG_KEY_VIRTUAL_AXES
     static uint32_t last_sync = 0;
@@ -300,7 +300,9 @@ void bootmagic_scan(void) {
 #ifdef RGB_MATRIX_ENABLE
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     static bool value_was_zero = false;
-    static uint8_t current_val;
+    static uint8_t current_val = 64;
+
+    // Get current value
     current_val = rgb_matrix_get_val();
 
     // Light up Esc if CapsLock
