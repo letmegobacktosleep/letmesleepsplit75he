@@ -92,6 +92,7 @@ void keyboard_post_init_user(void) {
 #endif
 #ifdef RGB_MATRIX_ENABLE
     gpio_set_pin_output(rgb_enable_pin);
+    gpio_write_pin_low(rgb_enable_pin);
 #endif
 }
 
@@ -283,7 +284,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 
 #ifdef RGB_MATRIX_ENABLE
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
-    static bool value_was_zero = false;
+    static bool value_was_zero = true;
     static uint8_t current_val = 64;
 
     // Get current value
