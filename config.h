@@ -122,7 +122,7 @@ row 7 = DKS, right hand */
 // Set size of EECONFIG for analog_config (per key)
 #define EECONFIG_USER_DATA_SIZE (5 * MATRIX_ROWS * MATRIX_COLS)
 // Set size of EECONFIG for calibration (global)
-#define EECONFIG_KB_DATA_SIZE (35 * 3)
+#define EECONFIG_KB_DATA_SIZE (36 * 3)
 
 
 

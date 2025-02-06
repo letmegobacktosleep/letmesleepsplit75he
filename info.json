@@ -3,7 +3,7 @@
     "keyboard_name": "letmesleepsplit75he",
     "maintainer": "letmegobacktosleep",
     "processor": "STM32F303",
-    "bootloader": "stm32-dfu",
+    "bootloader": "tinyuf2",
     "usb": {
         "vid": "0xFEED",
         "pid": "0xF082",

@@ -36,14 +36,14 @@ typedef struct PACKED {
     uint16_t max_input;  // 1 byte
     uint16_t max_output; // 1 byte
 
-} lookup_table_t; // 35 bytes
+} lookup_table_t; // 36 bytes
 
 typedef struct PACKED {
 
-    lookup_table_t displacement; // 35 bytes
-    lookup_table_t joystick;     // 35 bytes
-    lookup_table_t multiplier;   // 35 bytes
+    lookup_table_t displacement; // 36 bytes
+    lookup_table_t joystick;     // 36 bytes
+    lookup_table_t multiplier;   // 36 bytes
 
-} calibration_parameters_t; // 105 bytes
+} calibration_parameters_t; // 108 bytes
 _Static_assert(sizeof(calibration_parameters_t) == EECONFIG_KB_DATA_SIZE, "Mismatch in keyboard EECONFIG stored data size");
 extern calibration_parameters_t calibration_parameters;

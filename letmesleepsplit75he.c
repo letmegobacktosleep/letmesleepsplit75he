@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 #include "config.h"
 #include "matrix.h"
@@ -147,6 +148,9 @@ void housekeeping_task_kb(void) {
 #    if (defined(MOUSE_COORDINATES_ONE) || defined(MOUSE_COORDINATES_TWO) || defined(SCROLL_COORDINATES_ONE) || defined(SCROLL_COORDINATES_TWO))
         // Only run mouse if toggled on
         // https://docs.qmk.fm/features/pointing_device#manipulating-mouse-reports
+        static int8_t scroll_v = 0;
+        static int8_t scroll_h = 0;
+        static uint8_t next_scroll[2] = { 0 };
         if (virtual_mouse_toggle){
             // Get current report
             report_mouse_t currentReport = pointing_device_get_report()
@@ -156,9 +160,35 @@ void housekeeping_task_kb(void) {
             currentReport.y = MAX(-127, MIN(127, virtual_axes_combined[2][1] + virtual_axes_combined[3][1])); // y
 #        endif
 #        if (defined(SCROLL_COORDINATES_ONE) || defined(SCROLL_COORDINATES_TWO))
-            // Set scroll
-            currentReport.v = MAX(-127, MIN(127, virtual_axes_combined[4][0] + virtual_axes_combined[5][0])); // vertical scroll
-            currentReport.h = MAX(-127, MIN(127, virtual_axes_combined[4][1] + virtual_axes_combined[5][1])); // horizontal scroll
+            // Set scroll - time until next scroll
+            scroll_v = MAX(-127, MIN(127, virtual_axes_combined[4][0] + virtual_axes_combined[5][0]));
+            scroll_h = MAX(-127, MIN(127, virtual_axes_combined[4][1] + virtual_axes_combined[5][1])); 
+            if (last_scroll[0] == 0){
+                if (scroll_v > 2){
+                    currentReport.v = 1;
+                    next_scroll[0] = 32 - (abs(scroll_v) / 4);
+                }
+                else if (scroll_v < -2){
+                    currentReport.v = -1;
+                    next_scroll[0] = 32 - (abs(scroll_v) / 4);
+                }
+            }
+            else {
+                next_scroll[0]--;
+            }
+            if (last_scroll[1] == 0){
+                if (scroll_h > 2){
+                    currentReport.h = 1;
+                    next_scroll[1] = 32 - (abs(scroll_h) / 4);
+                }
+                else if (scroll_h < -2){
+                    currentReport.h = -1;
+                    next_scroll[1] = 32 - (abs(scroll_h) / 4);
+                }
+            }
+            else {
+                next_scroll[1]--;
+            }
 #        endif
             // Override current report & send
             pointing_device_set_report(report_mouse_t currentReport)

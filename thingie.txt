@@ -1,15 +1,47 @@
-// also write an additional application which can set per-key actuation settings & switch type
-
 // NEED TO CHECK REPHLEX'S CODE FOR THE ADC SCANNING
 // https://github.com/RephlexZero/qmk_firmware/blob/adc_testing/keyboards/rephlex/moonboard/
-// also this
-// https://docs.qmk.fm/custom_matrix https://github.com/qmk/qmk_firmware/blob/master/quantum/matrix.c 
-
 
 
 // https://discord.com/channels/1155086054622244904/1155145292119805963/1263077167995158629
 // https://discord.com/channels/1155086054622244904/1155145292119805963/1265214808350003311
 // ^^^^^ can guess down position from rest only
+
+
+
+// write a program that does this
+
+#include "custom_scanning.h"
+#include "custom_scanning.c"
+
+#define MATRIX_ROWS 8
+#define MATRIX_COLS 16
+
+static uint16_t max_value[MATRIX_ROWS][MATRIX_COLS];
+static uint16_t min_value[MATRIX_ROWS][MATRIX_COLS];
+
+for (uint8_t row = 0; row < MATRIX_ROWS; row++){
+    for (uint8_t col = 0; col < MATRIX_COLS; col++){
+        max_value[row][col] = 0;
+        min_value[row][col] = 2047;
+    }
+}
+
+
+for (uint8_t col = 0; col < MATRIX_COLS; col++){
+    for (uint8_t row = 0; row < MATRIX_ROWS; row++){
+
+        uint16_t raw = analog read 12 bit
+        if (raw < 2048){
+            raw = 2047 - raw;
+        }
+        else { // raw > 2047
+            raw = raw - 2048
+        }
+
+        min_value = (raw < min_value) ? raw : min_value;
+        max_value = (raw > max_value) ? raw : max_value;
+    }
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -32,22 +64,28 @@ void pointing_device_driver_set_cpi(uint16_t cpi) {
 // Add to config.h
 #define SPLIT_TRANSACTION_IDS_USER USER_SYNC_A
 
-uint8_t new_config[7] = { 0 }; // row, col, mode, lower, upper, down, up
+// row, col, mode, lower, upper, down, up
+uint8_t new_config[4][7] = { 0 };
+// how many are in the buffer
 uint8_t new_config_yes = 0;
 
-void user_sync_b_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
+// keyboard_post_init_user
+transaction_register_rpc(USER_SYNC_A, user_sync_a_slave_handler);
+transaction_register_rpc(USER_SYNC_B, user_sync_b_slave_handler);
+
+void user_sync_a_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
     // Cast data to correct type
     const uint8_t *m2s[7] = (const uint8_t*) in_data;
     uint8_t *s2m = (uint8_t*)out_data;
 
     // Set config
-    uint8_t row = m2s[0];
-    uint8_t col = m2s[1];
-    analog_config[row][col].mode  = m2s[2];
-    analog_config[row][col].lower = m2s[3];
-    analog_config[row][col].upper = m2s[4];
-    analog_config[row][col].down  = m2s[5];
-    analog_config[row][col].up    = m2s[6];
+    uint8_t row = *m2s[0];
+    uint8_t col = *m2s[1];
+    analog_config[row][col].mode  = *m2s[2];
+    analog_config[row][col].lower = *m2s[3];
+    analog_config[row][col].upper = *m2s[4];
+    analog_config[row][col].down  = *m2s[5];
+    analog_config[row][col].up    = *m2s[6];
 
     // Save to eeprom
     EEPROM_USER_PARTIAL_UPDATE(analog_config[row][col]);
@@ -56,20 +94,116 @@ void user_sync_b_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t o
     *s2m = 1;
 }
 
+void user_sync_b_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
+    // Cast data to correct type
+    const double *m2s[3] = (const double*) in_data;
+    uint8_t *s2m = (uint8_t*)out_data;
 
+    // literally zero
+    uint8_t literally_zero = 0;
 
-// keyboard_post_init_kb
-transaction_register_rpc(USER_SYNC_A, kb_sync_b_slave_handler);
+    // Set config
+    switch ((uint8_t) *m2s[0]){
+
+        case 0: // Displacement
+            calibration_parameters.displacement.lut_a = *m2s[1];
+            calibration_parameters.displacement.lut_b = *m2s[2];
+            EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, displacement);
+        case 1:
+            calibration_parameters.displacement.lut_c = *m2s[1];
+            calibration_parameters.displacement.lut_d = *m2s[2];
+            EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, displacement);
+        case 2:
+            calibration_parameters.displacement.max_input  = (uint8_t) *m2s[1];
+            calibration_parameters.displacement.max_output = (uint8_t) *m2s[2];
+            EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, displacement);
+        
+        case 3: // Joystick
+            calibration_parameters.joystick.lut_a = *m2s[1];
+            calibration_parameters.joystick.lut_b = *m2s[2];
+            EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, joystick);
+        case 4:
+            calibration_parameters.joystick.lut_c = *m2s[1];
+            calibration_parameters.joystick.lut_d = *m2s[2];
+            EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, joystick);
+        case 5:
+            calibration_parameters.joystick.max_input  = (uint8_t) *m2s[1];
+            calibration_parameters.joystick.max_output = (uint8_t) *m2s[2];
+            EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, joystick);
+
+        case 6:
+            calibration_parameters.multiplier.lut_a = *m2s[1];
+            calibration_parameters.multiplier.lut_b = *m2s[2];
+            EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, multiplier);
+        case 7:
+            calibration_parameters.multiplier.lut_c = *m2s[1];
+            calibration_parameters.multiplier.lut_d = *m2s[2];
+            EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, multiplier);
+        case 8:
+            calibration_parameters.multiplier.max_input  = (uint8_t) *m2s[1];
+            calibration_parameters.multiplier.max_output = (uint8_t) *m2s[2];
+            EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, multiplier);
+    }
+
+    // Save to eeprom
+    
+
+    // Send something back to master
+    *s2m = 1;
+}
 
 // housekeeping_task_kb
 // inside loop that runs every 500ms
-if (is_keyboard_master() && new_config_yes != 0){
-    transaction_rpc_exec
-    (
-        USER_SYNC_A, 
-        sizeof(new_config), 
-        &new_config, 
-        sizeof(new_config_yes), 
-        &new_config_yes
-    );
+if (is_keyboard_master() && new_config_yes > 0){
+    if (
+        transaction_rpc_exec(
+            USER_SYNC_A, 
+            sizeof(new_config[0]), 
+            &new_config[new_config_yes], 
+            sizeof(new_config_yes), 
+            &new_config_yes
+        )
+    )
+    {
+        // buffer can hold 4 key configs
+        new_config_yes--;
+    }
+}
+
+/////////////////////
+
+#define SCROLL_MIN_INTERVAL 1
+
+static uint8_t next_scroll[2] = { 0 };
+
+static int8_t scroll_v = MAX(-127, MIN(127, virtual_axes_combined[4][0] + virtual_axes_combined[5][0]));
+static int8_t scroll_h = MAX(-127, MIN(127, virtual_axes_combined[4][1] + virtual_axes_combined[5][1])); 
+
+
+if (last_scroll[0] == 0){
+    if (scroll_v > 2){
+        currentReport.v = 1;
+        next_scroll[0] = 64 - (abs(scroll_v) / 2);
+    }
+    else if (scroll_v < 2){
+        currentReport.v = -1;
+        next_scroll[0] = 64 - (abs(scroll_v) / 2);
+    }
+}
+else {
+    next_scroll[0]--;
+}
+
+if (last_scroll[1] == 0){
+    if (scroll_h > 2){
+        currentReport.h = 1;
+        next_scroll[1] = 64 - (abs(scroll_h) / 2);
+    }
+    else if (scroll_h < 2){
+        currentReport.h = -1;
+        next_scroll[1] = 64 - (abs(scroll_h) / 2);
+    }
+}
+else {
+    next_scroll[1]--;
 }
