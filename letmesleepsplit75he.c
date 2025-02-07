@@ -65,7 +65,40 @@ void kb_sync_a_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out
     // copy virtual_axes_from_self to the outbound buffer
     memcpy(out_data, virtual_axes_from_self, sizeof(virtual_axes_from_self));
 }
+void user_sync_a_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
+    // Cast data to correct type
+    const uint8_t *m2s[7] = (const uint8_t*) in_data;
+
+    // Set config
+    uint8_t row = *m2s[0];
+    uint8_t col = *m2s[1];
+    analog_config[row][col].mode  = *m2s[2];
+    analog_config[row][col].lower = *m2s[3];
+    analog_config[row][col].upper = *m2s[4];
+    analog_config[row][col].down  = *m2s[5];
+    analog_config[row][col].up    = *m2s[6];
+
+    // Save to eeprom
+    EEPROM_USER_PARTIAL_UPDATE(analog_config[row][col]);
+}
 #endif
+
+// Call this when a new value is set - do not call on slave...
+void user_write_new_config(row, col){
+#ifdef SPLIT_KEYBOARD
+    if (is_keyboard_master()){
+        uint8_t literally_zero = 0;
+        transaction_rpc_exec(
+            USER_SYNC_A,
+            sizeof(analog_config_t),
+            &analog_config[row][col], // NEED TO SET ROW AND COL
+            sizeof(literally_zero),
+            &literally_zero
+        );
+    }
+#endif
+    EEPROM_USER_PARTIAL_UPDATE(analog_config[row][col]);
+}
 
 #if (JOYSTICK_AXIS_COUNT == 4)
 joystick_config_t joystick_axes[JOYSTICK_AXIS_COUNT] = {
@@ -102,6 +135,7 @@ void keyboard_post_init_kb(void) {
 #endif
 #ifdef SPLIT_KEYBOARD
     transaction_register_rpc(KEYBOARD_SYNC_A, kb_sync_a_slave_handler);
+    transaction_register_rpc(USER_SYNC_A, user_sync_a_slave_handler);
 #endif
 }
 
@@ -124,8 +158,8 @@ void housekeeping_task_kb(void) {
 #    endif
         static int8_t virtual_axes_combined[6][2];
         for (uint8_t i = 0; i < 6; i++){
-            virtual_axes_combined[i][0] = MAX(-127, MIN(127, virtual_axes_from_self[i][0] + virtual_axes_from_slave[i][0] - virtual_axes_from_self[i][1] - virtual_axes_from_slave[i][1]))
-            virtual_axes_combined[i][1] = MAX(-127, MIN(127, virtual_axes_from_self[i][2] + virtual_axes_from_slave[i][2] - virtual_axes_from_self[i][3] - virtual_axes_from_slave[i][3]))
+            virtual_axes_combined[i][0] = MAX(-127, MIN(127, virtual_axes_from_self[i][1] + virtual_axes_from_slave[i][1] - virtual_axes_from_self[i][0] - virtual_axes_from_slave[i][0]))
+            virtual_axes_combined[i][1] = MAX(-127, MIN(127, virtual_axes_from_self[i][3] + virtual_axes_from_slave[i][3] - virtual_axes_from_self[i][2] - virtual_axes_from_slave[i][2]))
         }
         
 #    if (defined(JOYSTICK_COORDINATES_ONE) || defined(JOYSTICK_COORDINATES_TWO))
@@ -143,48 +177,50 @@ void housekeeping_task_kb(void) {
             joystick_set_axis(3, virtual_axes_combined[1][1]);
 #        endif
             // Send joystick report
-            // joystick_flush(); // Shouldn't have to manually call it...
+            joystick_flush();
         }
 #    endif
 #    if (defined(MOUSE_COORDINATES_ONE) || defined(MOUSE_COORDINATES_TWO) || defined(SCROLL_COORDINATES_ONE) || defined(SCROLL_COORDINATES_TWO))
         // Only run mouse if toggled on
         // https://docs.qmk.fm/features/pointing_device#manipulating-mouse-reports
-        static int8_t scroll_v = 0;
-        static int8_t scroll_h = 0;
+        static int8_t mouse_v = 0;
+        static int8_t mouse_h = 0;
         static uint8_t next_scroll[2] = { 0 };
         if (virtual_mouse_toggle){
             // Get current report
             report_mouse_t currentReport = pointing_device_get_report()
 #        if (defined(MOUSE_COORDINATES_ONE) || defined(MOUSE_COORDINATES_ONE))
             // Set mouse movement
-            currentReport.x = MAX(-127, MIN(127, virtual_axes_combined[2][0] + virtual_axes_combined[3][0])); // x
-            currentReport.y = MAX(-127, MIN(127, virtual_axes_combined[2][1] + virtual_axes_combined[3][1])); // y
+            mouse_x = MAX(-127, MIN(127, virtual_axes_combined[2][0] + virtual_axes_combined[3][0]));
+            mouse_y = MAX(-127, MIN(127, virtual_axes_combined[2][1] + virtual_axes_combined[3][1]));
+            currentReport.x = mouse_x
+            currentReport.y = mouse_y
 #        endif
 #        if (defined(SCROLL_COORDINATES_ONE) || defined(SCROLL_COORDINATES_TWO))
             // Set scroll - time until next scroll
-            scroll_v = MAX(-127, MIN(127, virtual_axes_combined[4][0] + virtual_axes_combined[5][0]));
-            scroll_h = MAX(-127, MIN(127, virtual_axes_combined[4][1] + virtual_axes_combined[5][1])); 
+            mouse_v = MAX(-127, MIN(127, virtual_axes_combined[4][0] + virtual_axes_combined[5][0]));
+            mouse_h = MAX(-127, MIN(127, virtual_axes_combined[4][1] + virtual_axes_combined[5][1])); 
             if (last_scroll[0] == 0){
-                if (scroll_v > 2){
+                if (mouse_v > 2){
                     currentReport.v = 1;
-                    next_scroll[0] = 32 - (abs(scroll_v) / 4);
+                    next_scroll[0] = 32 - (abs(mouse_v) / 4);
                 }
-                else if (scroll_v < -2){
+                else if (mouse_v < -2){
                     currentReport.v = -1;
-                    next_scroll[0] = 32 - (abs(scroll_v) / 4);
+                    next_scroll[0] = 32 - (abs(mouse_v) / 4);
                 }
             }
             else {
                 next_scroll[0]--;
             }
             if (last_scroll[1] == 0){
-                if (scroll_h > 2){
+                if (mouse_h > 2){
                     currentReport.h = 1;
-                    next_scroll[1] = 32 - (abs(scroll_h) / 4);
+                    next_scroll[1] = 32 - (abs(mouse_h) / 4);
                 }
-                else if (scroll_h < -2){
+                else if (mouse_h < -2){
                     currentReport.h = -1;
-                    next_scroll[1] = 32 - (abs(scroll_h) / 4);
+                    next_scroll[1] = 32 - (abs(mouse_h) / 4);
                 }
             }
             else {

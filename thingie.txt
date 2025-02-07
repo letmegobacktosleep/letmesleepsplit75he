@@ -65,34 +65,12 @@ void pointing_device_driver_set_cpi(uint16_t cpi) {
 #define SPLIT_TRANSACTION_IDS_USER USER_SYNC_A
 
 // row, col, mode, lower, upper, down, up
-uint8_t new_config[4][7] = { 0 };
+uint8_t new_config[7] = { 0 };
 // how many are in the buffer
 uint8_t new_config_yes = 0;
 
 // keyboard_post_init_user
-transaction_register_rpc(USER_SYNC_A, user_sync_a_slave_handler);
 transaction_register_rpc(USER_SYNC_B, user_sync_b_slave_handler);
-
-void user_sync_a_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
-    // Cast data to correct type
-    const uint8_t *m2s[7] = (const uint8_t*) in_data;
-    uint8_t *s2m = (uint8_t*)out_data;
-
-    // Set config
-    uint8_t row = *m2s[0];
-    uint8_t col = *m2s[1];
-    analog_config[row][col].mode  = *m2s[2];
-    analog_config[row][col].lower = *m2s[3];
-    analog_config[row][col].upper = *m2s[4];
-    analog_config[row][col].down  = *m2s[5];
-    analog_config[row][col].up    = *m2s[6];
-
-    // Save to eeprom
-    EEPROM_USER_PARTIAL_UPDATE(analog_config[row][col]);
-
-    // Send something back to master
-    *s2m = 1;
-}
 
 void user_sync_b_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
     // Cast data to correct type
@@ -131,7 +109,7 @@ void user_sync_b_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t o
             calibration_parameters.joystick.max_output = (uint8_t) *m2s[2];
             EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, joystick);
 
-        case 6:
+        case 6: // Multiplier
             calibration_parameters.multiplier.lut_a = *m2s[1];
             calibration_parameters.multiplier.lut_b = *m2s[2];
             EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, multiplier);
@@ -143,29 +121,5 @@ void user_sync_b_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t o
             calibration_parameters.multiplier.max_input  = (uint8_t) *m2s[1];
             calibration_parameters.multiplier.max_output = (uint8_t) *m2s[2];
             EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, multiplier);
-    }
-
-    // Save to eeprom
-    
-
-    // Send something back to master
-    *s2m = 1;
-}
-
-// housekeeping_task_kb
-// inside loop that runs every 500ms
-if (is_keyboard_master() && new_config_yes > 0){
-    if (
-        transaction_rpc_exec(
-            USER_SYNC_A, 
-            sizeof(new_config[0]), 
-            &new_config[new_config_yes], 
-            sizeof(new_config_yes), 
-            &new_config_yes
-        )
-    )
-    {
-        // buffer can hold 4 key configs
-        new_config_yes--;
     }
 }

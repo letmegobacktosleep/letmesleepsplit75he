@@ -135,7 +135,8 @@ row 7 = DKS, right hand */
 # define JOYSTICK_BUTTON_COUNT 0
 # define JOYSTICK_AXIS_COUNT 4
 # define JOYSTICK_AXIS_RESOLUTION 8
-// add {row, col} which make up the virtual axes
+// rows and cols which make up the virtual axes
+// order: left right up down
 # define JOYSTICK_COORDINATES_ONE { \
     {2, 1},  \
     {2, 3},  \
@@ -184,6 +185,7 @@ row 7 = DKS, right hand */
 # define RPC_S2M_BUFFER_SIZE 24
 // Keyboard level data sync:
 # define SPLIT_TRANSACTION_IDS_KB KEYBOARD_SYNC_A
+#define SPLIT_TRANSACTION_IDS_USER USER_SYNC_A
 #endif
 
 
