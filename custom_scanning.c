@@ -1,8 +1,13 @@
-#include "config.h"
+#include <stdint.h>
 
+#include "config.h"
+#include "matrix.h"
 #include "custom_scanning.h"
 
 // External definitions
+extern col_pins[MATRIX_COLS];
+
+// Local definitions
 static uint8_t multiplexer_number_of_bits = 0;
 
 void multiplexer_init(void){

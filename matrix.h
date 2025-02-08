@@ -1,4 +1,29 @@
-#include <stdint.h>
+// Extern global variables
+extern row_pins[ROWS_PER_HAND];
+extern col_pins[MATRIX_COLS];
+// Extern joystick definitions
+#ifdef ANALOG_KEY_VIRTUAL_AXES
+extern int8_t virtual_axes_from_self[6][4];
+extern int8_t virtual_axes_from_slave[6][4];
+# ifdef JOYSTICK_COORDINATES_ONE
+extern const uint8_t joystick_coordinates_one[4][2];
+# endif
+# ifdef JOYSTICK_COORDINATES_TWO
+extern const uint8_t joystick_coordinates_two[4][2];
+# endif
+# ifdef MOUSE_COORDINATES_ONE
+extern const uint8_t mouse_coordinates_two[4][2];
+# endif
+# ifdef MOUSE_COORDINATES_TWO
+extern const uint8_t mouse_coordinates_two[4][2];
+# endif
+# ifdef SCROLL_COORDINATES_ONE
+extern const uint8_t scroll_coordinates_one[4][2];
+# endif
+# ifdef SCROLL_COORDINATES_TWO
+extern const uint8_t scroll_coordinates_two[4][2];
+# endif
+#endif
 
 typedef struct PACKED { 
 
@@ -47,3 +72,9 @@ typedef struct PACKED {
 } calibration_parameters_t; // 108 bytes
 _Static_assert(sizeof(calibration_parameters_t) == EECONFIG_KB_DATA_SIZE, "Mismatch in keyboard EECONFIG stored data size");
 extern calibration_parameters_t calibration_parameters;
+
+// Function prototypes
+void register_key(matrix_row_t *current_row, uint8_t current_col);
+void deregister_key(matrix_row_t *current_row, uint8_t current_col);
+void matrix_init_custom(void);
+bool matrix_scan_custom(matrix_row_t current_matrix[]);

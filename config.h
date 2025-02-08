@@ -4,9 +4,6 @@
 
 #include "config_common.h"
 
-#include <stdbool.h>
-#include <stdint.h>
-
 // number of multiplexer channels
 #define MATRIX_COLS 16
 // number of ADC channels (whichever has more * 2)
@@ -129,7 +126,7 @@ row 7 = DKS, right hand */
 // comment out the next line to disable all joystick/mouse related code
 #define ANALOG_KEY_VIRTUAL_AXES
 #ifdef ANALOG_KEY_VIRTUAL_AXES
-// mouse layer
+// the layer containing mouse keys
 # define MOUSE_LAYER 3
 // qmk requires these
 # define JOYSTICK_BUTTON_COUNT 0

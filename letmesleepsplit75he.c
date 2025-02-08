@@ -6,14 +6,36 @@
 
 #include "config.h"
 #include "matrix.h"
+#include "custom_analog.h"
 
 // External definitions
 extern ADCManager adcManager;
 extern analog_key_t analog_key[MATRIX_ROWS][MATRIX_COLS];
 extern analog_key_t analog_config[MATRIX_ROWS][MATRIX_COLS];
 extern calibration_parameters_t calibration_parameters;
+// External joystick definitions
+#ifdef ANALOG_KEY_VIRTUAL_AXES
 extern int8_t virtual_axes_from_self[6][4];
 extern int8_t virtual_axes_from_slave[6][4];
+# ifdef JOYSTICK_COORDINATES_ONE
+extern const uint8_t joystick_coordinates_one[4][2];
+# endif
+# ifdef JOYSTICK_COORDINATES_TWO
+extern const uint8_t joystick_coordinates_two[4][2];
+# endif
+# ifdef MOUSE_COORDINATES_ONE
+extern const uint8_t mouse_coordinates_two[4][2];
+# endif
+# ifdef MOUSE_COORDINATES_TWO
+extern const uint8_t mouse_coordinates_two[4][2];
+# endif
+# ifdef SCROLL_COORDINATES_ONE
+extern const uint8_t scroll_coordinates_one[4][2];
+# endif
+# ifdef SCROLL_COORDINATES_TWO
+extern const uint8_t scroll_coordinates_two[4][2];
+# endif
+#endif
 
 static bool virtual_joystick_toggle = false;
 static bool virtual_mouse_toggle    = false;
@@ -77,6 +99,9 @@ void user_sync_a_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t o
     analog_config[row][col].upper = *m2s[4];
     analog_config[row][col].down  = *m2s[5];
     analog_config[row][col].up    = *m2s[6];
+    
+    // Update mode in analog_key
+    analog_key[row][col].mode = analog_config[row][col].mode;
 
     // Save to eeprom
     EEPROM_USER_PARTIAL_UPDATE(analog_config[row][col]);
@@ -228,8 +253,8 @@ void housekeeping_task_kb(void) {
             }
 #        endif
             // Override current report & send
-            pointing_device_set_report(report_mouse_t currentReport)
-            pointing_device_send()
+            pointing_device_set_report(report_mouse_t currentReport);
+            pointing_device_send();
         }
 #    endif
     }
@@ -369,11 +394,11 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 # endif
 
     // Cut power to most LEDs if brightness is zero
-    if (!value_was_zero && hsv.v == 0){
+    if (!value_was_zero && current_val == 0){
         gpio_write_pin_low(rgb_enable_pin);
         value_was_zero = true;
     }
-    else if (value_was_zero && hsv.v != 0){
+    else if (value_was_zero && current_val != 0){
         gpio_write_pin_high(rgb_enable_pin);
         value_was_zero = false;
     }

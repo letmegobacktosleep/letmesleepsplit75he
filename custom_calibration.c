@@ -1,7 +1,9 @@
+#include <stdint.h>
 #include <math.h>
-#include <util.h>
+#include "util.h"
 
 #include "config.h"
+#include "matrix.h"
 #include "custom_calibration.h"
 
 uint16_t distance_to_analog(uint8_t distance, lookup_table_t *lut_params) {
@@ -34,7 +36,7 @@ uint16_t scale_raw_value(uint16_t raw, uint8_t rest, uint16_t *lut_multiplier){
     intermediate *= MAX(0, raw - rest);
 
     // Cast to an unsigned integer and limit value
-    uint16_t calibrated = MIN(raw * multiplier, ANALOG_CAL_MAX_VALUE);
+    uint16_t calibrated = (uint16_t) MIN(raw * multiplier, ANALOG_CAL_MAX_VALUE);
     
     return calibrated;
 }

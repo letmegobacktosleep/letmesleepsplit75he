@@ -1,8 +1,10 @@
 /* Copyright 2023 RephlexZero (@RephlexZero)
 SPDX-License-Identifier: GPL-2.0-or-later */
 
-#include "custom_analog.h"
 #include "print.h"
+
+#include "config.h"
+#include "custom_analog.h"
 
 // Define the global ADC manager instance
 ADCManager adcManager;
@@ -253,10 +255,10 @@ adcsample_t getADCSample(const ADCManager *adcManager, uint8_t current_row, uint
         case 6:
             return adcManager->sampleBuffer5[0];
         case 7:
-            return 2047; // This row is used for DKS
+            return ANALOG_RAW_MAX_VALUE; // This row is used for DKS
 
         // Invalid index
         default:
-            return 2047;
+            return ANALOG_RAW_MAX_VALUE;
     }
 }

@@ -53,7 +53,7 @@ static uint8_t row_offset = 0;
 static uint8_t number_of_loops = MATRIX_COLS;
 
 // Create array for custom matrix mask
-const bool custom_matrix_mask[MATRIX_ROWS][MATRIX_COLS] = CUSTOM_MATRIX_MASK;
+static const bool custom_matrix_mask[MATRIX_ROWS][MATRIX_COLS] = CUSTOM_MATRIX_MASK;
 
 // External definitions
 extern ADCManager adcManager;
@@ -101,7 +101,7 @@ void deregister_key(matrix_row_t *current_row, uint8_t current_col) {
 }
 
 // Initialise matrix
-void matrix_init_custom(void) {
+void matrix_init_custom(void){
 #ifdef SPLIT_KEYBOARD
     // Set pinout for right half if pinout for that half is defined
     if (!is_keyboard_left()) {
@@ -120,9 +120,10 @@ void matrix_init_custom(void) {
         // set row offset if right hand
         row_offset = ROWS_PER_HAND;
 
-    /* thisHand and thatHand are already defined in a "lite" custom matrix
-    thisHand = isLeftHand ? 0 : (ROWS_PER_HAND);
-    thatHand = ROWS_PER_HAND - thisHand; */
+        /* thisHand and thatHand are already defined in "matrix_common.c"
+        thisHand = isLeftHand ? 0 : (ROWS_PER_HAND);
+        thatHand = ROWS_PER_HAND - thisHand; */
+    }
 #endif
     
     // Generate lookup tables
@@ -162,9 +163,9 @@ void matrix_init_custom(void) {
 }
 
 // create a previous matrix
-matrix_row_t previous_matrix[MATRIX_ROWS];
+static matrix_row_t previous_matrix[MATRIX_ROWS];
 // do a "lite" custom matrix
-bool matrix_scan_custom(matrix_row_t current_matrix[]) {
+bool matrix_scan_custom(matrix_row_t current_matrix[]){
     // update previous matrix
     memcpy(previous_matrix, current_matrix, sizeof(previous_matrix));
 
@@ -369,12 +370,9 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]) {
 //done: accessing settings from EEPROM
 //done: split communication - custom sync for joystick
 //done: DKS (uses mode instead of keycode)
+//done: virtual axes for joystick https://docs.qmk.fm/features/joystick#virtual-axes
+//done: use mouse report overrides https://docs.qmk.fm/features/pointing_device#manipulating-mouse-reports
 
-//todo: virtual axes for joystick
-// https://docs.qmk.fm/features/joystick#virtual-axes
-
-//todo: find virtual axis for mouse
-// https://docs.qmk.fm/features/pointing_device#custom-driver
 
 //todo: get values for generating: predicted abs diff between rest and down
 

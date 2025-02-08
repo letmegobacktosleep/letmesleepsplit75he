@@ -1,6 +1,8 @@
 #include <stdint.h>
 
+#include "config.h"
 #include "matrix.h"
+#include "eeconfig_set_defaults.h"
 
 // External definitions
 extern analog_key_t analog_key[MATRIX_ROWS][MATRIX_COLS];

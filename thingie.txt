@@ -64,62 +64,13 @@ void pointing_device_driver_set_cpi(uint16_t cpi) {
 // Add to config.h
 #define SPLIT_TRANSACTION_IDS_USER USER_SYNC_A
 
-// row, col, mode, lower, upper, down, up
-uint8_t new_config[7] = { 0 };
-// how many are in the buffer
-uint8_t new_config_yes = 0;
-
 // keyboard_post_init_user
 transaction_register_rpc(USER_SYNC_B, user_sync_b_slave_handler);
 
 void user_sync_b_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
     // Cast data to correct type
-    const double *m2s[3] = (const double*) in_data;
-    uint8_t *s2m = (uint8_t*)out_data;
+    const calibration_parameters_t *m2s = (const calibration_parameters_t*) in_data;
 
-    // literally zero
-    uint8_t literally_zero = 0;
-
-    // Set config
-    switch ((uint8_t) *m2s[0]){
-
-        case 0: // Displacement
-            calibration_parameters.displacement.lut_a = *m2s[1];
-            calibration_parameters.displacement.lut_b = *m2s[2];
-            EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, displacement);
-        case 1:
-            calibration_parameters.displacement.lut_c = *m2s[1];
-            calibration_parameters.displacement.lut_d = *m2s[2];
-            EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, displacement);
-        case 2:
-            calibration_parameters.displacement.max_input  = (uint8_t) *m2s[1];
-            calibration_parameters.displacement.max_output = (uint8_t) *m2s[2];
-            EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, displacement);
-        
-        case 3: // Joystick
-            calibration_parameters.joystick.lut_a = *m2s[1];
-            calibration_parameters.joystick.lut_b = *m2s[2];
-            EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, joystick);
-        case 4:
-            calibration_parameters.joystick.lut_c = *m2s[1];
-            calibration_parameters.joystick.lut_d = *m2s[2];
-            EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, joystick);
-        case 5:
-            calibration_parameters.joystick.max_input  = (uint8_t) *m2s[1];
-            calibration_parameters.joystick.max_output = (uint8_t) *m2s[2];
-            EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, joystick);
-
-        case 6: // Multiplier
-            calibration_parameters.multiplier.lut_a = *m2s[1];
-            calibration_parameters.multiplier.lut_b = *m2s[2];
-            EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, multiplier);
-        case 7:
-            calibration_parameters.multiplier.lut_c = *m2s[1];
-            calibration_parameters.multiplier.lut_d = *m2s[2];
-            EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, multiplier);
-        case 8:
-            calibration_parameters.multiplier.max_input  = (uint8_t) *m2s[1];
-            calibration_parameters.multiplier.max_output = (uint8_t) *m2s[2];
-            EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, multiplier);
-    }
+    // Save config
+    EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, displacement);
 }

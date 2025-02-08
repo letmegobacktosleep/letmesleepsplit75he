@@ -1,4 +1,4 @@
-#include <stdint.h>
+// Function prototypes
 
 void multiplexer_init(void);
 
