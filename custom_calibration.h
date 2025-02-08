@@ -1,4 +1,5 @@
-
+/* SPDX-License-Identifier: GPL-2.0-or-later */
+#pragma once
 
 // Function prototypes
 uint16_t distance_to_analog(uint8_t distance, lookup_table_t *lut_params);

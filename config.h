@@ -1,10 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
-
 #pragma once
 
 #include "config_common.h"
 
-// number of multiplexer channels
+// comment out the next line to disable all joystick/mouse related code
+#define ANALOG_KEY_VIRTUAL_AXES
+// comment out next line to disable processing of DKS
+#define DKS_ENABLE
+
+// number of multiplexer channels (must be 8 or 16 or 32)
 #define MATRIX_COLS 16
 // number of ADC channels (whichever has more * 2)
 #define MATRIX_ROWS 8
@@ -76,17 +80,17 @@ row 7 = DKS, right hand */
 
 
 // bit array of whether key is valid
+// DIRECTION IS FLIPPED, 1ST BIT IS THE LAST COLUMN
 #define CUSTOM_MATRIX_MASK { \
-    {1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1}, \
-    {1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1}, \
-    {1,1,1,1, 0,0,0,0, 0,0,0,0, 0,0,0,0}, \
-    {0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0}, \
-    {1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1}, \
-    {1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1}, \
-    {1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1}, \
-    {0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0}  \
+    0b1111111111111111, \
+    0b1111111111111111, \
+    0b0000000000001111, \
+    0b0000000000000000, \
+    0b1111111111111111, \
+    0b1111111111111111, \
+    0b1111111111111111, \
+    0b0000000000000000, \
 }
-
 
 
 
@@ -123,8 +127,7 @@ row 7 = DKS, right hand */
 
 
 
-// comment out the next line to disable all joystick/mouse related code
-#define ANALOG_KEY_VIRTUAL_AXES
+// Definitions for virtual axes
 #ifdef ANALOG_KEY_VIRTUAL_AXES
 // the layer containing mouse keys
 # define MOUSE_LAYER 3
@@ -187,6 +190,7 @@ row 7 = DKS, right hand */
 
 
 
+// RGB config
 #ifdef RGB_MATRIX_ENABLE
 // Set to open-drain, with external pullup to 5v
 # define WS2812_EXTERNAL_PULLUP

@@ -56,7 +56,6 @@ void pointing_device_driver_set_cpi(uint16_t cpi) {
     return; // no cpi to set
 }
 
-// https://docs.qmk.fm/features/pointing_device#analog-joystick
 // https://docs.qmk.fm/features/pointing_device#custom-driver
 
 //////////////////////////////////////////////////////////////////

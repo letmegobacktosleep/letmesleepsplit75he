@@ -1,11 +1,12 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
+#pragma once
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
 
 #include "config.h"
-// DELETE THIS ^^^
-
 #include "matrix.h"
 #include "custom_analog.h"
 #include "custom_calibration.h"
@@ -47,13 +48,23 @@ static SPLIT_MUTABLE_COL pin_t col_pins[MATRIX_COLS]   = MATRIX_COL_PINS;
 #    endif // MATRIX_COL_PINS
 #endif
 
+#if (MATRIX_COLS) == 8
+typedef uint8_t custom_matrix_mask_t
+#elif (MATRIX_COLS) == 16
+typedef uint16_t custom_matrix_mask_t
+#elif (MATRIX_COLS) == 32
+typedef uint32_t custom_matrix_mask_t
+#else
+# error "MATRIX_COLS was not 8/16/32"
+#endif
+
 // row offset
 static uint8_t row_offset = 0;
 // number of loops
 static uint8_t number_of_loops = MATRIX_COLS;
 
 // Create array for custom matrix mask
-static const bool custom_matrix_mask[MATRIX_ROWS][MATRIX_COLS] = CUSTOM_MATRIX_MASK;
+static const custom_matrix_mask_t custom_matrix_mask[MATRIX_ROWS] = CUSTOM_MATRIX_MASK;
 
 // External definitions
 extern ADCManager adcManager;
@@ -92,13 +103,7 @@ const uint8_t scroll_coordinates_two[4][2] = MOUSE_COORDINATES_TWO;
 # endif
 #endif
 
-// no clue how these work...
-void register_key(matrix_row_t *current_row, uint8_t current_col) {
-    *current_row |= (1 << current_col);
-}
-void deregister_key(matrix_row_t *current_row, uint8_t current_col) {
-    *current_row &= ~(1 << current_col);
-}
+
 
 // Initialise matrix
 void matrix_init_custom(void){
@@ -202,12 +207,13 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
         // run on every row
         for (uint8_t current_row = row_offset; current_row < row_offset + ROWS_PER_HAND; current_row++){
 
-            // how many direct pins were read to the buffer
-            uint8_t number_pins_read = 1;
             // row, col that can be modified
             uint8_t this_row = current_row;
             uint8_t this_col = current_col;
 
+#        if (MAX_MUXES_PER_ADC) > 1
+            // how many ADC pins were read on this row
+            uint8_t number_pins_read = 1;
             // check if the current row contains direct pins
 #        ifdef MATRIX_DIRECT_ROW
             if (this_row == MATRIX_DIRECT_ROW){
@@ -219,9 +225,9 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
                 number_pins_read = MAX_MUXES_PER_ADC;
             }
 #        endif
-
             // run multiple times if multiple direct pins were read
             for (uint8_t j = 0; j < number_pins_read; j++){
+#        endif
 
                 // increment current direct pin
 #            ifdef MATRIX_DIRECT_ROW
@@ -238,7 +244,7 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
 #            endif
 
                 // if the key should be scanned
-                if (custom_matrix_mask[this_row][this_col]){
+                if (custom_matrix_mask[this_row] & (1 << this_col)){
                     
                     // get raw adc value
                     uint16_t raw = getADCSample(*adcManager, this_row, current_direct_pin);
@@ -263,43 +269,41 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
                         current_key_state = actuation(
                             &analog_config[this_row][this_col], 
                             &analog_key[this_row][this_col], 
+                            &current_matrix[this_row], 
+                            this_col,
                             displacement, 
                             calibration_parameters.displacement.max_value
                         );
 
-                        // register keys
+                        // update time
                         if (current_key_state){
-                            register_key(&current_matrix[this_row], this_col);
                             time_to_be_updated = true;
                         }
-                        else {
-                            deregister_key(&current_matrix[this_row], this_col);
-                        }
 
+#                    ifdef DKS_ENABLE
                         // handle DKS
                         if (analog_config[this_row][this_col].mode > 4){
                             this_row = row_offset + ROWS_PER_HAND - 1; // last row on current hand
                             for (uint8_t l = 0; l < 4; l++){ // run actuation on four keys
-                                this_col = l + 4 * (analog_config[this_row][this_col].mode - 5);
+                                this_col = l + (4 * (analog_config[this_row][this_col].mode - 5));
                                 
                                 // run actuation
                                 current_key_state = actuation(
                                     &analog_config[this_row][this_col], 
                                     &analog_key[this_row][this_col], 
+                                    &current_matrix[this_row], 
+                                    this_col,
                                     displacement, 
                                     calibration_parameters.displacement.max_value
                                 );
 
-                                // register keys
+                                // update time
                                 if (current_key_state){
-                                    register_key(&current_matrix[this_row], this_col);
                                     time_to_be_updated = true;
-                                }
-                                else {
-                                    deregister_key(&current_matrix[this_row], this_col);
                                 }
                             }
                         }
+#                    endif
 
                         // handle joystick
 #                    ifdef ANALOG_KEY_VIRTUAL_AXES
@@ -342,7 +346,9 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
                         analog_key[this_row][this_col].rest = raw;
                     }
                 }
+#        if (MAX_MUXES_PER_ADC) > 1
             }
+#        endif
         }
         // increment current col
         current_col = (current_col + 1) % MATRIX_COLS;
