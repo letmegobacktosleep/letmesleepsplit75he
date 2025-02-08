@@ -42,6 +42,7 @@ bool actuation(analog_config_t *config, analog_key_t *key, matrix_row_t *current
                 return 1;
             }
             else {
+                DEREGISTER_KEY(current_row, current_col);
                 return 0;
             }
 
@@ -52,6 +53,7 @@ bool actuation(analog_config_t *config, analog_key_t *key, matrix_row_t *current
                 return 0;
             }
             else {
+                REGISTER_KEY(current_row, current_col);
                 return 1;
             }
 
@@ -63,6 +65,7 @@ bool actuation(analog_config_t *config, analog_key_t *key, matrix_row_t *current
                 return 1;
             }
             else {
+                DEREGISTER_KEY(current_row, current_col);
                 return 0;
             }
 
@@ -74,6 +77,7 @@ bool actuation(analog_config_t *config, analog_key_t *key, matrix_row_t *current
             }
             else if (current > key->old){ // update lowest position
                 key->old = current;
+                REGISTER_KEY(current_row, current_col);
                 return 1;
             }
             else if (current < key->old - config->up){ // rapid untrigger
@@ -83,6 +87,7 @@ bool actuation(analog_config_t *config, analog_key_t *key, matrix_row_t *current
                 return 0;
             }
             else {
+                REGISTER_KEY(current_row, current_col);
                 return 1;
             }
 
@@ -94,6 +99,7 @@ bool actuation(analog_config_t *config, analog_key_t *key, matrix_row_t *current
             }
             else if (current < key->old){ // update highest position
                 key->old = current;
+                DEREGISTER_KEY(current_row, current_col);
                 return 0;
             }
             else if ((current > key->old + config->down) || (current > max_key_displacement - config->upper)){ // rapid trigger or bottom deadzone
@@ -103,10 +109,12 @@ bool actuation(analog_config_t *config, analog_key_t *key, matrix_row_t *current
                 return 1;
             }
             else {
+                DEREGISTER_KEY(current_row, current_col);
                 return 0;
             }
 
         default: // invalid mode
+            DEREGISTER_KEY(current_row, current_col);
             return 0;
     }
 }
