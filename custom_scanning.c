@@ -11,14 +11,14 @@
 extern col_pins[MATRIX_COLS];
 
 // Local definitions
-static uint8_t multiplexer_number_of_bits = 0;
+static uint8_t multiplexer_number_of_pins = 0;
 
 void multiplexer_init(void){
-    multiplexer_number_of_bits = 0;
+    multiplexer_number_of_pins = 0;
     for (uint8_t i = 0; i < MATRIX_COLS; i++){
         if (col_pins[i] != NO_PIN){
             gpio_set_pin_output(pin)
-            multiplexer_number_of_bits += 1;
+            multiplexer_number_of_pins += 1;
         }
     }
 }
@@ -27,7 +27,7 @@ bool select_multiplexer_channel(uint8_t channel){
     if (channel > MATRIX_COLS){
         return 0;
     }
-    for (uint8_t i = 0; i < multiplexer_number_of_bits; i++){
+    for (uint8_t i = 0; i < multiplexer_number_of_pins; i++){
         gpio_write_pin(col_pins[i], channel & (1 << i));
     }
     return 1

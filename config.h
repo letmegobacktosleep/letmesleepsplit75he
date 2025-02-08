@@ -31,12 +31,13 @@
     NO_PIN, NO_PIN, NO_PIN, NO_PIN, \
     NO_PIN, NO_PIN, NO_PIN, NO_PIN  \
 }
-#define MATRIX_COL_PINS_RIGHT { \
+/* #define MATRIX_COL_PINS_RIGHT { \
     A8,     B15,    B14,    B13,    \
     NO_PIN, NO_PIN, NO_PIN, NO_PIN, \
     NO_PIN, NO_PIN, NO_PIN, NO_PIN, \
     NO_PIN, NO_PIN, NO_PIN, NO_PIN  \
-}
+} SAME AS LEFT HAND, DO NOT HAVE TO DEFINE RIGHT HAND*/
+
 // ADC pins
 /* LEFT
 row 0 = mux 1 = ADC4_IN3
@@ -61,7 +62,11 @@ row 7 = DKS, right hand */
     NO_PIN  \
 }
 // ADC pins for direct pins
-/* DIRECT_ROW = WASD = ADC2_IN3, ADC2_IN4, ADC2_IN2, ADC2_IN1 */
+/* LEFT
+ADC2_IN3 = W
+ADC2_IN4 = A
+ADC2_IN2 = S
+ADC2_IN1 = D */
 #ifdef MATRIX_DIRECT
 # define DIRECT_PINS { \
     A6,     \
@@ -70,10 +75,10 @@ row 7 = DKS, right hand */
     A4      \
 }
 #endif
+/* RIGHT
+not defined */
 #ifdef MATRIX_DIRECT_RIGHT
 # define DIRECT_PINS_RIGHT { \
-    NO_PIN, \
-    NO_PIN  \
 }
 #endif
 
@@ -91,39 +96,6 @@ row 7 = DKS, right hand */
     0b1111111111111111, \
     0b0000000000000000, \
 }
-
-
-
-// Set ADC resolution and sampling time
-#define ADC_RESOLUTION      ADC_CFGR_RES_12BITS
-#define ADC_SAMPLING_TIME   ADC_SMPR_SMP_2P5
-#define ADC_RESOLUTION_MAX  1 << 12
-// Max value of raw
-#define ANALOG_RAW_MAX_VALUE 2047
-// Max value of calibrated
-#define ANALOG_CAL_MAX_VALUE 1023
-
-
-
-// Set USART pins and driver
-#define SERIAL_USART_FULL_DUPLEX
-#define SERIAL_USART_DRIVER SD2
-#define SERIAL_USART_TX_PIN B3
-#define SERIAL_USART_RX_PIN B4
-#define SERIAL_USART_TX_PAL_MODE 7
-#define SERIAL_USART_RX_PAL_MODE 7
-
-
-
-// Change emulated flash size
-// https://docs.qmk.fm/drivers/eeprom#wear_leveling-efl-driver-configuration
-#define WEAR_LEVELING_EFL_OMIT_LAST_SECTOR_COUNT 0
-#define WEAR_LEVELING_LOGICAL_SIZE 4096
-#define WEAR_LEVELING_BACKING_SIZE 8192
-// Set size of EECONFIG for analog_config (per key)
-#define EECONFIG_USER_DATA_SIZE (5 * MATRIX_ROWS * MATRIX_COLS)
-// Set size of EECONFIG for calibration (global)
-#define EECONFIG_KB_DATA_SIZE (36 * 3)
 
 
 
@@ -174,6 +146,39 @@ row 7 = DKS, right hand */
     {7, 0}   \
 }
 #endif
+
+
+
+// Set ADC resolution and sampling time
+#define ADC_RESOLUTION      ADC_CFGR_RES_12BITS
+#define ADC_SAMPLING_TIME   ADC_SMPR_SMP_2P5
+#define ADC_RESOLUTION_MAX  1 << 12
+// Max value of raw
+#define ANALOG_RAW_MAX_VALUE 2047
+// Max value of calibrated
+#define ANALOG_CAL_MAX_VALUE 1023
+
+
+
+// Set USART pins and driver
+#define SERIAL_USART_FULL_DUPLEX
+#define SERIAL_USART_DRIVER SD2
+#define SERIAL_USART_TX_PIN B3
+#define SERIAL_USART_RX_PIN B4
+#define SERIAL_USART_TX_PAL_MODE 7
+#define SERIAL_USART_RX_PAL_MODE 7
+
+
+
+// Change emulated flash size
+// https://docs.qmk.fm/drivers/eeprom#wear_leveling-efl-driver-configuration
+#define WEAR_LEVELING_EFL_OMIT_LAST_SECTOR_COUNT 0
+#define WEAR_LEVELING_LOGICAL_SIZE 4096
+#define WEAR_LEVELING_BACKING_SIZE 8192
+// Set size of EECONFIG for analog_config (per key)
+#define EECONFIG_USER_DATA_SIZE (5 * MATRIX_ROWS * MATRIX_COLS)
+// Set size of EECONFIG for calibration (global)
+#define EECONFIG_KB_DATA_SIZE (36 * 3)
 
 
 
