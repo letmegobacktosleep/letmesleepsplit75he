@@ -1,5 +1,4 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
-#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,6 +19,7 @@
 // returns a bool of whether it is connected by usb
 
 // Redefine rows per hand
+#define ROWS_PER_HAND
 #ifdef SPLIT_KEYBOARD
 #    undef ROWS_PER_HAND
 #    define ROWS_PER_HAND (MATRIX_ROWS / 2)
