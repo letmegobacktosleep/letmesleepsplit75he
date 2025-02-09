@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+#include "gpio.h"
 #include "config.h"
 #include "matrix.h"
 #include "custom_scanning.h"

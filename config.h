@@ -1,8 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 #pragma once
 
-#include "config_common.h"
-
 // comment out the next line to disable all joystick/mouse related code
 #define ANALOG_KEY_VIRTUAL_AXES
 // comment out next line to disable processing of DKS

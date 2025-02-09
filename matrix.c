@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "gpio.h"
 #include "config.h"
 #include "matrix.h"
 #include "custom_analog.h"
