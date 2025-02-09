@@ -10,6 +10,7 @@
 #include "config.h"
 #include "custom_matrix.h"
 #include "custom_analog.h"
+#include "custom_scanning.h"
 #include "eeconfig_set_defaults.h"
 #include "letmesleepsplit75he.h"
 
@@ -97,13 +98,13 @@ void user_sync_a_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t o
     const uint8_t *m2s = (const uint8_t*) in_data;
 
     // Set config
-    uint8_t row = *m2s[0];
-    uint8_t col = *m2s[1];
-    analog_config[row][col].mode  = *m2s[2];
-    analog_config[row][col].lower = *m2s[3];
-    analog_config[row][col].upper = *m2s[4];
-    analog_config[row][col].down  = *m2s[5];
-    analog_config[row][col].up    = *m2s[6];
+    uint8_t row = m2s[0];
+    uint8_t col = m2s[1];
+    analog_config[row][col].mode  = m2s[2];
+    analog_config[row][col].lower = m2s[3];
+    analog_config[row][col].upper = m2s[4];
+    analog_config[row][col].down  = m2s[5];
+    analog_config[row][col].up    = m2s[6];
     
     // Update mode in analog_key
     analog_key[row][col].mode = analog_config[row][col].mode;
@@ -260,7 +261,7 @@ void housekeeping_task_kb(void) {
             }
 #        endif
             // Override current report & send
-            pointing_device_set_report(report_mouse_t currentReport);
+            pointing_device_set_report(currentReport);
             pointing_device_send();
         }
 #    endif
@@ -304,7 +305,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
         default: 
             // press caps instead of esc if caps is on
             if (host_keyboard_led_state().caps_lock && record->event.pressed && record->event.key.row == 0 && record->event.key.col == 4){
-                SEND_STRING(SS_TAP(KC_CAPS));
+                tap_code(KC_CAPS);
                 return false;
             }
             // ignore keys with virtual axes
