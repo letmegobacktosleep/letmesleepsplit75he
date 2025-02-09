@@ -1,6 +1,9 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 #pragma once
 
+#include "util.h"
+#include "eeconfig.h"
+
 // Redefine rows per hand
 #define ROWS_PER_HAND
 #ifdef SPLIT_KEYBOARD
@@ -12,8 +15,8 @@
 #endif
 
 // Extern global variables
-extern row_pins[ROWS_PER_HAND];
-extern col_pins[MATRIX_COLS];
+extern pin_t row_pins[ROWS_PER_HAND];
+extern pin_t col_pins[MATRIX_COLS];
 // Extern joystick definitions
 #ifdef ANALOG_KEY_VIRTUAL_AXES
 extern int8_t virtual_axes_from_self[6][4];
@@ -49,7 +52,7 @@ typedef struct PACKED {
 
 } analog_config_t; // 5 bytes
 _Static_assert(sizeof(analog_config_t)*MATRIX_ROWS*MATRIX_COLS == EECONFIG_USER_DATA_SIZE, "Mismatch in user EECONFIG stored data size");
-extern analog_key_t analog_config[MATRIX_ROWS][MATRIX_COLS];
+extern analog_config_t analog_config[MATRIX_ROWS][MATRIX_COLS];
 
 typedef struct {
 
