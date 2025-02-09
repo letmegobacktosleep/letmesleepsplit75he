@@ -18,21 +18,6 @@
 // is_keyboard_master()
 // returns a bool of whether it is connected by usb
 
-// Use const if the same pins are used for left and right
-#ifdef MATRIX_ROW_PINS_RIGHT
-#    undef SPLIT_MUTABLE_ROW
-#    define SPLIT_MUTABLE_ROW
-#else
-#    undef SPLIT_MUTABLE_ROW
-#    define SPLIT_MUTABLE_ROW const
-#endif
-#ifdef MATRIX_COL_PINS_RIGHT
-#    undef SPLIT_MUTABLE_COL
-#    define SPLIT_MUTABLE_COL
-#else
-#    undef SPLIT_MUTABLE_COL
-#    define SPLIT_MUTABLE_COL const
-#endif
 // Create global variables storing the row and column pins
 #if defined(MATRIX_ROW_PINS) && defined(MATRIX_COL_PINS)
 #    ifdef MATRIX_ROW_PINS
@@ -65,7 +50,7 @@ static const custom_matrix_mask_t custom_matrix_mask[MATRIX_ROWS] = CUSTOM_MATRI
 extern ADCManager adcManager;
 
 // Initialize everything to zero
-analog_key_t analog_key[MATRIX_ROWS][MATRIX_COLS]    = { 0 };
+analog_config_t analog_key[MATRIX_ROWS][MATRIX_COLS]    = { 0 };
 analog_key_t analog_config[MATRIX_ROWS][MATRIX_COLS] = { 0 };
 calibration_parameters_t calibration_parameters      = { 0 };
 
@@ -85,7 +70,7 @@ const uint8_t joystick_coordinates_one[4][2] = JOYSTICK_COORDINATES_ONE;
 const uint8_t joystick_coordinates_two[4][2] = JOYSTICK_COORDINATES_TWO;
 # endif
 # ifdef MOUSE_COORDINATES_ONE
-const uint8_t mouse_coordinates_two[4][2] = MOUSE_COORDINATES_ONE;
+const uint8_t mouse_coordinates_one[4][2] = MOUSE_COORDINATES_ONE;
 # endif
 # ifdef MOUSE_COORDINATES_TWO
 const uint8_t mouse_coordinates_two[4][2] = MOUSE_COORDINATES_TWO;
@@ -169,9 +154,6 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
     // update previous matrix
     memcpy(previous_matrix, current_matrix, sizeof(previous_matrix));
 
-    // store joystick values
-    static uint8_t joystick_values_temp[12] = 0;
-
     // store cols
     static uint8_t current_col = 0;
     // store channel
@@ -180,7 +162,7 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
     // create variables to track time
     static bool save_rest_values = false;
     static bool time_to_be_updated = false;
-    static uint32_t time_current = timer_read32()
+    static uint32_t time_current = timer_read32();
     static uint32_t time_next_calibration = 0;
     
     // check if keyboard should be calibrated
@@ -242,7 +224,7 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
                 if (custom_matrix_mask[this_row] & (1 << this_col)){
                     
                     // get raw adc value
-                    uint16_t raw = getADCSample(*adcManager, this_row, current_direct_pin);
+                    uint16_t raw = getADCSample(&adcManager, this_row, current_direct_pin);
                     // account for magnet polarity (bipolar sensor, 12-bit reading)
                     if (raw < ANALOG_RAW_MAX_VALUE + 1){
                         raw = ANALOG_RAW_MAX_VALUE - raw;
@@ -255,23 +237,24 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
                     if (!save_rest_values){
 
                         // run calibration (output 0-1023)
-                        uint16_t calibrated = scale_raw_value(raw, analog_key[this_row][this_col].rest, lut_multiplier);
+                        uint16_t calibrated = scale_raw_value(raw, analog_key[this_row][this_col].rest, &lut_multiplier);
 
                         // run lookup table (output 0-200, where 200=4mm)
                         uint8_t displacement = lut_displacement[calibrated];
-
-                        // run actuation (output bool, always false if mode > 4)
-                        current_key_state = actuation(
-                            &analog_config[this_row][this_col], 
-                            &analog_key[this_row][this_col], 
-                            &current_matrix[this_row], 
-                            this_col,
-                            displacement, 
-                            calibration_parameters.displacement.max_value
-                        );
-
-                        // update time
-                        if (current_key_state){
+ 
+                        if (
+                            // run actuation (output bool, always false if mode > 4)
+                            current_key_state = actuation(
+                                &analog_config[this_row][this_col], 
+                                &analog_key[this_row][this_col], 
+                                &current_matrix[this_row], 
+                                this_col,
+                                displacement, 
+                                calibration_parameters.displacement.max_output
+                            )
+                        )
+                        {
+                            // update time
                             time_to_be_updated = true;
                         }
 
@@ -282,18 +265,19 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
                             for (uint8_t l = 0; l < 4; l++){ // run actuation on four keys
                                 this_col = l + (4 * (analog_config[this_row][this_col].mode - 5));
                                 
-                                // run actuation
-                                current_key_state = actuation(
-                                    &analog_config[this_row][this_col], 
-                                    &analog_key[this_row][this_col], 
-                                    &current_matrix[this_row], 
-                                    this_col,
-                                    displacement, 
-                                    calibration_parameters.displacement.max_value
-                                );
-
-                                // update time
-                                if (current_key_state){
+                                if (
+                                    // run actuation (output bool, always false if mode > 4)
+                                    current_key_state = actuation(
+                                        &analog_config[this_row][this_col], 
+                                        &analog_key[this_row][this_col], 
+                                        &current_matrix[this_row], 
+                                        this_col,
+                                        displacement, 
+                                        calibration_parameters.displacement.max_output
+                                    )
+                                )
+                                {
+                                    // update time
                                     time_to_be_updated = true;
                                 }
                             }

@@ -4,6 +4,21 @@
 #include "util.h"
 #include "eeconfig.h"
 
+// Use const if the same pins are used for left and right
+#ifdef MATRIX_ROW_PINS_RIGHT
+#    undef SPLIT_MUTABLE_ROW
+#    define SPLIT_MUTABLE_ROW
+#else
+#    undef SPLIT_MUTABLE_ROW
+#    define SPLIT_MUTABLE_ROW const
+#endif
+#ifdef MATRIX_COL_PINS_RIGHT
+#    undef SPLIT_MUTABLE_COL
+#    define SPLIT_MUTABLE_COL
+#else
+#    undef SPLIT_MUTABLE_COL
+#    define SPLIT_MUTABLE_COL const
+#endif
 // Redefine rows per hand
 #define ROWS_PER_HAND
 #ifdef SPLIT_KEYBOARD
@@ -15,8 +30,8 @@
 #endif
 
 // Extern global variables
-extern pin_t row_pins[ROWS_PER_HAND];
-extern pin_t col_pins[MATRIX_COLS];
+extern SPLIT_MUTABLE_ROW pin_t row_pins[ROWS_PER_HAND];
+extern SPLIT_MUTABLE_COL pin_t col_pins[MATRIX_COLS];
 // Extern joystick definitions
 #ifdef ANALOG_KEY_VIRTUAL_AXES
 extern int8_t virtual_axes_from_self[6][4];
