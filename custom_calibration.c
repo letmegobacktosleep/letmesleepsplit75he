@@ -38,7 +38,7 @@ uint16_t scale_raw_value(uint16_t raw, uint8_t rest, uint16_t *lut_multiplier){
     intermediate *= MAX(0, raw - rest);
 
     // Cast to an unsigned integer and limit value
-    uint16_t calibrated = (uint16_t) MIN(raw * multiplier, ANALOG_CAL_MAX_VALUE);
+    uint16_t calibrated = (uint16_t) MAX(0, MIN(intermediate, ANALOG_CAL_MAX_VALUE));
     
     return calibrated;
 }
