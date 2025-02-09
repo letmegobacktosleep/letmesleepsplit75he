@@ -46,28 +46,6 @@ extern const uint8_t scroll_coordinates_two[4][2];
 static bool virtual_joystick_toggle = false;
 static bool virtual_mouse_toggle    = false;
 
-enum custom_keycodes {
-    KC_JS_TG = QK_KB_0,
-    KC_MS_TG,
-    KC_MS_MO,
-};
-/* This goes in the vial.json
-"customKeycodes": [
-    {"name": "Analog Joystick Toggle",
-    "title": "Toggle use of WASD & PL;' as a joystick",
-    "shortName": "KC_JS_TG"
-    },
-    {"name": "Analog Mouse Toggle",
-    "title": "Toggle use of WASD & Arrow Keys to control your mouse",
-    "shortName": "KC_MS_TG"
-    },
-    {"name": "Analog Mouse Momentary",
-    "title": "Momentarily use WASD & Arrow Keys to control your mouse",
-    "shortName": "KC_MS_MO"
-    }
-],
-*/
-
 #ifdef RGB_MATRIX_ENABLE
 static const pin_t rgb_enable_pin = CUSTOM_RGB_ENABLE_PIN;
 #endif
