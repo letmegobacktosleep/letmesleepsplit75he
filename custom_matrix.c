@@ -21,10 +21,10 @@
 // Create global variables storing the row and column pins
 #if defined(MATRIX_ROW_PINS) && defined(MATRIX_COL_PINS)
 #    ifdef MATRIX_ROW_PINS
-static SPLIT_MUTABLE_ROW pin_t row_pins[ROWS_PER_HAND] = MATRIX_ROW_PINS;
+SPLIT_MUTABLE_ROW pin_t row_pins[ROWS_PER_HAND] = MATRIX_ROW_PINS;
 #    endif // MATRIX_ROW_PINS
 #    ifdef MATRIX_COL_PINS
-static SPLIT_MUTABLE_COL pin_t col_pins[MATRIX_COLS]   = MATRIX_COL_PINS;
+SPLIT_MUTABLE_COL pin_t col_pins[MATRIX_COLS]   = MATRIX_COL_PINS;
 #    endif // MATRIX_COL_PINS
 #endif
 
@@ -50,9 +50,9 @@ static const custom_matrix_mask_t custom_matrix_mask[MATRIX_ROWS] = CUSTOM_MATRI
 extern ADCManager adcManager;
 
 // Initialize everything to zero
-analog_config_t analog_key[MATRIX_ROWS][MATRIX_COLS]    = { 0 };
-analog_key_t analog_config[MATRIX_ROWS][MATRIX_COLS] = { 0 };
-calibration_parameters_t calibration_parameters      = { 0 };
+analog_key_t analog_key[MATRIX_ROWS][MATRIX_COLS]       = { 0 };
+analog_config_t analog_config[MATRIX_ROWS][MATRIX_COLS] = { 0 };
+calibration_parameters_t calibration_parameters         = { 0 };
 
 // Define lookup tables
 static uint8_t lut_displacement[ANALOG_CAL_MAX_VALUE+1] = { 0 };
@@ -162,8 +162,9 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
     // create variables to track time
     static bool save_rest_values = false;
     static bool time_to_be_updated = false;
-    static uint32_t time_current = timer_read32();
+    static uint32_t time_current = 0;
     static uint32_t time_next_calibration = 0;
+    time_current = timer_read32();
     
     // check if keyboard should be calibrated
     if (time_current > time_next_calibration){
@@ -244,7 +245,7 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
  
                         if (
                             // run actuation (output bool, always false if mode > 4)
-                            current_key_state = actuation(
+                            actuation(
                                 &analog_config[this_row][this_col], 
                                 &analog_key[this_row][this_col], 
                                 &current_matrix[this_row], 
@@ -267,7 +268,7 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
                                 
                                 if (
                                     // run actuation (output bool, always false if mode > 4)
-                                    current_key_state = actuation(
+                                    actuation(
                                         &analog_config[this_row][this_col], 
                                         &analog_key[this_row][this_col], 
                                         &current_matrix[this_row], 
