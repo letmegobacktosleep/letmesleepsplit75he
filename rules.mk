@@ -7,6 +7,10 @@ DEBOUNCE_TYPE = sym_eager_pk
 # instant change followed by 5 ms of no change
 # to prevent people from triggering way too fast
 
+CUSTOM_MATRIX = lite
+# custom lite matrix
+# keyboard.json method doesn't seem to work
+
 JOYSTICK_ENABLE = yes
 # enable joystick
 
