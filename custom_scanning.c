@@ -10,14 +10,14 @@
 extern SPLIT_MUTABLE_COL pin_t col_pins[MATRIX_COLS];
 
 // Local definitions
-static uint8_t multiplexer_number_of_pins = 0;
+static uint8_t mux_pin_count = 0;
 
 void multiplexer_init(void){
-    multiplexer_number_of_pins = 0;
+    mux_pin_count = 0; // reset to zero
     for (uint8_t i = 0; i < MATRIX_COLS; i++){
         if (col_pins[i] != NO_PIN){
-            gpio_set_pin_output(pin)
-            multiplexer_number_of_pins += 1;
+            palSetLineMode(col_pins[i], PAL_MODE_OUTPUT_PUSHPULL); // gpio_set_pin_output(col_pins[i]);
+            mux_pin_count += 1;
         }
     }
 }
@@ -26,10 +26,10 @@ bool select_multiplexer_channel(uint8_t channel){
     if (channel > MATRIX_COLS){
         return 0;
     }
-    for (uint8_t i = 0; i < multiplexer_number_of_pins; i++){
-        gpio_write_pin(col_pins[i], channel & (1 << i));
+    for (uint8_t i = 0; i < mux_pin_count; i++){
+        palWriteLine(col_pins[i], channel & (1 << i)); // gpio_write_pin(col_pins[i], channel & (1 << i));
     }
-    return 1
+    return 1;
 }
 
 bool actuation(analog_config_t *config, analog_key_t *key, matrix_row_t *current_row, uint8_t current_col, uint8_t current, uint8_t max_key_displacement){

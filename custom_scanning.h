@@ -1,6 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 #pragma once
 
+#include "hal.h"
+
 // Macros to register, deregister keys
 #define REGISTER_KEY(current_row, current_col) *current_row |= (1 << current_col)
 #define DEREGISTER_KEY(current_row, current_col) *current_row &= ~(1 << current_col)
@@ -10,7 +12,6 @@
 #define bitflip(byte,nbit)  ((byte) ^=  (1<<(nbit)))
 #define bitcheck(byte,nbit) ((byte) &   (1<<(nbit)))
 */
-
 
 // Function prototypes
 void multiplexer_init(void);

@@ -149,8 +149,8 @@ void keyboard_post_init_user(void) {
     eeconfig_read_user_datablock(&analog_config);
 #endif
 #ifdef RGB_MATRIX_ENABLE
-    gpio_set_pin_output(rgb_enable_pin);
-    gpio_write_pin_low(rgb_enable_pin);
+    palSetLineMode(rgb_enable_pin, PAL_MODE_OUTPUT_PUSHPULL); // gpio_set_pin_output(rgb_enable_pin);
+    palClearLine(rgb_enable_pin); // gpio_write_pin_low(rgb_enable_pin);
 #endif
 }
 
@@ -395,11 +395,11 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 
     // Cut power to most LEDs if brightness is zero
     if (!value_was_zero && current_val == 0){
-        gpio_write_pin_low(rgb_enable_pin);
+        palClearLine(rgb_enable_pin); // gpio_write_pin_low(rgb_enable_pin);
         value_was_zero = true;
     }
     else if (value_was_zero && current_val != 0){
-        gpio_write_pin_high(rgb_enable_pin);
+        palSetLine(rgb_enable_pin); // gpio_write_pin_high(rgb_enable_pin);
         value_was_zero = false;
     }
 
