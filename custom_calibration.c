@@ -20,7 +20,7 @@ uint8_t analog_to_distance(uint16_t adc, lookup_table_t *lut_params) {
     return distance;
 }
 
-uint16_t rest_to_absolute_change(uint8_t distance, lookup_table_t *lut_params) {
+uint16_t rest_to_absolute_change(uint16_t adc, lookup_table_t *lut_params) {
     double intermediate = lut_params->lut_a * exp(lut_params->lut_b * distance + lut_params->lut_c) + lut_params->lut_d;
     uint16_t adc = (uint16_t) MAX(0, MIN(intermediate, lut_params->max_input));
     return adc;
