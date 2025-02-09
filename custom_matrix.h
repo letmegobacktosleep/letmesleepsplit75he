@@ -2,7 +2,7 @@
 #pragma once
 
 #include "util.h"
-#include "eeconfig.h"
+#include "quantum.h"
 
 // Use const if the same pins are used for left and right
 #ifdef MATRIX_ROW_PINS_RIGHT
