@@ -11,7 +11,7 @@
 // External definitions
 extern ADCManager adcManager;
 extern analog_key_t analog_key[MATRIX_ROWS][MATRIX_COLS];
-extern analog_key_t analog_config[MATRIX_ROWS][MATRIX_COLS];
+extern analog_config_t analog_config[MATRIX_ROWS][MATRIX_COLS];
 extern calibration_parameters_t calibration_parameters;
 // External joystick definitions
 #ifdef ANALOG_KEY_VIRTUAL_AXES
