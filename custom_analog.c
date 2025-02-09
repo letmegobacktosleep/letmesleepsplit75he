@@ -2,7 +2,9 @@
 
 #include "print.h"
 
+#include "gpio.h"
 #include "config.h"
+#include "custom_matrix.h"
 #include "custom_analog.h"
 
 // Define the global ADC manager instance
