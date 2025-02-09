@@ -1,4 +1,4 @@
-SRC += matrix.c custom_analog.c custom_calibration.c custom_scanning.c eeconfig_set_defaults.c
+SRC += custom_matrix.c custom_analog.c custom_calibration.c custom_scanning.c eeconfig_set_defaults.c
 
 MCU_LDSCRIPT = STM32F303xB
 WEAR_LEVELING_DRIVER = embedded_flash

@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #include "config.h"
-#include "matrix.h"
+#include "custom_matrix.h"
 #include "eeconfig_set_defaults.h"
 
 // External definitions

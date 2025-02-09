@@ -6,7 +6,7 @@
 #include "util.h"
 
 #include "config.h"
-#include "matrix.h"
+#include "custom_matrix.h"
 #include "custom_calibration.h"
 
 uint16_t distance_to_analog(uint8_t distance, lookup_table_t *lut_params) {

@@ -6,7 +6,7 @@
 #include <stdlib.h>
 
 #include "config.h"
-#include "matrix.h"
+#include "custom_matrix.h"
 #include "custom_analog.h"
 
 // External definitions
