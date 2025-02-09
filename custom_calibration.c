@@ -29,7 +29,7 @@ uint16_t rest_to_absolute_change(uint8_t distance, lookup_table_t *lut_params) {
 uint16_t scale_raw_value(uint16_t raw, uint8_t rest, uint16_t *lut_multiplier){
 
     // Find the multiplier
-    double intermediate = (double) ANALOG_CAL_MAX_VALUE / lut_multiplier[rest]
+    double intermediate = (double) ANALOG_CAL_MAX_VALUE / lut_multiplier[rest];
     
     // Comment this out when lut_multiplier values have been added
     // intermediate = 1.1983185203883775;
