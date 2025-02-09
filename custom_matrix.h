@@ -1,6 +1,16 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 #pragma once
 
+// Redefine rows per hand
+#define ROWS_PER_HAND
+#ifdef SPLIT_KEYBOARD
+#    undef ROWS_PER_HAND
+#    define ROWS_PER_HAND (MATRIX_ROWS / 2)
+#else
+#    undef ROWS_PER_HAND
+#    define ROWS_PER_HAND (MATRIX_ROWS)
+#endif
+
 // Extern global variables
 extern row_pins[ROWS_PER_HAND];
 extern col_pins[MATRIX_COLS];

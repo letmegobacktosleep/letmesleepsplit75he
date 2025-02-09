@@ -18,16 +18,6 @@
 // is_keyboard_master()
 // returns a bool of whether it is connected by usb
 
-// Redefine rows per hand
-#define ROWS_PER_HAND
-#ifdef SPLIT_KEYBOARD
-#    undef ROWS_PER_HAND
-#    define ROWS_PER_HAND (MATRIX_ROWS / 2)
-#else
-#    undef ROWS_PER_HAND
-#    define ROWS_PER_HAND (MATRIX_ROWS)
-#endif
-
 // Use const if the same pins are used for left and right
 #ifdef MATRIX_ROW_PINS_RIGHT
 #    undef SPLIT_MUTABLE_ROW
