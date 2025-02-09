@@ -11,7 +11,7 @@
 ADCManager adcManager;
 
 // External definitions
-extern pin_t row_pins[ROWS_PER_HAND];
+extern SPLIT_MUTABLE_ROW pin_t row_pins[ROWS_PER_HAND];
 
 static void adcCompleteCallback(ADCDriver *adcp) {
     (void)adcp; // Unused parameter
