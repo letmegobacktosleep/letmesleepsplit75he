@@ -10,5 +10,5 @@ DEBOUNCE_TYPE = sym_eager_pk
 JOYSTICK_ENABLE = yes
 # enable joystick
 
-POINTING_DEVICE_ENABLE = yes
+# POINTING_DEVICE_ENABLE = yes
 # enable pointing device

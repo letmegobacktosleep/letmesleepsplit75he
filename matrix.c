@@ -29,17 +29,21 @@
 
 // Use const if the same pins are used for left and right
 #ifdef MATRIX_ROW_PINS_RIGHT
+#    undef SPLIT_MUTABLE_ROW
 #    define SPLIT_MUTABLE_ROW
 #else
+#    undef SPLIT_MUTABLE_ROW
 #    define SPLIT_MUTABLE_ROW const
 #endif
 #ifdef MATRIX_COL_PINS_RIGHT
+#    undef SPLIT_MUTABLE_COL
 #    define SPLIT_MUTABLE_COL
 #else
+#    undef SPLIT_MUTABLE_COL
 #    define SPLIT_MUTABLE_COL const
 #endif
 // Create global variables storing the row and column pins
-#ifdef MATRIX_ROW_PINS && MATRIX_COL_PINS
+#if defined(MATRIX_ROW_PINS) && defined(MATRIX_COL_PINS)
 #    ifdef MATRIX_ROW_PINS
 static SPLIT_MUTABLE_ROW pin_t row_pins[ROWS_PER_HAND] = MATRIX_ROW_PINS;
 #    endif // MATRIX_ROW_PINS
@@ -49,11 +53,11 @@ static SPLIT_MUTABLE_COL pin_t col_pins[MATRIX_COLS]   = MATRIX_COL_PINS;
 #endif
 
 #if (MATRIX_COLS) == 8
-typedef uint8_t custom_matrix_mask_t
+typedef uint8_t custom_matrix_mask_t;
 #elif (MATRIX_COLS) == 16
-typedef uint16_t custom_matrix_mask_t
+typedef uint16_t custom_matrix_mask_t;
 #elif (MATRIX_COLS) == 32
-typedef uint32_t custom_matrix_mask_t
+typedef uint32_t custom_matrix_mask_t;
 #else
 # error "MATRIX_COLS was not 8/16/32"
 #endif

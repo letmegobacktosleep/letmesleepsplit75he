@@ -202,10 +202,10 @@ not defined */
 // Set custom enable pin
 # define CUSTOM_RGB_ENABLE_PIN A9
 // Set PWM driver, channel, mode
-# define WS2812_PWM_DRIVER PWMD2
-# define WS2812_PWM_CHANNEL 4
-# define WS2812_PWM_PAL_MODE 10
+# define WS2812_PWM_DRIVER PWMD1
+# define WS2812_PWM_CHANNEL 3
+# define WS2812_PWM_PAL_MODE 6
 // Set DMA stream, channel
 # define WS2812_DMA_STREAM STM32_DMA1_STREAM2 
-# define WS2812_PWM_DMA_CHANNEL 2
+# define WS2812_PWM_DMA_CHANNEL 3
 #endif
