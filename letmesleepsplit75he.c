@@ -4,9 +4,14 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+#include "transactions.h"
+#include "pointing_device.h"
+
 #include "config.h"
 #include "custom_matrix.h"
 #include "custom_analog.h"
+#include "eeconfig_set_defaults.h"
+#include "letmesleepsplit75he.h"
 
 // External definitions
 extern ADCManager adcManager;
@@ -24,7 +29,7 @@ extern const uint8_t joystick_coordinates_one[4][2];
 extern const uint8_t joystick_coordinates_two[4][2];
 # endif
 # ifdef MOUSE_COORDINATES_ONE
-extern const uint8_t mouse_coordinates_two[4][2];
+extern const uint8_t mouse_coordinates_one[4][2];
 # endif
 # ifdef MOUSE_COORDINATES_TWO
 extern const uint8_t mouse_coordinates_two[4][2];
@@ -44,7 +49,7 @@ enum custom_keycodes {
     KC_JS_TG = QK_KB_0,
     KC_MS_TG,
     KC_MS_MO,
-}
+};
 /* This goes in the vial.json
 "customKeycodes": [
     {"name": "Analog Joystick Toggle",
@@ -77,8 +82,8 @@ static const pin_t rgb_enable_pin = CUSTOM_RGB_ENABLE_PIN;
 // struct in array of struct
 // EEPROM_USER_PARTIAL_UPDATE(analog_config[row][col]);
 #if (EECONFIG_USER_DATA_SIZE) > 0
-#    define EEPROM_USER_PARTIAL_UPDATE(__struct) eeprom_update_block(&(__struct), (void *)((void *)(EECONFIG_USER_DATABLOCK) + offsetof(typeof(__struct), __struct)), sizeof(__struct))
-#    define EEPROM_USER_PARTIAL_READ(__struct) eeprom_read_block(&(__struct), (void *)((void *)(EECONFIG_USER_DATABLOCK) + offsetof(typeof(__struct), __struct)), sizeof(__struct))
+#    define EEPROM_USER_PARTIAL_UPDATE(__struct) eeprom_update_block(&(__struct), (void *)(EECONFIG_USER_DATABLOCK), sizeof(__struct))
+#    define EEPROM_USER_PARTIAL_READ(__struct) eeprom_read_block(&(__struct), (void *)(EECONFIG_USER_DATABLOCK), sizeof(__struct))
 #endif
 // https://discord.com/channels/440868230475677696/440868230475677698/1334525203044106241
 
@@ -89,7 +94,7 @@ void kb_sync_a_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out
 }
 void user_sync_a_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
     // Cast data to correct type
-    const uint8_t *m2s[7] = (const uint8_t*) in_data;
+    const uint8_t *m2s = (const uint8_t*) in_data;
 
     // Set config
     uint8_t row = *m2s[0];
@@ -109,7 +114,7 @@ void user_sync_a_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t o
 #endif
 
 // Call this when a new value is set - do not call on slave...
-void user_write_new_config(row, col){
+void user_write_new_config(uint8_t row, uint8_t col){
 #ifdef SPLIT_KEYBOARD
     if (is_keyboard_master()){
         uint8_t literally_zero = 0;
@@ -183,8 +188,8 @@ void housekeeping_task_kb(void) {
 #    endif
         static int8_t virtual_axes_combined[6][2];
         for (uint8_t i = 0; i < 6; i++){
-            virtual_axes_combined[i][0] = MAX(-127, MIN(127, virtual_axes_from_self[i][1] + virtual_axes_from_slave[i][1] - virtual_axes_from_self[i][0] - virtual_axes_from_slave[i][0]))
-            virtual_axes_combined[i][1] = MAX(-127, MIN(127, virtual_axes_from_self[i][3] + virtual_axes_from_slave[i][3] - virtual_axes_from_self[i][2] - virtual_axes_from_slave[i][2]))
+            virtual_axes_combined[i][0] = MAX(-127, MIN(127, virtual_axes_from_self[i][1] + virtual_axes_from_slave[i][1] - virtual_axes_from_self[i][0] - virtual_axes_from_slave[i][0]));
+            virtual_axes_combined[i][1] = MAX(-127, MIN(127, virtual_axes_from_self[i][3] + virtual_axes_from_slave[i][3] - virtual_axes_from_self[i][2] - virtual_axes_from_slave[i][2]));
         }
         
 #    if (defined(JOYSTICK_COORDINATES_ONE) || defined(JOYSTICK_COORDINATES_TWO))
@@ -208,24 +213,26 @@ void housekeeping_task_kb(void) {
 #    if (defined(MOUSE_COORDINATES_ONE) || defined(MOUSE_COORDINATES_TWO) || defined(SCROLL_COORDINATES_ONE) || defined(SCROLL_COORDINATES_TWO))
         // Only run mouse if toggled on
         // https://docs.qmk.fm/features/pointing_device#manipulating-mouse-reports
+        static int8_t mouse_x = 0;
+        static int8_t mouse_y = 0;
         static int8_t mouse_v = 0;
         static int8_t mouse_h = 0;
         static uint8_t next_scroll[2] = { 0 };
         if (virtual_mouse_toggle){
             // Get current report
-            report_mouse_t currentReport = pointing_device_get_report()
+            report_mouse_t currentReport = pointing_device_get_report();
 #        if (defined(MOUSE_COORDINATES_ONE) || defined(MOUSE_COORDINATES_ONE))
             // Set mouse movement
             mouse_x = MAX(-127, MIN(127, virtual_axes_combined[2][0] + virtual_axes_combined[3][0]));
             mouse_y = MAX(-127, MIN(127, virtual_axes_combined[2][1] + virtual_axes_combined[3][1]));
-            currentReport.x = mouse_x
-            currentReport.y = mouse_y
+            currentReport.x = mouse_x;
+            currentReport.y = mouse_y;
 #        endif
 #        if (defined(SCROLL_COORDINATES_ONE) || defined(SCROLL_COORDINATES_TWO))
             // Set scroll - time until next scroll
             mouse_v = MAX(-127, MIN(127, virtual_axes_combined[4][0] + virtual_axes_combined[5][0]));
             mouse_h = MAX(-127, MIN(127, virtual_axes_combined[4][1] + virtual_axes_combined[5][1])); 
-            if (last_scroll[0] == 0){
+            if (next_scroll[0] == 0){
                 if (mouse_v > 2){
                     currentReport.v = 1;
                     next_scroll[0] = 32 - (abs(mouse_v) / 4);
@@ -238,7 +245,7 @@ void housekeeping_task_kb(void) {
             else {
                 next_scroll[0]--;
             }
-            if (last_scroll[1] == 0){
+            if (next_scroll[1] == 0){
                 if (mouse_h > 2){
                     currentReport.h = 1;
                     next_scroll[1] = 32 - (abs(mouse_h) / 4);
@@ -276,21 +283,21 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
                 virtual_mouse_toggle = !virtual_mouse_toggle;
             }
             if (virtual_mouse_toggle){
-                SEND_STRING(SS_DOWN(MO(MOUSE_LAYER))); // turn on mouse layer
+                layer_on(MOUSE_LAYER); // turn on mouse layer
             }
             else {
-                SEND_STRING(SS_UP(MO(MOUSE_LAYER))); // turn off mouse layer
+                layer_off(MOUSE_LAYER); // turn off mouse layer
             }
             return false;
             
         case KC_MS_MO:
             if (record->event.pressed){
                 virtual_mouse_toggle = true;
-                SEND_STRING(SS_DOWN(MO(MOUSE_LAYER))); // turn on mouse layer
+                layer_on(MOUSE_LAYER); // turn on mouse layer
             }
             else {
                 virtual_mouse_toggle = false;
-                SEND_STRING(SS_UP(MO(MOUSE_LAYER))); // turn off mouse layer
+                layer_off(MOUSE_LAYER); // turn off mouse layer
             }
             return false;
 #    endif
@@ -412,30 +419,30 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 void bootmagic_scan(void) {
 
     uint16_t bootmagic_key_value = 0;
+    uint8_t current_direct_pin = 0;
 
 # if (defined(BOOTMAGIC_ROW) && defined(BOOTMAGIC_COLUMN))
-    if (keyboard_is_left()){
-        uint8_t current_direct_pin = 0;
+    if (is_keyboard_left()){
 #    ifdef MATRIX_DIRECT
         if (BOOTMAGIC_ROW == MATRIX_DIRECT_ROW && BOOTMAGIC_COLUMN < MATRIX_DIRECT){
             current_direct_pin = BOOTMAGIC_COLUMN;
         }
 #    endif
         select_multiplexer_channel(BOOTMAGIC_COLUMN);
-        adcStartAllConversions(adcManager, current_direct_pin);
-        bootmagic_key_value = getADCSample(BOOTMAGIC_ROW);
+        adcStartAllConversions(&adcManager, current_direct_pin);
+        bootmagic_key_value = getADCSample(&adcManager, BOOTMAGIC_ROW, current_direct_pin);
     }
 # endif
 # if (defined(BOOTMAGIC_ROW_RIGHT) && defined(BOOTMAGIC_COLUMN_RIGHT))
-    if (!keyboard_is_left()){
+    if (!is_keyboard_left()){
 #    ifdef MATRIX_DIRECT_RIGHT
         if (BOOTMAGIC_ROW_RIGHT == MATRIX_DIRECT_ROW_RIGHT && BOOTMAGIC_COLUMN_RIGHT < MATRIX_DIRECT_RIGHT){
             current_direct_pin = BOOTMAGIC_COLUMN_RIGHT;
         }
 #    endif
         select_multiplexer_channel(BOOTMAGIC_COLUMN_RIGHT);
-        adcStartAllConversions(adcManager, current_direct_pin);
-        bootmagic_key_value = getADCSample(BOOTMAGIC_ROW_RIGHT);
+        adcStartAllConversions(&adcManager, current_direct_pin);
+        bootmagic_key_value = getADCSample(&adcManager, BOOTMAGIC_ROW_RIGHT, current_direct_pin);
     }
 #endif
 
