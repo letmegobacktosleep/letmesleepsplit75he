@@ -54,9 +54,9 @@ analog_config_t analog_config[MATRIX_ROWS][MATRIX_COLS] = { 0 };
 calibration_parameters_t calibration_parameters         = { 0 };
 
 // Define lookup tables
-static uint8_t lut_displacement[ANALOG_CAL_MAX_VALUE+1] = { 0 };
-static uint8_t lut_joystick[ANALOG_CAL_MAX_VALUE+1]     = { 0 };
-static uint16_t lut_multiplier[ANALOG_RAW_MAX_VALUE+1]  = { 0 };
+static uint8_t lut_displacement[ANALOG_CAL_MAX_VALUE+1]     = { 0 };
+static uint8_t lut_joystick[ANALOG_CAL_MAX_VALUE+1]          = { 0 };
+static uint16_t lut_multiplier[ANALOG_MULTIPLIER_LUT_SIZE] = { 0 };
 
 // Create global joystick variables
 #ifdef ANALOG_KEY_VIRTUAL_AXES
@@ -115,7 +115,7 @@ void matrix_init_custom(void){
         lut_displacement[i] = analog_to_distance(i, &calibration_parameters.displacement);
         lut_joystick[i]     = analog_to_distance(i, &calibration_parameters.joystick);
     }
-    for (uint16_t i = 0; i < ANALOG_RAW_MAX_VALUE+1; i++){
+    for (uint16_t i = 0; i < ANALOG_MULTIPLIER_LUT_SIZE; i++){
         // rest -> fully pressed value
         lut_multiplier[i] = rest_to_absolute_change(i, &calibration_parameters.multiplier);
     }
@@ -322,7 +322,7 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
                     }
                     // save raw value
                     else {
-                        analog_key[this_row][this_col].rest = raw;
+                        analog_key[this_row][this_col].rest = MIN(raw, ANALOG_MULTIPLIER_LUT_SIZE - 1);
                     }
                 }
 #        if (MAX_MUXES_PER_ADC) > 1
