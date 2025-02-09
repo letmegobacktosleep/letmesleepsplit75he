@@ -238,7 +238,7 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
                     if (!save_rest_values){
 
                         // run calibration (output 0-1023)
-                        uint16_t calibrated = scale_raw_value(raw, analog_key[this_row][this_col].rest, &lut_multiplier);
+                        uint16_t calibrated = scale_raw_value(raw, analog_key[this_row][this_col].rest, lut_multiplier);
 
                         // run lookup table (output 0-200, where 200=4mm)
                         uint8_t displacement = lut_displacement[calibrated];
