@@ -27,23 +27,13 @@ SPLIT_MUTABLE_COL pin_t col_pins[MATRIX_COLS]   = MATRIX_COL_PINS;
 #    endif // MATRIX_COL_PINS
 #endif
 
-#if (MATRIX_COLS) == 8
-typedef uint8_t custom_matrix_mask_t;
-#elif (MATRIX_COLS) == 16
-typedef uint16_t custom_matrix_mask_t;
-#elif (MATRIX_COLS) == 32
-typedef uint32_t custom_matrix_mask_t;
-#else
-# error "MATRIX_COLS was not 8/16/32"
-#endif
-
 // row offset
 static uint8_t row_offset = 0;
 // number of loops
 static uint8_t number_of_loops = MATRIX_COLS;
 
 // Create array for custom matrix mask
-static const custom_matrix_mask_t custom_matrix_mask[MATRIX_ROWS] = CUSTOM_MATRIX_MASK;
+static const matrix_row_t custom_matrix_mask[MATRIX_ROWS] = CUSTOM_MATRIX_MASK;
 
 // External definitions
 extern ADCManager adcManager;
