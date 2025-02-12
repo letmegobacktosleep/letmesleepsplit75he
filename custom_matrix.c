@@ -11,6 +11,7 @@
 #include "custom_calibration.h"
 #include "custom_scanning.h"
 #include "eeconfig_set_defaults.h"
+#include "letmesleepsplit75he.h"
 
 // is_keyboard_left()
 // returns a bool of whether it is left or right
@@ -37,6 +38,7 @@ static const matrix_row_t custom_matrix_mask[MATRIX_ROWS] = CUSTOM_MATRIX_MASK;
 
 // External definitions
 extern ADCManager adcManager;
+extern uint8_t virtual_axes_toggle;
 
 // Initialize everything to zero
 analog_key_t analog_key[MATRIX_ROWS][MATRIX_COLS]       = { 0 };
@@ -44,8 +46,8 @@ analog_config_t analog_config[MATRIX_ROWS][MATRIX_COLS] = { 0 };
 calibration_parameters_t calibration_parameters         = { 0 };
 
 // Define lookup tables
-static uint8_t lut_displacement[ANALOG_CAL_MAX_VALUE+1]     = { 0 };
-static uint8_t lut_joystick[ANALOG_CAL_MAX_VALUE+1]          = { 0 };
+static uint8_t lut_displacement[ANALOG_CAL_MAX_VALUE+1]    = { 0 };
+static uint8_t lut_joystick[ANALOG_CAL_MAX_VALUE+1]        = { 0 };
 static uint16_t lut_multiplier[ANALOG_MULTIPLIER_LUT_SIZE] = { 0 };
 
 // Create global joystick variables
@@ -214,7 +216,7 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
 #            endif
 
                 // if the key should be scanned
-                if (custom_matrix_mask[this_row] & (1 << this_col)){
+                if (BIT_GET(custom_matrix_mask[this_row], this_col)){
                     
                     // get raw adc value
                     uint16_t raw = getADCSample(&adcManager, this_row, current_direct_pin);
@@ -226,95 +228,129 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
                         raw = raw - ANALOG_RAW_MAX_VALUE - 1;
                     }
 
-                    // process keys
-                    if (!save_rest_values){
+                    // run calibration (output 0-1023)
+                    uint16_t calibrated = scale_raw_value(raw, analog_key[this_row][this_col].rest, lut_multiplier);
 
-                        // run calibration (output 0-1023)
-                        uint16_t calibrated = scale_raw_value(raw, analog_key[this_row][this_col].rest, lut_multiplier);
-
-                        // run lookup table (output 0-200, where 200=4mm)
-                        uint8_t displacement = lut_displacement[calibrated];
+                    // run lookup table (output 0-200, where 200=4mm)
+                    uint8_t displacement = lut_displacement[calibrated];
  
-                        if (
-                            // run actuation (output bool, always false if mode > 4)
-                            actuation(
-                                &analog_config[this_row][this_col], 
-                                &analog_key[this_row][this_col], 
-                                &current_matrix[this_row], 
-                                this_col,
-                                displacement, 
-                                calibration_parameters.displacement.max_output
-                            )
+                    if (
+                        // run actuation (output bool, always false if mode > 4)
+                        actuation(
+                            &analog_config[this_row][this_col], 
+                            &analog_key[this_row][this_col], 
+                            &current_matrix[this_row], 
+                            this_col,
+                            displacement, 
+                            calibration_parameters.displacement.max_output
                         )
-                        {
-                            // update time
-                            time_to_be_updated = true;
-                        }
+                    )
+                    {
+                        // update time
+                        time_to_be_updated = true;
+                    }
 
-#                    ifdef DKS_ENABLE
-                        // handle DKS
-                        if (analog_config[this_row][this_col].mode > 4){
-                            this_row = row_offset + ROWS_PER_HAND - 1; // last row on current hand
-                            for (uint8_t l = 0; l < 4; l++){ // run actuation on four keys
-                                this_col = l + (4 * (analog_config[this_row][this_col].mode - 5));
-                                
-                                if (
-                                    // run actuation (output bool, always false if mode > 4)
-                                    actuation(
-                                        &analog_config[this_row][this_col], 
-                                        &analog_key[this_row][this_col], 
-                                        &current_matrix[this_row], 
-                                        this_col,
-                                        displacement, 
-                                        calibration_parameters.displacement.max_output
-                                    )
+#                ifdef DKS_ENABLE
+                    // handle DKS
+                    if (analog_config[this_row][this_col].mode > 4){
+                        this_row = row_offset + ROWS_PER_HAND - 1; // last row on current hand
+                        for (uint8_t l = 0; l < 4; l++){ // run actuation on four keys
+                            this_col = l + (4 * (analog_config[this_row][this_col].mode - 5));
+                            
+                            if (
+                                // run actuation (output bool, always false if mode > 4)
+                                actuation(
+                                    &analog_config[this_row][this_col], 
+                                    &analog_key[this_row][this_col], 
+                                    &current_matrix[this_row], 
+                                    this_col,
+                                    displacement, 
+                                    calibration_parameters.displacement.max_output
                                 )
-                                {
-                                    // update time
-                                    time_to_be_updated = true;
-                                }
+                            )
+                            {
+                                // update time
+                                time_to_be_updated = true;
                             }
                         }
-#                    endif
+                    }
+#                endif
 
-                        // handle joystick
-#                    ifdef ANALOG_KEY_VIRTUAL_AXES
+                    // handle joystick
+#                ifdef ANALOG_KEY_VIRTUAL_AXES
+                    if (
+                        BIT_GET(virtual_axes_toggle, 0) || 
+                        BIT_GET(virtual_axes_toggle, 1) || 
+                        BIT_GET(virtual_axes_toggle, 2)
+                    )
+                    {
                         for (uint8_t k = 0; k < 4; k++){
 #                        ifdef JOYSTICK_COORDINATES_LEFT     
-                            if (this_col == joystick_coordinates_left[k][1] && this_row == joystick_coordinates_left[k][0]){
+                            if (
+                                BIT_GET(virtual_axes_toggle, 0)             && 
+                                this_col == joystick_coordinates_left[k][1] && 
+                                this_row == joystick_coordinates_left[k][0]
+                            )
+                            {
                                 virtual_axes_temp[0][k] += lut_joystick[calibrated];
                             }
 #                        endif
 #                        ifdef JOYSTICK_COORDINATES_RIGHT
-                            if (this_col == joystick_coordinates_right[k][1] && this_row == joystick_coordinates_right[k][0]){
+                            if (
+                                BIT_GET(virtual_axes_toggle, 0)              && 
+                                this_col == joystick_coordinates_right[k][1] && 
+                                this_row == joystick_coordinates_right[k][0]
+                            )
+                            {
                                 virtual_axes_temp[1][k] += lut_joystick[calibrated];
                             }
 #                        endif
 #                        ifdef MOUSE_COORDINATES_LEFT
-                            if (this_col == mouse_coordinates_left[k][1] && this_row == mouse_coordinates_left[k][0]){
-                                virtual_axes_temp[2][k] += lut_joystick[calibrated];
-                            }
-#                        endif
-#                        ifdef MOUSE_COORDINATES_RIGHT
-                            if (this_col == mouse_coordinates_right[k][1] && this_row == mouse_coordinates_right[k][0]){
+                            if (
+                                BIT_GET(virtual_axes_toggle, 1)          && 
+                                this_col == mouse_coordinates_left[k][1] && 
+                                this_row == mouse_coordinates_left[k][0]
+                            )
+                            {
                                 virtual_axes_temp[2][k] += lut_joystick[calibrated];
                             }
 #                        endif
 #                        ifdef SCROLL_COORDINATES_LEFT
-                            if (this_col == scroll_coordinates_left[k][1] && this_row == scroll_coordinates_left[k][0]){
+                            if (
+                                BIT_GET(virtual_axes_toggle, 1)           && 
+                                this_col == scroll_coordinates_left[k][1] && 
+                                this_row == scroll_coordinates_left[k][0]
+                            )
+                            {
                                 virtual_axes_temp[3][k] += lut_joystick[calibrated];
                             }
 #                        endif
+#                        ifdef MOUSE_COORDINATES_RIGHT
+                            if (
+                                BIT_GET(virtual_axes_toggle, 2)           && 
+                                this_col == mouse_coordinates_right[k][1] && 
+                                this_row == mouse_coordinates_right[k][0]
+                            )
+                            {
+                                virtual_axes_temp[2][k] += lut_joystick[calibrated];
+                            }
+#                        endif
 #                        ifdef SCROLL_COORDINATES_RIGHT
-                            if (this_col == scroll_coordinates_right[k][1] && this_row == scroll_coordinates_right[k][0]){
+                            if (
+                                BIT_GET(virtual_axes_toggle, 2)            && 
+                                this_col == scroll_coordinates_right[k][1] && 
+                                this_row == scroll_coordinates_right[k][0]
+                            )
+                            {
                                 virtual_axes_temp[3][k] += lut_joystick[calibrated];
                             }
 #                        endif
                         }
-#                    endif
                     }
+#                    endif
+
                     // save raw value
-                    else {
+                    if (save_rest_values) {
                         analog_key[this_row][this_col].rest = MIN(raw, ANALOG_MULTIPLIER_LUT_SIZE - 1);
                     }
                 }

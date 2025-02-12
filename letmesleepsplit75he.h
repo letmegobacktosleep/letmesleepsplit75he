@@ -1,6 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 #pragma once
 
+extern uint8_t virtual_axes_toggle;
+
+#define BIT_SET(byte, nbit) ((byte) |=  (1 << (nbit)))
+#define BIT_CLR(byte, nbit) ((byte) &= ~(1 << (nbit)))
+#define BIT_FLP(byte, nbit) ((byte) ^=  (1 << (nbit)))
+#define BIT_GET(byte, nbit) ((byte) &   (1 << (nbit)))
+
 enum custom_keycodes {
     KC_JS_TG = QK_KB_0,
     KC_MS_TG,
