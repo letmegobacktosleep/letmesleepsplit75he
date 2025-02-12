@@ -50,25 +50,25 @@ static uint16_t lut_multiplier[ANALOG_MULTIPLIER_LUT_SIZE] = { 0 };
 
 // Create global joystick variables
 #ifdef ANALOG_KEY_VIRTUAL_AXES
-int8_t virtual_axes_from_self[6][4]  = { 0 };
-int8_t virtual_axes_from_slave[6][4] = { 0 };
-# ifdef JOYSTICK_COORDINATES_ONE
-const uint8_t joystick_coordinates_one[4][2] = JOYSTICK_COORDINATES_ONE;
+uint8_t virtual_axes_from_self[4][4]  = { 0 };
+uint8_t virtual_axes_from_slave[4][4] = { 0 };
+# ifdef JOYSTICK_COORDINATES_LEFT
+const uint8_t joystick_coordinates_left[4][2] = JOYSTICK_COORDINATES_LEFT;
 # endif
-# ifdef JOYSTICK_COORDINATES_TWO
-const uint8_t joystick_coordinates_two[4][2] = JOYSTICK_COORDINATES_TWO;
+# ifdef JOYSTICK_COORDINATES_RIGHT
+const uint8_t joystick_coordinates_right[4][2] = JOYSTICK_COORDINATES_RIGHT;
 # endif
-# ifdef MOUSE_COORDINATES_ONE
-const uint8_t mouse_coordinates_one[4][2] = MOUSE_COORDINATES_ONE;
+# ifdef MOUSE_COORDINATES_LEFT
+const uint8_t mouse_coordinates_left[4][2] = MOUSE_COORDINATES_LEFT;
 # endif
-# ifdef MOUSE_COORDINATES_TWO
-const uint8_t mouse_coordinates_two[4][2] = MOUSE_COORDINATES_TWO;
+# ifdef MOUSE_COORDINATES_RIGHT
+const uint8_t mouse_coordinates_right[4][2] = MOUSE_COORDINATES_RIGHT;
 # endif
-# ifdef SCROLL_COORDINATES_ONE
-const uint8_t scroll_coordinates_one[4][2] = MOUSE_COORDINATES_TWO;
+# ifdef SCROLL_COORDINATES_LEFT
+const uint8_t scroll_coordinates_left[4][2] = MOUSE_COORDINATES_RIGHT;
 # endif
-# ifdef SCROLL_COORDINATES_TWO
-const uint8_t scroll_coordinates_two[4][2] = MOUSE_COORDINATES_TWO;
+# ifdef SCROLL_COORDINATES_RIGHT
+const uint8_t scroll_coordinates_right[4][2] = MOUSE_COORDINATES_RIGHT;
 # endif
 #endif
 
@@ -142,6 +142,9 @@ static matrix_row_t previous_matrix[MATRIX_ROWS];
 bool matrix_scan_custom(matrix_row_t current_matrix[]){
     // update previous matrix
     memcpy(previous_matrix, current_matrix, sizeof(previous_matrix));
+
+    // store virtual axes
+    static uint8_t virtual_axes_temp[4][4] = { 0 };
 
     // store cols
     static uint8_t current_col = 0;
@@ -277,34 +280,34 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
                         // handle joystick
 #                    ifdef ANALOG_KEY_VIRTUAL_AXES
                         for (uint8_t k = 0; k < 4; k++){
-#                        ifdef JOYSTICK_COORDINATES_ONE     
-                            if (this_row == joystick_coordinates_one[k][0] && this_col == joystick_coordinates_one[k][1]){
-                                virtual_axes_from_self[0][k] = lut_joystick[calibrated];
+#                        ifdef JOYSTICK_COORDINATES_LEFT     
+                            if (this_col == joystick_coordinates_left[k][1] && this_row == joystick_coordinates_left[k][0]){
+                                virtual_axes_temp[0][k] += lut_joystick[calibrated];
                             }
 #                        endif
-#                        ifdef JOYSTICK_COORDINATES_TWO
-                            if (this_row == joystick_coordinates_two[k][0] && this_col == joystick_coordinates_two[k][1]){
-                                virtual_axes_from_self[1][k] = lut_joystick[calibrated];
+#                        ifdef JOYSTICK_COORDINATES_RIGHT
+                            if (this_col == joystick_coordinates_right[k][1] && this_row == joystick_coordinates_right[k][0]){
+                                virtual_axes_temp[1][k] += lut_joystick[calibrated];
                             }
 #                        endif
-#                        ifdef MOUSE_COORDINATES_ONE
-                            if (this_row == mouse_coordinates_one[k][0] && this_col == mouse_coordinates_one[k][1]){
-                                virtual_axes_from_self[2][k] = lut_joystick[calibrated];
+#                        ifdef MOUSE_COORDINATES_LEFT
+                            if (this_col == mouse_coordinates_left[k][1] && this_row == mouse_coordinates_left[k][0]){
+                                virtual_axes_temp[2][k] += lut_joystick[calibrated];
                             }
 #                        endif
-#                        ifdef MOUSE_COORDINATES_TWO
-                            if (this_row == mouse_coordinates_two[k][0] && this_col == mouse_coordinates_two[k][1]){
-                                virtual_axes_from_self[3][k] = lut_joystick[calibrated];
+#                        ifdef MOUSE_COORDINATES_RIGHT
+                            if (this_col == mouse_coordinates_right[k][1] && this_row == mouse_coordinates_right[k][0]){
+                                virtual_axes_temp[2][k] += lut_joystick[calibrated];
                             }
 #                        endif
-#                        ifdef SCROLL_COORDINATES_ONE
-                            if (this_row == scroll_coordinates_one[k][0] && this_col == scroll_coordinates_one[k][1]){
-                                virtual_axes_from_self[4][k] = lut_joystick[calibrated];
+#                        ifdef SCROLL_COORDINATES_LEFT
+                            if (this_col == scroll_coordinates_left[k][1] && this_row == scroll_coordinates_left[k][0]){
+                                virtual_axes_temp[3][k] += lut_joystick[calibrated];
                             }
 #                        endif
-#                        ifdef SCROLL_COORDINATES_TWO
-                            if (this_row == scroll_coordinates_two[k][0] && this_col == scroll_coordinates_two[k][1]){
-                                virtual_axes_from_self[5][k] = lut_joystick[calibrated];
+#                        ifdef SCROLL_COORDINATES_RIGHT
+                            if (this_col == scroll_coordinates_right[k][1] && this_row == scroll_coordinates_right[k][0]){
+                                virtual_axes_temp[3][k] += lut_joystick[calibrated];
                             }
 #                        endif
                         }
@@ -330,6 +333,13 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
         time_to_be_updated = false;
         save_rest_values = false;
     }
+
+#ifdef ANALOG_KEY_VIRTUAL_AXES
+    // copy over virtual axes
+    memcpy(virtual_axes_from_self, virtual_axes_temp, sizeof(virtual_axes_temp));
+    // clear virtual axes temp
+    memset(virtual_axes_temp, 0, sizeof(virtual_axes_temp));
+#endif
 
     // compare current matrix against previous matrix
     return memcmp(previous_matrix, current_matrix, sizeof(previous_matrix)) != 0;

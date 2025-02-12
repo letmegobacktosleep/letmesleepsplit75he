@@ -34,25 +34,25 @@ extern SPLIT_MUTABLE_ROW pin_t row_pins[ROWS_PER_HAND];
 extern SPLIT_MUTABLE_COL pin_t col_pins[MATRIX_COLS];
 // Extern joystick definitions
 #ifdef ANALOG_KEY_VIRTUAL_AXES
-extern int8_t virtual_axes_from_self[6][4];
-extern int8_t virtual_axes_from_slave[6][4];
-# ifdef JOYSTICK_COORDINATES_ONE
-extern const uint8_t joystick_coordinates_one[4][2];
+extern uint8_t virtual_axes_from_self[4][4];
+extern uint8_t virtual_axes_from_slave[4][4];
+# ifdef JOYSTICK_COORDINATES_LEFT
+extern const uint8_t joystick_coordinates_left[4][2];
 # endif
-# ifdef JOYSTICK_COORDINATES_TWO
-extern const uint8_t joystick_coordinates_two[4][2];
+# ifdef JOYSTICK_COORDINATES_RIGHT
+extern const uint8_t joystick_coordinates_right[4][2];
 # endif
-# ifdef MOUSE_COORDINATES_ONE
-extern const uint8_t mouse_coordinates_two[4][2];
+# ifdef MOUSE_COORDINATES_LEFT
+extern const uint8_t mouse_coordinates_right[4][2];
 # endif
-# ifdef MOUSE_COORDINATES_TWO
-extern const uint8_t mouse_coordinates_two[4][2];
+# ifdef MOUSE_COORDINATES_RIGHT
+extern const uint8_t mouse_coordinates_right[4][2];
 # endif
-# ifdef SCROLL_COORDINATES_ONE
-extern const uint8_t scroll_coordinates_one[4][2];
+# ifdef SCROLL_COORDINATES_LEFT
+extern const uint8_t scroll_coordinates_left[4][2];
 # endif
-# ifdef SCROLL_COORDINATES_TWO
-extern const uint8_t scroll_coordinates_two[4][2];
+# ifdef SCROLL_COORDINATES_RIGHT
+extern const uint8_t scroll_coordinates_right[4][2];
 # endif
 #endif
 

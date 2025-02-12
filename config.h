@@ -107,37 +107,37 @@ not defined */
 # define JOYSTICK_AXIS_RESOLUTION 8
 // rows and cols which make up the virtual axes
 // order: left right up down
-# define JOYSTICK_COORDINATES_ONE { \
+# define JOYSTICK_COORDINATES_LEFT { \
     {2, 1},  \
     {2, 3},  \
     {2, 0},  \
     {2, 2}   \
 }
-# define JOYSTICK_COORDINATES_TWO { \
+# define JOYSTICK_COORDINATES_RIGHT { \
     {4, 9},  \
     {4, 15}, \
     {4, 7},  \
     {4, 8}   \
 }
-# define MOUSE_COORDINATES_ONE { \
+# define MOUSE_COORDINATES_LEFT { \
     {2, 1},  \
     {2, 3},  \
     {2, 0},  \
     {2, 2}   \
 }
-# define MOUSE_COORDINATES_TWO { \
+# define MOUSE_COORDINATES_RIGHT { \
     {5, 10}, \
     {5, 13}, \
     {5, 11}, \
     {5, 12}  \
 }
-# define SCROLL_COORDINATES_ONE { \
+# define SCROLL_COORDINATES_LEFT { \
     {1, 10}, \
     {1, 8},  \
     {0, 0},  \
     {1, 9}   \
 }
-# define SCROLL_COORDINATES_TWO { \
+# define SCROLL_COORDINATES_RIGHT { \
     {6, 15}, \
     {6, 14}, \
     {7, 0},  \
@@ -184,9 +184,9 @@ not defined */
 // Custom sync
 #ifdef SPLIT_KEYBOARD
 // Master to slave:
-# define RPC_M2S_BUFFER_SIZE 24
+# define RPC_M2S_BUFFER_SIZE 16
 // Slave to master:
-# define RPC_S2M_BUFFER_SIZE 24
+# define RPC_S2M_BUFFER_SIZE 16
 // Keyboard level data sync:
 # define SPLIT_TRANSACTION_IDS_KB KEYBOARD_SYNC_A
 #define SPLIT_TRANSACTION_IDS_USER USER_SYNC_A

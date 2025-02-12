@@ -21,25 +21,25 @@ extern analog_config_t analog_config[MATRIX_ROWS][MATRIX_COLS];
 extern calibration_parameters_t calibration_parameters;
 // External joystick definitions
 #ifdef ANALOG_KEY_VIRTUAL_AXES
-extern int8_t virtual_axes_from_self[6][4];
-extern int8_t virtual_axes_from_slave[6][4];
-# ifdef JOYSTICK_COORDINATES_ONE
-extern const uint8_t joystick_coordinates_one[4][2];
+extern uint8_t virtual_axes_from_self[4][4];
+extern uint8_t virtual_axes_from_slave[4][4];
+# ifdef JOYSTICK_COORDINATES_LEFT
+extern const uint8_t joystick_coordinates_left[4][2];
 # endif
-# ifdef JOYSTICK_COORDINATES_TWO
-extern const uint8_t joystick_coordinates_two[4][2];
+# ifdef JOYSTICK_COORDINATES_RIGHT
+extern const uint8_t joystick_coordinates_right[4][2];
 # endif
-# ifdef MOUSE_COORDINATES_ONE
-extern const uint8_t mouse_coordinates_one[4][2];
+# ifdef MOUSE_COORDINATES_LEFT
+extern const uint8_t mouse_coordinates_left[4][2];
 # endif
-# ifdef MOUSE_COORDINATES_TWO
-extern const uint8_t mouse_coordinates_two[4][2];
+# ifdef MOUSE_COORDINATES_RIGHT
+extern const uint8_t mouse_coordinates_right[4][2];
 # endif
-# ifdef SCROLL_COORDINATES_ONE
-extern const uint8_t scroll_coordinates_one[4][2];
+# ifdef SCROLL_COORDINATES_LEFT
+extern const uint8_t scroll_coordinates_left[4][2];
 # endif
-# ifdef SCROLL_COORDINATES_TWO
-extern const uint8_t scroll_coordinates_two[4][2];
+# ifdef SCROLL_COORDINATES_RIGHT
+extern const uint8_t scroll_coordinates_right[4][2];
 # endif
 #endif
 
@@ -166,21 +166,21 @@ void housekeeping_task_kb(void) {
         }
 #    endif
         static int8_t virtual_axes_combined[6][2];
-        for (uint8_t i = 0; i < 6; i++){
+        for (uint8_t i = 0; i < 4; i++){
             virtual_axes_combined[i][0] = MAX(-127, MIN(127, virtual_axes_from_self[i][1] + virtual_axes_from_slave[i][1] - virtual_axes_from_self[i][0] - virtual_axes_from_slave[i][0]));
             virtual_axes_combined[i][1] = MAX(-127, MIN(127, virtual_axes_from_self[i][3] + virtual_axes_from_slave[i][3] - virtual_axes_from_self[i][2] - virtual_axes_from_slave[i][2]));
         }
         
-#    if (defined(JOYSTICK_COORDINATES_ONE) || defined(JOYSTICK_COORDINATES_TWO))
+#    if (defined(JOYSTICK_COORDINATES_LEFT) || defined(JOYSTICK_COORDINATES_RIGHT))
         // Only run joystick if toggled on
         // https://docs.qmk.fm/features/joystick#virtual-axes
         if (virtual_joystick_toggle){
-#        ifdef JOYSTICK_COORDINATES_ONE
+#        ifdef JOYSTICK_COORDINATES_LEFT
             // Left joystick
             joystick_set_axis(0, virtual_axes_combined[0][0]);
             joystick_set_axis(1, virtual_axes_combined[0][1]);
 #        endif
-#        ifdef JOYSTICK_COORDINATES_TWO
+#        ifdef JOYSTICK_COORDINATES_RIGHT
             // Right joystick
             joystick_set_axis(2, virtual_axes_combined[1][0]);
             joystick_set_axis(3, virtual_axes_combined[1][1]);
@@ -189,7 +189,7 @@ void housekeeping_task_kb(void) {
             joystick_flush();
         }
 #    endif
-#    if (defined(MOUSE_COORDINATES_ONE) || defined(MOUSE_COORDINATES_TWO) || defined(SCROLL_COORDINATES_ONE) || defined(SCROLL_COORDINATES_TWO))
+#    if (defined(MOUSE_COORDINATES_LEFT) || defined(MOUSE_COORDINATES_RIGHT) || defined(SCROLL_COORDINATES_LEFT) || defined(SCROLL_COORDINATES_RIGHT))
         // Only run mouse if toggled on
         // https://docs.qmk.fm/features/pointing_device#manipulating-mouse-reports
         static int8_t mouse_x = 0;
@@ -200,17 +200,15 @@ void housekeeping_task_kb(void) {
         if (virtual_mouse_toggle){
             // Get current report
             report_mouse_t currentReport = pointing_device_get_report();
-#        if (defined(MOUSE_COORDINATES_ONE) || defined(MOUSE_COORDINATES_ONE))
+#        if (defined(MOUSE_COORDINATES_LEFT) || defined(MOUSE_COORDINATES_LEFT))
             // Set mouse movement
-            mouse_x = MAX(-127, MIN(127, virtual_axes_combined[2][0] + virtual_axes_combined[3][0]));
-            mouse_y = MAX(-127, MIN(127, virtual_axes_combined[2][1] + virtual_axes_combined[3][1]));
-            currentReport.x = mouse_x;
-            currentReport.y = mouse_y;
+            currentReport.x = virtual_axes_combined[2][0];
+            currentReport.y = virtual_axes_combined[2][1];
 #        endif
-#        if (defined(SCROLL_COORDINATES_ONE) || defined(SCROLL_COORDINATES_TWO))
-            // Set scroll - time until next scroll
-            mouse_v = MAX(-127, MIN(127, virtual_axes_combined[4][0] + virtual_axes_combined[5][0]));
-            mouse_h = MAX(-127, MIN(127, virtual_axes_combined[4][1] + virtual_axes_combined[5][1])); 
+#        if (defined(SCROLL_COORDINATES_LEFT) || defined(SCROLL_COORDINATES_RIGHT))
+            mouse_v = virtual_axes_combined[3][0];
+            mouse_h = virtual_axes_combined[3][1]; 
+            // Vertical scroll
             if (next_scroll[0] == 0){
                 if (mouse_v > 2){
                     currentReport.v = 1;
@@ -224,6 +222,7 @@ void housekeeping_task_kb(void) {
             else {
                 next_scroll[0]--;
             }
+            // Horizontal scroll
             if (next_scroll[1] == 0){
                 if (mouse_h > 2){
                     currentReport.h = 1;
@@ -290,35 +289,35 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 #        ifdef ANALOG_KEY_VIRTUAL_AXES
             for (uint8_t k = 0; k < 4; k++){ // ignore keys if joystick or mouse is toggled
                 if (virtual_joystick_toggle){
-#                ifdef JOYSTICK_COORDINATES_ONE     
-                    if (record->event.key.row == joystick_coordinates_one[k][0] && record->event.key.col == joystick_coordinates_one[k][1]){
+#                ifdef JOYSTICK_COORDINATES_LEFT     
+                    if (record->event.key.row == joystick_coordinates_left[k][0] && record->event.key.col == joystick_coordinates_left[k][1]){
                         return false;
                     }
 #                endif
-#                ifdef JOYSTICK_COORDINATES_TWO
-                    if (record->event.key.row == joystick_coordinates_two[k][0] && record->event.key.col == joystick_coordinates_two[k][1]){
+#                ifdef JOYSTICK_COORDINATES_RIGHT
+                    if (record->event.key.row == joystick_coordinates_right[k][0] && record->event.key.col == joystick_coordinates_right[k][1]){
                         return false;
                     }
 #                endif
                 }
                 if (virtual_mouse_toggle){
-#                ifdef MOUSE_COORDINATES_ONE
-                    if (record->event.key.row == mouse_coordinates_one[k][0] && record->event.key.col == mouse_coordinates_one[k][1]){
+#                ifdef MOUSE_COORDINATES_LEFT
+                    if (record->event.key.row == mouse_coordinates_left[k][0] && record->event.key.col == mouse_coordinates_left[k][1]){
                         return false;
                     }
 #                endif
-#                ifdef MOUSE_COORDINATES_TWO
-                    if (record->event.key.row == mouse_coordinates_two[k][0] && record->event.key.col == mouse_coordinates_two[k][1]){
+#                ifdef MOUSE_COORDINATES_RIGHT
+                    if (record->event.key.row == mouse_coordinates_right[k][0] && record->event.key.col == mouse_coordinates_right[k][1]){
                         return false;
                     }
 #                endif
-#                ifdef SCROLL_COORDINATES_ONE
-                    if (record->event.key.row == scroll_coordinates_one[k][0] && record->event.key.col == scroll_coordinates_one[k][1]){
+#                ifdef SCROLL_COORDINATES_LEFT
+                    if (record->event.key.row == scroll_coordinates_left[k][0] && record->event.key.col == scroll_coordinates_left[k][1]){
                         return false;
                     }
 #                endif
-#                ifdef SCROLL_COORDINATES_TWO
-                    if (record->event.key.row == scroll_coordinates_two[k][0] && record->event.key.col == scroll_coordinates_two[k][1]){
+#                ifdef SCROLL_COORDINATES_RIGHT
+                    if (record->event.key.row == scroll_coordinates_right[k][0] && record->event.key.col == scroll_coordinates_right[k][1]){
                         return false;
                     }
 #                endif
@@ -348,13 +347,13 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     // Highlight joystick buttons
     if (virtual_joystick_toggle){
         uint8_t brightness = MIN(255, current_val + 64);
-#    ifdef JOYSTICK_COORDINATES_ONE
+#    ifdef JOYSTICK_COORDINATES_LEFT
         rgb_matrix_set_color(15, brightness, brightness, brightness);
         rgb_matrix_set_color(20, brightness, brightness, brightness);
         rgb_matrix_set_color(21, brightness, brightness, brightness);
         rgb_matrix_set_color(22, brightness, brightness, brightness);
 #    endif
-#    ifdef JOYSTICK_COORDINATES_TWO
+#    ifdef JOYSTICK_COORDINATES_RIGHT
         rgb_matrix_set_color(56, brightness, brightness, brightness);
         rgb_matrix_set_color(64, brightness, brightness, brightness);
         rgb_matrix_set_color(65, brightness, brightness, brightness);
@@ -364,13 +363,13 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     // Highlight mouse buttons
     if (virtual_mouse_toggle){
         uint8_t brightness = MIN(255, current_val + 64);
-#    ifdef MOUSE_COORDINATES_ONE
+#    ifdef MOUSE_COORDINATES_LEFT
         rgb_matrix_set_color(15, brightness, brightness, brightness);
         rgb_matrix_set_color(20, brightness, brightness, brightness);
         rgb_matrix_set_color(21, brightness, brightness, brightness);
         rgb_matrix_set_color(22, brightness, brightness, brightness);
 #    endif
-#    ifdef MOUSE_COORDINATES_TWO
+#    ifdef MOUSE_COORDINATES_RIGHT
         rgb_matrix_set_color(75, brightness, brightness, brightness);
         rgb_matrix_set_color(81, brightness, brightness, brightness);
         rgb_matrix_set_color(82, brightness, brightness, brightness);
