@@ -43,10 +43,10 @@ extern const uint8_t scroll_coordinates_right[4][2];
 # endif
 #endif
 
-static uint8_t virtual_axes_toggle = 0;
 // bit 1 = joystick toggle
 // bit 2 = left mouse toggle
 // bit 3 = right mouse toggle
+static uint8_t virtual_axes_toggle = 0;
 
 #ifdef RGB_MATRIX_ENABLE
 static const pin_t rgb_enable_pin = CUSTOM_RGB_ENABLE_PIN;
@@ -73,6 +73,7 @@ void kb_sync_a_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out
     // copy virtual_axes_from_self to the outbound buffer
     memcpy(out_data, virtual_axes_from_self, sizeof(virtual_axes_from_self));
 }
+
 void user_sync_a_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
     // Cast data to correct type
     const uint8_t *m2s = (const uint8_t*) in_data;
@@ -109,6 +110,20 @@ void user_write_new_config(uint8_t row, uint8_t col){
     }
 #endif
     EEPROM_USER_PARTIAL_UPDATE(analog_config[row][col]);
+}
+
+void handle_virtual_mouse_layer(uint8_t virtual_axes_toggle){
+    if (
+        BIT_GET(virtual_axes_toggle, 1) || 
+        BIT_GET(virtual_axes_toggle, 2)
+    )
+    {
+        layer_on(MOUSE_LAYER); // turn on mouse layer
+    }
+    else {
+        layer_off(MOUSE_LAYER); // turn off mouse layer
+    }
+    return
 }
 
 #if (JOYSTICK_AXIS_COUNT == 4)
@@ -280,26 +295,55 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
         case KC_MS_TG:
             if (record->event.pressed){ // only change state on key press
                 BIT_FLP(virtual_axes_toggle, 1);
+                BIT_FLP(virtual_axes_toggle, 2);
             }
-            if (BIT_GET(virtual_axes_toggle, 1)){
-                layer_on(MOUSE_LAYER); // turn on mouse layer
-            }
-            else {
-                layer_off(MOUSE_LAYER); // turn off mouse layer
-            }
+            handle_virtual_mouse_layer(virtual_axes_toggle);
             return false;
             
         case KC_MS_MO:
             if (record->event.pressed){
                 BIT_SET(virtual_axes_toggle, 1);
                 BIT_SET(virtual_axes_toggle, 2);
-                layer_on(MOUSE_LAYER); // turn on mouse layer
             }
             else {
                 BIT_CLR(virtual_axes_toggle, 1);
                 BIT_CLR(virtual_axes_toggle, 2);
-                layer_off(MOUSE_LAYER); // turn off mouse layer
             }
+            handle_virtual_mouse_layer(virtual_axes_toggle);
+            return false;
+
+        case KC_MS_TG1:
+            if (record->event.pressed){ // only change state on key press
+                BIT_FLP(virtual_axes_toggle, 1);
+            }
+            handle_virtual_mouse_layer(virtual_axes_toggle);
+            return false;
+            
+        case KC_MS_MO1:
+            if (record->event.pressed){
+                BIT_SET(virtual_axes_toggle, 1);
+            }
+            else {
+                BIT_CLR(virtual_axes_toggle, 1);
+            }
+            handle_virtual_mouse_layer(virtual_axes_toggle);
+            return false;
+
+        case KC_MS_TG2:
+            if (record->event.pressed){ // only change state on key press
+                BIT_FLP(virtual_axes_toggle, 2);
+            }
+            handle_virtual_mouse_layer(virtual_axes_toggle);
+            return false;
+            
+        case KC_MS_MO2:
+            if (record->event.pressed){
+                BIT_SET(virtual_axes_toggle, 2);
+            }
+            else {
+                BIT_CLR(virtual_axes_toggle, 2);
+            }
+            handle_virtual_mouse_layer(virtual_axes_toggle);
             return false;
 #    endif
 
