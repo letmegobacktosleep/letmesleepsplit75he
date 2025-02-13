@@ -364,7 +364,7 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
 
     if (time_to_be_updated){
         // add 5 minutes to current time
-        time_next_calibration = time_current + 1000*60*5;
+        time_next_calibration = time_current + 300000;
         // reset booleans
         time_to_be_updated = false;
         save_rest_values = false;

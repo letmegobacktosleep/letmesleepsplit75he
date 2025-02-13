@@ -78,6 +78,7 @@
     "rgb_matrix": {
         "driver": "ws2812",
         "sleep": true,
+        "timeout": 300000,
         "max_brightness": 255,
         "led_count": 84,
         "split_count": [36, 48],
