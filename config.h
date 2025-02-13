@@ -153,7 +153,8 @@ not defined */
 #define ADC_RESOLUTION_MAX  1 << 12
 // Max value of raw
 #define ANALOG_RAW_MAX_VALUE 2047
-#define ANALOG_MULTIPLIER_LUT_SIZE 1024
+// Max value of rest - value at around 2mm into keypress
+#define ANALOG_MULTIPLIER_LUT_SIZE 512
 // Max value of calibrated
 #define ANALOG_CAL_MAX_VALUE 1023
 

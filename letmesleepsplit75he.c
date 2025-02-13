@@ -509,8 +509,8 @@ void bootmagic_scan(void) {
         bootmagic_key_value = bootmagic_key_value - 2048;
     }
 
-    // arbitrary value
-    if (bootmagic_key_value > 500) {
+    // greater than the max rest value
+    if (bootmagic_key_value > ANALOG_MULTIPLIER_LUT_SIZE) {
         bootloader_jump();
     }
 }
