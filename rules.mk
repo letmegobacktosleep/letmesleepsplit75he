@@ -1,6 +1,6 @@
 SRC += custom_matrix.c custom_analog.c custom_calibration.c custom_scanning.c eeconfig_set_defaults.c dummy_pointing_device.c
 
-MCU_LDSCRIPT = STM32F303xB
+MCU_LDSCRIPT = STM32F303xB_tinyuf2
 WEAR_LEVELING_DRIVER = embedded_flash
 
 DEBOUNCE_TYPE = sym_eager_pk
