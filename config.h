@@ -29,12 +29,13 @@
     NO_PIN, NO_PIN, NO_PIN, NO_PIN, \
     NO_PIN, NO_PIN, NO_PIN, NO_PIN  \
 }
-/* #define MATRIX_COL_PINS_RIGHT { \
+/* SAME AS LEFT HAND
+#define MATRIX_COL_PINS_RIGHT { \
     A8,     B15,    B14,    B13,    \
     NO_PIN, NO_PIN, NO_PIN, NO_PIN, \
     NO_PIN, NO_PIN, NO_PIN, NO_PIN, \
     NO_PIN, NO_PIN, NO_PIN, NO_PIN  \
-} SAME AS LEFT HAND, DO NOT HAVE TO DEFINE RIGHT HAND*/
+} */
 
 // ADC pins
 /* LEFT
@@ -55,7 +56,7 @@ row 6 = mux 5 = ADC1_IN4
 row 7 = DKS, right hand */
 #define MATRIX_ROW_PINS_RIGHT { \
     B12,    \
-    A7,     \
+    B1,     \
     A3,     \
     NO_PIN  \
 }
@@ -73,13 +74,16 @@ ADC2_IN1 = D */
     A4      \
 }
 #endif
-/* RIGHT
-not defined */
+/* RIGHT - commented out because it is unused
 #ifdef MATRIX_DIRECT_RIGHT
 # define DIRECT_PINS_RIGHT { \
+    NO_PIN, \
+    NO_PIN, \
+    NO_PIN, \
+    NO_PIN  \
 }
 #endif
-
+*/
 
 
 // bit array of whether key is valid
@@ -190,7 +194,7 @@ not defined */
 # define RPC_S2M_BUFFER_SIZE 16
 // Keyboard level data sync:
 # define SPLIT_TRANSACTION_IDS_KB KEYBOARD_SYNC_A
-#define SPLIT_TRANSACTION_IDS_USER USER_SYNC_A
+# define SPLIT_TRANSACTION_IDS_USER USER_SYNC_A
 #endif
 
 
