@@ -20,7 +20,6 @@
         "rgb_matrix": true
     },
     "bootmagic": {
-        "enabled": true,
         "matrix": [0, 4]
     },
     "qmk": {
