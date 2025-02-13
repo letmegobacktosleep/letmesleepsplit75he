@@ -46,7 +46,7 @@ extern const uint8_t scroll_coordinates_right[4][2];
 // bit 1 = joystick toggle
 // bit 2 = left mouse toggle
 // bit 3 = right mouse toggle
-static uint8_t virtual_axes_toggle = 0;
+uint8_t virtual_axes_toggle = 0;
 
 #ifdef RGB_MATRIX_ENABLE
 static const pin_t rgb_enable_pin = CUSTOM_RGB_ENABLE_PIN;
@@ -123,7 +123,7 @@ void handle_virtual_mouse_layer(uint8_t virtual_axes_toggle){
     else {
         layer_off(MOUSE_LAYER); // turn off mouse layer
     }
-    return
+    return;
 }
 
 #if (JOYSTICK_AXIS_COUNT == 4)
@@ -215,13 +215,9 @@ void housekeeping_task_kb(void) {
         }
 #    endif
 #    if (defined(MOUSE_COORDINATES_LEFT) || defined(MOUSE_COORDINATES_RIGHT) || defined(SCROLL_COORDINATES_LEFT) || defined(SCROLL_COORDINATES_RIGHT))
+        // How much time until next scroll report
+        static uint8_t next_scroll[2] = { 0 };        
         // Only run mouse if toggled on
-        // https://docs.qmk.fm/features/pointing_device#manipulating-mouse-reports
-        static int8_t mouse_x = 0;
-        static int8_t mouse_y = 0;
-        static int8_t mouse_v = 0;
-        static int8_t mouse_h = 0;
-        static uint8_t next_scroll[2] = { 0 };
         if (
             BIT_GET(virtual_axes_toggle, 1) ||
             BIT_GET(virtual_axes_toggle, 2)
@@ -235,8 +231,8 @@ void housekeeping_task_kb(void) {
             currentReport.y = virtual_axes_combined[2][1];
 #        endif
 #        if (defined(SCROLL_COORDINATES_LEFT) || defined(SCROLL_COORDINATES_RIGHT))
-            mouse_v = virtual_axes_combined[3][0];
-            mouse_h = virtual_axes_combined[3][1]; 
+            int8_t mouse_v = virtual_axes_combined[3][0];
+            int8_t mouse_h = virtual_axes_combined[3][1]; 
             // Vertical scroll
             if (next_scroll[0] == 0){
                 if (mouse_v > 2){
@@ -267,6 +263,7 @@ void housekeeping_task_kb(void) {
             }
 #        endif
             // Override current report & send
+            // https://docs.qmk.fm/features/pointing_device#manipulating-mouse-reports
             pointing_device_set_report(currentReport);
             pointing_device_send();
         }
@@ -442,6 +439,7 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
         rgb_matrix_set_color(17, brightness, brightness, brightness);
         rgb_matrix_set_color(21, brightness, brightness, brightness);
 #    endif
+    }
     // Highlight right mouse buttons
     if (BIT_GET(virtual_axes_toggle, 2)){
         uint8_t brightness = MIN(255, current_val + 64);
