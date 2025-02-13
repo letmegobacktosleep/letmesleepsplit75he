@@ -200,13 +200,13 @@ msg_t adcStartAllConversions(ADCManager *adcManager, uint8_t current_direct_pin)
                 adcStartConversionI(&ADCD2, &adcConversionGroup3, adcManager->sampleBuffer2, 1);
                 break;
             case 1: // A
-                adcStartConversionI(&ADCD2, &adcConversionGroup4, adcManager->sampleBuffer6, 1);
+                adcStartConversionI(&ADCD2, &adcConversionGroup4, adcManager->sampleBuffer2, 1);
                 break;
             case 2: // S
-                adcStartConversionI(&ADCD2, &adcConversionGroup2, adcManager->sampleBuffer7, 1);
+                adcStartConversionI(&ADCD2, &adcConversionGroup2, adcManager->sampleBuffer2, 1);
                 break;
             case 3: // D
-                adcStartConversionI(&ADCD2, &adcConversionGroup1, adcManager->sampleBuffer8, 1);
+                adcStartConversionI(&ADCD2, &adcConversionGroup1, adcManager->sampleBuffer2, 1);
                 break;
             default:
                 break;
@@ -234,18 +234,11 @@ adcsample_t getADCSample(const ADCManager *adcManager, uint8_t current_row, uint
         case 1:
             return adcManager->sampleBuffer1[0];
         case 2:
-            switch (current_direct_pin){
-                case 0: // W
-                    return adcManager->sampleBuffer2[0];
-                case 1: // A
-                    return adcManager->sampleBuffer6[0];
-                case 2: // S
-                    return adcManager->sampleBuffer7[0];
-                case 3: // D
-                    return adcManager->sampleBuffer8[0];
-            }
+            // if multiple direct pins scanned in one iteration, 
+            // need a switch to determine correct buffer position
+            return adcManager->sampleBuffer2[0];
         case 3:
-            return 2047; // This row is used for DKS
+            return ANALOG_RAW_MAX_VALUE; // This row is used for DKS
 
         // Right
         case 4:

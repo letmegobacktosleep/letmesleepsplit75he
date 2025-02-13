@@ -11,9 +11,6 @@ typedef struct {
     adcsample_t sampleBuffer3[MAX_MUXES_PER_ADC];
     adcsample_t sampleBuffer4[MAX_MUXES_PER_ADC];
     adcsample_t sampleBuffer5[MAX_MUXES_PER_ADC];
-    adcsample_t sampleBuffer6[MAX_MUXES_PER_ADC];
-    adcsample_t sampleBuffer7[MAX_MUXES_PER_ADC];
-    adcsample_t sampleBuffer8[MAX_MUXES_PER_ADC];
     volatile int completedConversions;
     semaphore_t sem;
 } ADCManager;
