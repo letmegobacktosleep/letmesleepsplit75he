@@ -235,11 +235,11 @@ void housekeeping_task_kb(void) {
             int8_t mouse_h = virtual_axes_combined[3][1]; 
             // Vertical scroll
             if (next_scroll[0] == 0){
-                if (mouse_v > 2){
+                if (mouse_v > MOUSE_DEADZONE){
                     currentReport.v = 1;
                     next_scroll[0] = 32 - (abs(mouse_v) / 4);
                 }
-                else if (mouse_v < -2){
+                else if (mouse_v < -MOUSE_DEADZONE){
                     currentReport.v = -1;
                     next_scroll[0] = 32 - (abs(mouse_v) / 4);
                 }
@@ -249,11 +249,11 @@ void housekeeping_task_kb(void) {
             }
             // Horizontal scroll
             if (next_scroll[1] == 0){
-                if (mouse_h > 2){
+                if (mouse_h > MOUSE_DEADZONE){
                     currentReport.h = 1;
                     next_scroll[1] = 32 - (abs(mouse_h) / 4);
                 }
-                else if (mouse_h < -2){
+                else if (mouse_h < -MOUSE_DEADZONE){
                     currentReport.h = -1;
                     next_scroll[1] = 32 - (abs(mouse_h) / 4);
                 }

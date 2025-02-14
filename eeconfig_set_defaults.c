@@ -24,6 +24,7 @@ void set_default_analog_config(void){
     }
     return;
 }
+
 void set_default_analog_key(void){
     // loop through rows and columns
     for (uint8_t row = 0; row < MATRIX_ROWS; row++){
@@ -35,6 +36,7 @@ void set_default_analog_key(void){
     }
     return;
 }
+
 void set_default_calibration_parameters(void){
     // https://www.desmos.com/calculator/z87qmchhxo
     calibration_parameters.displacement.lut_a = -327.139936442;

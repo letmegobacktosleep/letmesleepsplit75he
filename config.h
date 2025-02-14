@@ -105,6 +105,7 @@ ADC2_IN1 = D */
 #ifdef ANALOG_KEY_VIRTUAL_AXES
 // the layer containing mouse keys
 # define MOUSE_LAYER 3
+# define MOUSE_DEADZONE 16
 // qmk requires these
 # define JOYSTICK_BUTTON_COUNT 0
 # define JOYSTICK_AXIS_COUNT 4
