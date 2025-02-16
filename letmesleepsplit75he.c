@@ -396,22 +396,22 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 #ifdef RGB_MATRIX_ENABLE
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     static bool value_was_zero = true;
-    static uint8_t current_val = 64;
+    static uint8_t base_brightness = 64;
 
     // Get current value
-    current_val = rgb_matrix_get_val();
+    base_brightness = (uint8_t) rgb_matrix_get_val() * 255 / 100;
 
     // Light up Esc if CapsLock
     if (host_keyboard_led_state().caps_lock){
         // Always make brightness brighter than current brightness
-        uint8_t brightness = MIN(255, current_val + 128);
+        uint8_t brightness = MIN(255, base_brightness + 128);
         rgb_matrix_set_color(0, brightness, brightness, brightness);
     }
 
 # ifdef ANALOG_KEY_VIRTUAL_AXES
     // Highlight joystick buttons
     if (BIT_GET(virtual_axes_toggle, 0)){
-        uint8_t brightness = MIN(255, current_val + 64);
+        uint8_t brightness = MIN(255, base_brightness + 64);
 #    ifdef JOYSTICK_COORDINATES_LEFT
         rgb_matrix_set_color(15, brightness, brightness, brightness);
         rgb_matrix_set_color(20, brightness, brightness, brightness);
@@ -427,7 +427,7 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     }
     // Highlight left mouse buttons
     if (BIT_GET(virtual_axes_toggle, 1)){
-        uint8_t brightness = MIN(255, current_val + 64);
+        uint8_t brightness = MIN(255, base_brightness + 64);
 #    ifdef MOUSE_COORDINATES_LEFT
         rgb_matrix_set_color(15, brightness, brightness, brightness);
         rgb_matrix_set_color(20, brightness, brightness, brightness);
@@ -443,7 +443,7 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     }
     // Highlight right mouse buttons
     if (BIT_GET(virtual_axes_toggle, 2)){
-        uint8_t brightness = MIN(255, current_val + 64);
+        uint8_t brightness = MIN(255, base_brightness + 64);
 #    ifdef MOUSE_COORDINATES_RIGHT
         rgb_matrix_set_color(74, brightness, brightness, brightness);
         rgb_matrix_set_color(76, brightness, brightness, brightness);
@@ -458,11 +458,11 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 # endif
 
     // Cut power to most LEDs if brightness is zero
-    if (!value_was_zero && current_val == 0){
+    if (!value_was_zero && base_brightness == 0){
         palClearLine(rgb_enable_pin); // gpio_write_pin_low(rgb_enable_pin);
         value_was_zero = true;
     }
-    else if (value_was_zero && current_val != 0){
+    else if (value_was_zero && base_brightness != 0){
         palSetLine(rgb_enable_pin); // gpio_write_pin_high(rgb_enable_pin);
         value_was_zero = false;
     }
