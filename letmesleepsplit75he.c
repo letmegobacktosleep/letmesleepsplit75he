@@ -399,7 +399,7 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     static uint8_t base_brightness = 64;
 
     // Get current value
-    base_brightness = (uint8_t) rgb_matrix_get_val() * 255 / 100;
+    base_brightness = rgb_matrix_get_val();
 
     // Light up Esc if CapsLock
     if (host_keyboard_led_state().caps_lock){
