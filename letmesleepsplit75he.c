@@ -519,17 +519,17 @@ void bootmagic_scan(void) {
 
 #if defined(VIA_ENABLE) && !defined(VIAL_ENABLE)
 
-#define ITERATE_ALL_PHYSICAL_KEYS(__user_code)          \
-for (uint8_t row = 0; row < MATRIX_ROWS; row++){	    \
-	for (uint8_t col = 0; col < MATRIX_COLS; col++){    \
-        if (                                            \
-            (row != ROWS_PER_HAND - 1) &&               \
-            (row != MATRIX_ROWS - 1)                    \
-        )                                               \
-        {                                               \
-		__user_code  								    \
-        }                                               \
-	}												    \
+#define ITERATE_ALL_PHYSICAL_KEYS(__user_code)              \
+for (uint8_t row = 0; row < MATRIX_ROWS; row++){	        \
+    if (                                                    \
+        (row != ROWS_PER_HAND - 1) &&                       \
+        (row != MATRIX_ROWS - 1)                            \
+    )                                                       \
+    {                                                       \
+        for (uint8_t col = 0; col < MATRIX_COLS; col++){    \
+            __user_code  								    \
+        }                                                   \
+	}												        \
 }
 
 enum via_hall_effect {
