@@ -76,6 +76,22 @@ const uint8_t scroll_coordinates_right[4][2] = MOUSE_COORDINATES_RIGHT;
 
 
 
+// Generate lookup tables
+void generate_lookup_tables(void){
+
+    for (uint16_t i = 0; i < ANALOG_CAL_MAX_VALUE+1; i++){
+        // change in voltage from rest -> distance pressed
+        lut_displacement[i] = analog_to_distance(i, &calibration_parameters.displacement);
+        lut_joystick[i]     = analog_to_distance(i, &calibration_parameters.joystick);
+    }
+    for (uint16_t i = 0; i < ANALOG_MULTIPLIER_LUT_SIZE; i++){
+        // rest -> fully pressed value
+        lut_multiplier[i] = rest_to_absolute_change(i, &calibration_parameters.multiplier);
+    }
+
+    return;
+}
+
 // Initialise matrix
 void matrix_init_custom(void){
 #ifdef SPLIT_KEYBOARD
@@ -101,18 +117,8 @@ void matrix_init_custom(void){
         thatHand = ROWS_PER_HAND - thisHand; */
     }
 #endif
-    
-    // Generate lookup tables
-    for (uint16_t i = 0; i < ANALOG_CAL_MAX_VALUE+1; i++){
-        lut_displacement[i] = analog_to_distance(i, &calibration_parameters.displacement);
-        lut_joystick[i]     = analog_to_distance(i, &calibration_parameters.joystick);
-    }
-    for (uint16_t i = 0; i < ANALOG_MULTIPLIER_LUT_SIZE; i++){
-        // rest -> fully pressed value
-        lut_multiplier[i] = rest_to_absolute_change(i, &calibration_parameters.multiplier);
-    }
 
-    // modify number of times to loop
+    // Modify number of times to loop
 #ifdef MATRIX_DIRECT
     if (is_keyboard_left()){
         number_of_loops = MATRIX_DIRECT / MAX_MUXES_PER_ADC;
@@ -128,6 +134,9 @@ void matrix_init_custom(void){
     set_default_calibration_parameters();
     set_default_analog_config();
     set_default_analog_key();
+
+    // Generate lookup tables
+    generate_lookup_tables();
 
     // Initialize multiplexer GPIO pins
     multiplexer_init();

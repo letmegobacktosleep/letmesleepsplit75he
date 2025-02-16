@@ -105,7 +105,6 @@ _Static_assert(sizeof(calibration_parameters_t) == EECONFIG_KB_DATA_SIZE, "Misma
 extern calibration_parameters_t calibration_parameters;
 
 // Function prototypes
-void register_key(matrix_row_t *current_row, uint8_t current_col);
-void deregister_key(matrix_row_t *current_row, uint8_t current_col);
+void generate_lookup_tables(uint8_t *lut_displacement, uint8_t *lut_joystick, uint16_t *lut_multiplier);
 void matrix_init_custom(void);
 bool matrix_scan_custom(matrix_row_t current_matrix[]);

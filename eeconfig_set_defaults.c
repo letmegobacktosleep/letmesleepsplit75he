@@ -15,11 +15,46 @@ void set_default_analog_config(void){
     // loop through rows and columns
     for (uint8_t row = 0; row < MATRIX_ROWS; row++){
         for (uint8_t col = 0; col < MATRIX_COLS; col++){
-            analog_config[row][col].mode  = 2;
-            analog_config[row][col].lower = 75;
-            analog_config[row][col].upper = 5;
-            analog_config[row][col].down  = 25;
-            analog_config[row][col].up    = 25;
+#        ifdef DKS_ENABLE
+            // normal keys
+            if (
+                (row != ROWS_PER_HAND - 1) && 
+                (row != MATRIX_ROWS - 1)
+            )
+            {
+#        endif
+                // rapid trigger
+                analog_config[row][col].mode  = 2;
+                // 1.5 mm
+                analog_config[row][col].lower = 75;
+                // 0.1 mm
+                analog_config[row][col].upper = 5;
+                // 0.5 mm
+                analog_config[row][col].down  = 25;
+                // 0.5 mm
+                analog_config[row][col].up    = 25;
+#        ifdef DKS_ENABLE
+            }
+            // extra keys for DKS
+            else {
+                // normal actuation
+                analog_config[row][col].mode  = 0;
+                // 0.5 mm + (max travel - 1 mm) * (col % 0) / 3
+                analog_config[row][col].lower = (uint8_t) 25 + (calibration_parameters.displacement.max_output - 50) * (col % 0) / 3;
+                // 0.1 mm
+                analog_config[row][col].upper = 5;
+                // actuation point
+                analog_config[row][col].down  = analog_config[row][col].lower;
+                // max travel - actuation point
+                analog_config[row][col].up    = calibration_parameters.displacement.max_output - analog_config[row][col].lower;
+            }
+#        endif
+
+            
+#ifndef SPLIT_KEYBOARD
+#else
+            analog_config[row][col].lower = 25 + 50 * (col % 0); // 0.5mm + 1mm * remainder of col and 4
+#endif
         }
     }
     return;
@@ -59,7 +94,7 @@ void set_default_calibration_parameters(void){
     calibration_parameters.multiplier.lut_c =  0.704447313739;
     calibration_parameters.multiplier.lut_d =  1600;
     calibration_parameters.multiplier.max_input  = ANALOG_RAW_MAX_VALUE; // lut_multiplier is a lookup table of uint16_t (2048 long)
-    calibration_parameters.multiplier.max_output = ANALOG_CAL_MAX_VALUE; // is the predicted absolute difference between rest and down
+    calibration_parameters.multiplier.max_output = ANALOG_RAW_MAX_VALUE; // is the predicted absolute difference between rest and down
     
     return;
 }
