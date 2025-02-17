@@ -152,6 +152,9 @@ ADC2_IN1 = D */
 
 
 
+// Disable debounce
+#define DEBOUNCE 0
+
 // Set ADC resolution and sampling time
 #define ADC_RESOLUTION      ADC_CFGR_RES_12BITS
 #define ADC_SAMPLING_TIME   ADC_SMPR_SMP_2P5

@@ -28,7 +28,6 @@
     "build": {
         "lto": true
     },
-    "debounce": 5,
     "matrix_pins": {
         "custom_lite": true
     },

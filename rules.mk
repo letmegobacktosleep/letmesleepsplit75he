@@ -3,9 +3,9 @@ SRC += custom_matrix.c custom_analog.c custom_calibration.c custom_scanning.c ee
 MCU_LDSCRIPT = STM32F303xB_tinyuf2
 WEAR_LEVELING_DRIVER = embedded_flash
 
-DEBOUNCE_TYPE = sym_eager_pk
-# instant change followed by 5 ms of no change
-# to prevent people from triggering way too fast
+# DEBOUNCE_TYPE = sym_defer_g
+# if debounce is required, uncomment this and
+# set debounce to 5 milliseconds in config.h
 
 CUSTOM_MATRIX = lite
 # custom lite matrix
