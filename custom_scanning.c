@@ -35,7 +35,7 @@ bool select_multiplexer_channel(uint8_t channel){
 bool actuation(analog_config_t *config, analog_key_t *key, matrix_row_t *current_row, uint8_t current_col, uint8_t current, uint8_t max_key_displacement){
     switch (key->mode){
         case 0: // normal, not pressed
-            if (current > config->lower){
+            if ((current > config->lower) || (current > max_key_displacement - config->upper)){
                 key->mode = 1;
                 REGISTER_KEY(current_row, current_col);
                 return 1;
@@ -46,7 +46,7 @@ bool actuation(analog_config_t *config, analog_key_t *key, matrix_row_t *current
             }
 
         case 1: // normal, pressed
-            if (current < config->lower - config->upper){
+            if ((current < config->lower - config->upper) || (current < config->upper)){
                 key->mode = 0;
                 DEREGISTER_KEY(current_row, current_col);
                 return 0;
@@ -57,7 +57,7 @@ bool actuation(analog_config_t *config, analog_key_t *key, matrix_row_t *current
             }
 
         case 2: // rapid trigger, at top
-            if (current > config->lower){
+            if ((current > config->lower) || (current > max_key_displacement - config->upper)){
                 key->old = current;
                 key->mode = 3;
                 REGISTER_KEY(current_row, current_col);
