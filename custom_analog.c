@@ -16,8 +16,8 @@ static void adcCompleteCallback(ADCDriver *adcp) {
     (void)adcp; // Unused parameter
     osalSysLockFromISR();
     adcManager.completedConversions++;
-    if (adcManager.completedConversions == 4) {
-        chSemSignalI(&adcManager.sem); // Signal the semaphore
+    if (adcManager.completedConversions == 3){ // change to number of ADCs
+        chSemSignalI(&adcManager.sem);
     }
     osalSysUnlockFromISR();
 }
@@ -146,7 +146,7 @@ static const ADCConversionGroup adcConversionGroup5 = { // Channels 1,2,3,4,5
 
 void initADCGroups(ADCManager *adcManager) {
     adcManager->completedConversions = 0;
-    chSemObjectInit(&adcManager->sem, 0); // Initialize semaphore with a count of 0
+    chSemObjectInit(&adcManager->sem, 0);
 
 #ifdef DIRECT_PINS
     const pin_t direct_pins[MATRIX_DIRECT] = DIRECT_PINS;
