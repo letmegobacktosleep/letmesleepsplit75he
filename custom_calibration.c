@@ -28,14 +28,8 @@ uint16_t rest_to_absolute_change(uint16_t adc, lookup_table_t *lut_params) {
 
 uint16_t scale_raw_value(uint16_t raw, uint8_t rest, uint16_t *lut_multiplier){
 
-    // Find the multiplier
-    double intermediate = (double) ANALOG_CAL_MAX_VALUE / lut_multiplier[rest];
-    
-    // Comment this out when lut_multiplier values have been added
-    // intermediate = 1.1983185203883775;
-
-    // Multiply by difference between raw and rest
-    intermediate *= MAX(0, raw - rest);
+    // Scale raw value between 0 and 1023
+    float intermediate = MAX(0, raw - rest) * ANALOG_CAL_MAX_VALUE / lut_multiplier[rest];
 
     // Cast to an unsigned integer and limit value
     uint16_t calibrated = (uint16_t) MAX(0, MIN(intermediate, ANALOG_CAL_MAX_VALUE));

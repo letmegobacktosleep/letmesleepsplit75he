@@ -21,5 +21,6 @@ extern ADCManager adcManager;
 // Function Prototypes
 void initADCGroups(ADCManager *adcManager);
 void adcErrorCallback(ADCDriver *adcp, adcerror_t err);
-msg_t adcStartAllConversions(ADCManager *adcManager, uint8_t current_direct_pin);
-adcsample_t getADCSample(const ADCManager *adcManager, uint8_t current_row, uint8_t current_direct_pin);
+msg_t adcStartAllConversions(ADCManager *adcManager, uint8_t current_col);
+msg_t adcWaitForConversions(ADCManager *adcManager);
+adcsample_t getADCSample(const ADCManager *adcManager, uint8_t current_row);

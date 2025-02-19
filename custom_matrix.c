@@ -30,8 +30,6 @@ SPLIT_MUTABLE_COL pin_t col_pins[MATRIX_COLS]   = MATRIX_COL_PINS;
 
 // row offset
 static uint8_t row_offset = 0;
-// number of loops
-static uint8_t number_of_loops = MATRIX_COLS;
 
 // Create array for custom matrix mask
 static const matrix_row_t custom_matrix_mask[MATRIX_ROWS] = CUSTOM_MATRIX_MASK;
@@ -117,18 +115,6 @@ void matrix_init_custom(void){
         thatHand = ROWS_PER_HAND - thisHand; */
     }
 #endif
-
-    // Modify number of times to loop
-#ifdef MATRIX_DIRECT
-    if (is_keyboard_left()){
-        number_of_loops = MATRIX_DIRECT / MAX_MUXES_PER_ADC;
-    }
-#endif
-#ifdef MATRIX_DIRECT_RIGHT
-    if (!is_keyboard_left()) {
-        number_of_loops = MATRIX_DIRECT_RIGHT / MAX_MUXES_PER_ADC;
-    }
-#endif
     
     // Load default values (before real values are loaded)
     set_default_calibration_parameters();
@@ -157,10 +143,9 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
     // store virtual axes
     static uint8_t virtual_axes_temp[4][4] = { 0 };
 
-    // store cols
-    static uint8_t current_col = 0;
-    // store channel
-    static uint8_t current_direct_pin = 0;
+    // row, col that can be modified - static because maybe it goes faster? I honestly don't know...
+    static uint8_t this_row = 0;
+    static uint8_t this_col = 0;
 
     // create variables to track time
     static bool save_rest_values = false;
@@ -173,211 +158,189 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
     if (time_current > time_next_calibration){
         save_rest_values = true;
         time_to_be_updated = true;
-        number_of_loops = MATRIX_COLS;
     }
 
+    // switch multiplexer to first column
+    select_multiplexer_channel(current_col);
+    // start first adc scan
+    adcStartAllConversions(&adcManager, current_col);
+
     // loop through columns
-    for (uint8_t i = 0; i < number_of_loops; i++){
+    for (uint8_t current_col = 0; current_col < MATRIX_COLS; current_col++){
 
-        // switch multiplexer to current column
-        select_multiplexer_channel(current_col);
+        // wait for adc to finish
+        adcWaitForConversions(&adcManager);
 
-        // scan all rows
-        adcStartAllConversions(&adcManager, current_direct_pin);
-
-        // run on every row
-        for (uint8_t current_row = row_offset; current_row < row_offset + ROWS_PER_HAND; current_row++){
-
-            // row, col that can be modified
-            uint8_t this_row = current_row;
-            uint8_t this_col = current_col;
-
-#        if (MAX_MUXES_PER_ADC) > 1
-            // how many ADC pins were read on this row
-            uint8_t number_pins_read = 1;
-            // check if the current row contains direct pins
-#        ifdef MATRIX_DIRECT_ROW
-            if (this_row == MATRIX_DIRECT_ROW){
-                number_pins_read = MAX_MUXES_PER_ADC;
-            }
-#        endif
-#        ifdef MATRIX_DIRECT_ROW_RIGHT
-            if (this_row == MATRIX_DIRECT_ROW_RIGHT){
-                number_pins_read = MAX_MUXES_PER_ADC;
-            }
-#        endif
-            // run multiple times if multiple direct pins were read
-            for (uint8_t j = 0; j < number_pins_read; j++){
-#        endif
-
-                // increment current direct pin
-#            ifdef MATRIX_DIRECT_ROW
-                if (this_row == MATRIX_DIRECT_ROW){
-                    this_col = current_direct_pin;
-                    current_direct_pin = (current_direct_pin + 1) % MATRIX_DIRECT_ROW;
-                }
-#            endif
-#            ifdef MATRIX_DIRECT_ROW_RIGHT
-                if (this_row == MATRIX_DIRECT_ROW_RIGHT){
-                    this_col = current_direct_pin;
-                    current_direct_pin = (current_direct_pin + 1) % MATRIX_DIRECT_ROW_RIGHT;
-                }
-#            endif
-
-                // if the key should be scanned
-                if (BIT_GET(custom_matrix_mask[this_row], this_col)){
-                    
-                    // get raw adc value
-                    uint16_t raw = getADCSample(&adcManager, this_row, current_direct_pin);
-                    // account for magnet polarity (bipolar sensor, 12-bit reading)
-                    if (raw < ANALOG_RAW_MAX_VALUE + 1){
-                        raw = ANALOG_RAW_MAX_VALUE - raw;
-                    }
-                    else { // raw > ANALOG_RAW_MAX_VALUE
-                        raw = raw - ANALOG_RAW_MAX_VALUE - 1;
-                    }
-
-                    // run calibration (output 0-1023)
-                    uint16_t calibrated = scale_raw_value(raw, analog_key[this_row][this_col].rest, lut_multiplier);
-
-                    // run lookup table (output 0-200, where 200=4mm)
-                    uint8_t displacement = lut_displacement[calibrated];
- 
-                    if (
-                        // run actuation (output bool, always false if mode > 4)
-                        actuation(
-                            &analog_config[this_row][this_col], 
-                            &analog_key[this_row][this_col], 
-                            &current_matrix[this_row], 
-                            this_col,
-                            displacement, 
-                            calibration_parameters.displacement.max_output
-                        )
-                    )
-                    {
-                        // update time
-                        time_to_be_updated = true;
-                    }
-
-#                ifdef DKS_ENABLE
-                    // handle DKS
-                    if (analog_config[this_row][this_col].mode > 4){
-                        this_row = row_offset + ROWS_PER_HAND - 1; // last row on current hand
-                        for (uint8_t l = 0; l < 4; l++){ // run actuation on four keys
-                            this_col = l + (4 * (analog_config[this_row][this_col].mode - 5));
-                            
-                            if (
-                                // run actuation (output bool, always false if mode > 4)
-                                actuation(
-                                    &analog_config[this_row][this_col], 
-                                    &analog_key[this_row][this_col], 
-                                    &current_matrix[this_row], 
-                                    this_col,
-                                    displacement, 
-                                    calibration_parameters.displacement.max_output
-                                )
-                            )
-                            {
-                                // update time
-                                time_to_be_updated = true;
-                            }
-                        }
-                    }
-#                endif
-
-                    // handle joystick
-#                ifdef ANALOG_KEY_VIRTUAL_AXES
-                    if (
-                        BIT_GET(virtual_axes_toggle, 0) || 
-                        BIT_GET(virtual_axes_toggle, 1) || 
-                        BIT_GET(virtual_axes_toggle, 2)
-                    )
-                    {
-                        for (uint8_t k = 0; k < 4; k++){
-#                        ifdef JOYSTICK_COORDINATES_LEFT     
-                            if (
-                                BIT_GET(virtual_axes_toggle, 0)             && 
-                                this_col == joystick_coordinates_left[k][1] && 
-                                this_row == joystick_coordinates_left[k][0]
-                            )
-                            {
-                                virtual_axes_temp[0][k] += lut_joystick[calibrated];
-                            }
-#                        endif
-#                        ifdef JOYSTICK_COORDINATES_RIGHT
-                            if (
-                                BIT_GET(virtual_axes_toggle, 0)              && 
-                                this_col == joystick_coordinates_right[k][1] && 
-                                this_row == joystick_coordinates_right[k][0]
-                            )
-                            {
-                                virtual_axes_temp[1][k] += lut_joystick[calibrated];
-                            }
-#                        endif
-#                        ifdef MOUSE_COORDINATES_LEFT
-                            if (
-                                BIT_GET(virtual_axes_toggle, 1)          && 
-                                this_col == mouse_coordinates_left[k][1] && 
-                                this_row == mouse_coordinates_left[k][0]
-                            )
-                            {
-                                virtual_axes_temp[2][k] += lut_joystick[calibrated];
-                            }
-#                        endif
-#                        ifdef SCROLL_COORDINATES_LEFT
-                            if (
-                                BIT_GET(virtual_axes_toggle, 1)           && 
-                                this_col == scroll_coordinates_left[k][1] && 
-                                this_row == scroll_coordinates_left[k][0]
-                            )
-                            {
-                                virtual_axes_temp[3][k] += lut_joystick[calibrated];
-                            }
-#                        endif
-#                        ifdef MOUSE_COORDINATES_RIGHT
-                            if (
-                                BIT_GET(virtual_axes_toggle, 2)           && 
-                                this_col == mouse_coordinates_right[k][1] && 
-                                this_row == mouse_coordinates_right[k][0]
-                            )
-                            {
-                                virtual_axes_temp[2][k] += lut_joystick[calibrated];
-                            }
-#                        endif
-#                        ifdef SCROLL_COORDINATES_RIGHT
-                            if (
-                                BIT_GET(virtual_axes_toggle, 2)            && 
-                                this_col == scroll_coordinates_right[k][1] && 
-                                this_row == scroll_coordinates_right[k][0]
-                            )
-                            {
-                                virtual_axes_temp[3][k] += lut_joystick[calibrated];
-                            }
-#                        endif
-                        }
-                    }
-#                    endif
-
-                    // save raw value
-                    if (save_rest_values) {
-                        analog_key[this_row][this_col].rest = MIN(raw, ANALOG_MULTIPLIER_LUT_SIZE - 1);
-                    }
-                }
-#        if (MAX_MUXES_PER_ADC) > 1
-            }
-#        endif
+        // fetch adc values
+        static uint16_t raw_values[ROWS_PER_HAND];
+        for (uint8_t current_row = 0; current_row < ROWS_PER_HAND; current_row++){
+            raw_values[current_row] = getADCSample(&adcManager, current_row + row_offset, current_col);
         }
-        // increment current col
-        current_col = (current_col + 1) % MATRIX_COLS;
+
+        // start next adc read
+        if (current_col < MATRIX_COLS - 1){
+            // switch multiplexer to next column
+            select_multiplexer_channel(current_col + 1);
+            // start next adc scan
+            adcStartAllConversions(&adcManager, current_col + 1);
+        }
+
+        // iterate through rows
+        for (uint8_t current_row = 0; current_row < ROWS_PER_HAND; current_row++){
+
+            // update modifable row, col
+            this_row = current_row + row_offset;
+            this_col = current_col;
+
+            // if the key should be scanned
+            if (BIT_GET(custom_matrix_mask[this_row], this_col)){
+                
+                // get raw adc value
+                uint16_t raw = raw_values[current_row];
+                // account for magnet polarity (bipolar sensor, 12-bit reading)
+                if (raw <= ANALOG_RAW_MAX_VALUE){
+                    raw = ANALOG_RAW_MAX_VALUE - raw;
+                }
+                else { // raw > ANALOG_RAW_MAX_VALUE
+                    raw = raw - ANALOG_RAW_MAX_VALUE - 1;
+                }
+
+                // run calibration (output 0-1023)
+                uint16_t calibrated = scale_raw_value(raw, analog_key[this_row][this_col].rest, lut_multiplier);
+
+                // run lookup table (output 0-200, where 200=4mm)
+                uint8_t displacement = lut_displacement[calibrated];
+
+                if (
+                    // run actuation
+                    actuation(
+                        &analog_config[this_row][this_col], 
+                        &analog_key[this_row][this_col], 
+                        &current_matrix[this_row], 
+                        this_col,
+                        displacement, 
+                        calibration_parameters.displacement.max_output
+                    )
+                )
+                {
+                    // update time
+                    time_to_be_updated = true;
+                }
+
+#            ifdef DKS_ENABLE
+                // handle DKS
+                if (analog_config[this_row][this_col].mode > 4){
+                    this_row = row_offset + ROWS_PER_HAND - 1; // last row on current hand
+                    for (uint8_t k = 0; k < 4; k++){ // run actuation on four keys
+                        this_col = k + (4 * (analog_config[this_row][this_col].mode - 5));
+                        
+                        if (
+                            // run actuation
+                            actuation(
+                                &analog_config[this_row][this_col], 
+                                &analog_key[this_row][this_col], 
+                                &current_matrix[this_row], 
+                                this_col,
+                                displacement, 
+                                calibration_parameters.displacement.max_output
+                            )
+                        )
+                        {
+                            // update time
+                            time_to_be_updated = true;
+                        }
+                    }
+                }
+#            endif
+#            ifdef ANALOG_KEY_VIRTUAL_AXES
+                // handle joystick
+                if (
+                    BIT_GET(virtual_axes_toggle, 0) || 
+                    BIT_GET(virtual_axes_toggle, 1) || 
+                    BIT_GET(virtual_axes_toggle, 2)
+                )
+                {
+                    for (uint8_t k = 0; k < 4; k++){
+#                    ifdef JOYSTICK_COORDINATES_LEFT     
+                        if (
+                            BIT_GET(virtual_axes_toggle, 0)             && 
+                            this_col == joystick_coordinates_left[k][1] && 
+                            this_row == joystick_coordinates_left[k][0]
+                        )
+                        {
+                            virtual_axes_temp[0][k] += lut_joystick[calibrated];
+                        }
+#                    endif
+#                    ifdef JOYSTICK_COORDINATES_RIGHT
+                        if (
+                            BIT_GET(virtual_axes_toggle, 0)              && 
+                            this_col == joystick_coordinates_right[k][1] && 
+                            this_row == joystick_coordinates_right[k][0]
+                        )
+                        {
+                            virtual_axes_temp[1][k] += lut_joystick[calibrated];
+                        }
+#                    endif
+#                    ifdef MOUSE_COORDINATES_LEFT
+                        if (
+                            BIT_GET(virtual_axes_toggle, 1)          && 
+                            this_col == mouse_coordinates_left[k][1] && 
+                            this_row == mouse_coordinates_left[k][0]
+                        )
+                        {
+                            virtual_axes_temp[2][k] += lut_joystick[calibrated];
+                        }
+#                    endif
+#                    ifdef SCROLL_COORDINATES_LEFT
+                        if (
+                            BIT_GET(virtual_axes_toggle, 1)           && 
+                            this_col == scroll_coordinates_left[k][1] && 
+                            this_row == scroll_coordinates_left[k][0]
+                        )
+                        {
+                            virtual_axes_temp[3][k] += lut_joystick[calibrated];
+                        }
+#                    endif
+#                    ifdef MOUSE_COORDINATES_RIGHT
+                        if (
+                            BIT_GET(virtual_axes_toggle, 2)           && 
+                            this_col == mouse_coordinates_right[k][1] && 
+                            this_row == mouse_coordinates_right[k][0]
+                        )
+                        {
+                            virtual_axes_temp[2][k] += lut_joystick[calibrated];
+                        }
+#                    endif
+#                    ifdef SCROLL_COORDINATES_RIGHT
+                        if (
+                            BIT_GET(virtual_axes_toggle, 2)            && 
+                            this_col == scroll_coordinates_right[k][1] && 
+                            this_row == scroll_coordinates_right[k][0]
+                        )
+                        {
+                            virtual_axes_temp[3][k] += lut_joystick[calibrated];
+                        }
+#                    endif
+                    }
+                }
+#            endif
+
+                // save rest values
+                if (save_rest_values) {
+                    analog_key[this_row][this_col].rest = MIN(raw, ANALOG_MULTIPLIER_LUT_SIZE - 1);
+                }
+            }
+        }
     }
 
     if (time_to_be_updated){
+
         if (save_rest_values){
-            // add 2 minutes to current time
-            time_next_calibration = time_current + (2 * 60000);
+            // next calibration in 1 minute
+            time_next_calibration = time_current + (1 * 60000);
         }
         else {
-            // add 5 minutes to current time
+            // next calibration in 5 minutes
             time_next_calibration = time_current + (5 * 60000);
         }
         
@@ -396,23 +359,3 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
     // compare current matrix against previous matrix
     return memcmp(previous_matrix, current_matrix, sizeof(previous_matrix)) != 0;
 }
-
-
-
-//done: adc reading (good)
-//done: split matrix stuff (might not work)
-//done: lite matrix scanning (badly)
-//done: lookup table generation (need new values tho)
-//done: load default settings
-//done: accessing settings from EEPROM
-//done: split communication - custom sync for joystick
-//done: DKS (uses mode instead of keycode)
-//done: virtual axes for joystick https://docs.qmk.fm/features/joystick#virtual-axes
-//done: use mouse report overrides https://docs.qmk.fm/features/pointing_device#manipulating-mouse-reports
-
-
-//todo: get values for generating: predicted abs diff between rest and down
-
-//todo: add method to modify settings & save to EEPROM
-
-//todo: fork vial to add extra tabs: analog settings & DKS & mouse keys & joystick

@@ -1,10 +1,34 @@
-// NEED TO CHECK REPHLEX'S CODE FOR THE ADC SCANNING
+// RephlexZero's code - used as a template
 // https://github.com/RephlexZero/qmk_firmware/blob/adc_testing/keyboards/rephlex/moonboard/
-
-
+// evidence of being able to guess down position from rest only
 // https://discord.com/channels/1155086054622244904/1155145292119805963/1263077167995158629
 // https://discord.com/channels/1155086054622244904/1155145292119805963/1265214808350003311
-// ^^^^^ can guess down position from rest only
+
+
+
+
+
+
+
+
+
+
+//todo: get values for generating: predicted abs diff between rest and down
+
+//todo: add method to modify settings & save to EEPROM
+
+//todo: fork vial to add extra tabs: analog settings - actuation & calibration
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -41,35 +65,4 @@ for (uint8_t col = 0; col < MATRIX_COLS; col++){
         min_value = (raw < min_value) ? raw : min_value;
         max_value = (raw > max_value) ? raw : max_value;
     }
-}
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////
-
-void pointing_device_driver_init(void) {
-    return; // nothing to initialize here
-}
-uint16_t pointing_device_driver_get_cpi(void) {
-    return 0; // no cpi to set
-}
-void pointing_device_driver_set_cpi(uint16_t cpi) {
-    return; // no cpi to set
-}
-
-// https://docs.qmk.fm/features/pointing_device#custom-driver
-
-//////////////////////////////////////////////////////////////////
-
-// Add to config.h
-#define SPLIT_TRANSACTION_IDS_USER USER_SYNC_A
-
-// keyboard_post_init_user
-transaction_register_rpc(USER_SYNC_B, user_sync_b_slave_handler);
-
-void user_sync_b_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
-    // Cast data to correct type
-    const calibration_parameters_t *m2s = (const calibration_parameters_t*) in_data;
-
-    // Save config
-    EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, displacement);
 }

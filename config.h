@@ -9,13 +9,11 @@
 // number of multiplexer channels (must be 8 or 16 or 32)
 #define MATRIX_COLS 16
 // number of ADC channels (whichever has more * 2)
+/* any changes to this definition also requires modifying custom_analog.c */
 #define MATRIX_ROWS 8
 // number of direct pins (cannot be greater than 16) // MATRIX_DIRECT_RIGHT
 /* any changes to this definition also requires modifying custom_analog.c */
 #define MATRIX_DIRECT 4
-// the row which contains the direct pins // MATRIX_DIRECT_ROW_RIGHT
-/* any changes to this definition also requires modifying custom_analog.c */
-#define MATRIX_DIRECT_ROW 2
 // max number of multiplexers per ADC
 /* any changes to this definition also requires modifying custom_analog.c */
 #define MAX_MUXES_PER_ADC 1
@@ -29,7 +27,7 @@
     NO_PIN, NO_PIN, NO_PIN, NO_PIN, \
     NO_PIN, NO_PIN, NO_PIN, NO_PIN  \
 }
-/* SAME AS LEFT HAND
+/* same as left hand
 #define MATRIX_COL_PINS_RIGHT { \
     A8,     B15,    B14,    B13,    \
     NO_PIN, NO_PIN, NO_PIN, NO_PIN, \
@@ -74,7 +72,7 @@ ADC2_IN1 = D */
     A4      \
 }
 #endif
-/* RIGHT - commented out because it is unused
+/* RIGHT - not used
 #ifdef MATRIX_DIRECT_RIGHT
 # define DIRECT_PINS_RIGHT { \
     NO_PIN, \

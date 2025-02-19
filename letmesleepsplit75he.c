@@ -476,38 +476,29 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 void bootmagic_scan(void) {
 
     uint16_t bootmagic_key_value = 0;
-    uint8_t current_direct_pin = 0;
 
 # if (defined(BOOTMAGIC_ROW) && defined(BOOTMAGIC_COLUMN))
     if (is_keyboard_left()){
-#    ifdef MATRIX_DIRECT
-        if (BOOTMAGIC_ROW == MATRIX_DIRECT_ROW && BOOTMAGIC_COLUMN < MATRIX_DIRECT){
-            current_direct_pin = BOOTMAGIC_COLUMN;
-        }
-#    endif
         select_multiplexer_channel(BOOTMAGIC_COLUMN);
-        adcStartAllConversions(&adcManager, current_direct_pin);
-        bootmagic_key_value = getADCSample(&adcManager, BOOTMAGIC_ROW, current_direct_pin);
+        adcStartAllConversions(&adcManager, BOOTMAGIC_COLUMN);
+        adcWaitForConversions(&adcManager);
+        bootmagic_key_value = getADCSample(&adcManager, BOOTMAGIC_ROW);
     }
 # endif
 # if (defined(BOOTMAGIC_ROW_RIGHT) && defined(BOOTMAGIC_COLUMN_RIGHT))
     if (!is_keyboard_left()){
-#    ifdef MATRIX_DIRECT_RIGHT
-        if (BOOTMAGIC_ROW_RIGHT == MATRIX_DIRECT_ROW_RIGHT && BOOTMAGIC_COLUMN_RIGHT < MATRIX_DIRECT_RIGHT){
-            current_direct_pin = BOOTMAGIC_COLUMN_RIGHT;
-        }
-#    endif
         select_multiplexer_channel(BOOTMAGIC_COLUMN_RIGHT);
-        adcStartAllConversions(&adcManager, current_direct_pin);
-        bootmagic_key_value = getADCSample(&adcManager, BOOTMAGIC_ROW_RIGHT, current_direct_pin);
+        adcStartAllConversions(&adcManager, BOOTMAGIC_COLUMN_RIGHT);
+        adcWaitForConversions(&adcManager);
+        bootmagic_key_value = getADCSample(&adcManager, BOOTMAGIC_ROW_RIGHT);
     }
 #endif
 
-    if (bootmagic_key_value < 2048){
-        bootmagic_key_value = 2047 - bootmagic_key_value ;
+    if (bootmagic_key_value <= ANALOG_RAW_MAX_VALUE){
+        bootmagic_key_value = ANALOG_RAW_MAX_VALUE - bootmagic_key_value ;
     }
     else { // bootmagic_key_value > 2047
-        bootmagic_key_value = bootmagic_key_value - 2048;
+        bootmagic_key_value = bootmagic_key_value - ANALOG_RAW_MAX_VALUE - 1;
     }
 
     // greater than the max rest value
