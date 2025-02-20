@@ -17,6 +17,9 @@
 // max number of multiplexers per ADC
 /* any changes to this definition also requires modifying custom_analog.c */
 #define MAX_MUXES_PER_ADC 1
+// number of ADCs used on each side
+#define N_ADCS_SCANNED       3
+#define N_ADCS_SCANNED_RIGHT 3
 
 
 
@@ -159,10 +162,10 @@ ADC2_IN1 = D */
 #define ADC_RESOLUTION_MAX  1 << 12
 // Max value of raw
 #define ANALOG_RAW_MAX_VALUE 2047
-// Max value of rest - value at around 2mm into keypress
-#define ANALOG_MULTIPLIER_LUT_SIZE 512
 // Max value of calibrated
 #define ANALOG_CAL_MAX_VALUE 1023
+// Max value of rest - value at around 2mm into keypress
+#define ANALOG_MULTIPLIER_LUT_SIZE 512
 
 
 

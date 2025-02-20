@@ -18,15 +18,8 @@ static void adcCompleteCallback(ADCDriver *adcp) {
     adcManager.completedConversions++;
 
     if (
-        is_keyboard_left() && 
-        adcManager.completedConversions == 3 // change to number of ADCs on left
-    )
-    {
-        chSemSignalI(&adcManager.sem);
-    }
-    else if (
-        !is_keyboard_left() && 
-        adcManager.completedConversions == 3 // change to number of ADCs on right
+        ( is_keyboard_left() && adcManager.completedConversions == N_ADCS_SCANNED) || 
+        (!is_keyboard_left() && adcManager.completedConversions == N_ADCS_SCANNED_RIGHT)
     )
     {
         chSemSignalI(&adcManager.sem);
@@ -99,8 +92,9 @@ msg_t adcStartAllConversions(ADCManager *adcManager, uint8_t current_col){
             case 3: // D
                 adcStartConversionI(&ADCD2, &adcConversionGroup1, adcManager->sampleBuffer2, 1);
                 break;
-            default: // scan W because wwwwwwwwwwwwwwwwwwwwwwwww
-                adcStartConversionI(&ADCD2, &adcConversionGroup3, adcManager->sampleBuffer2, 1);
+            default: // increment completedConversions without doing an ADC conversion
+                adcManager->sampleBuffer2[0] = ANALOG_RAW_MAX_VALUE;
+                adcManager->completedConversions++;
                 break;
         }
     }
@@ -111,7 +105,6 @@ msg_t adcStartAllConversions(ADCManager *adcManager, uint8_t current_col){
     }
     
     osalSysUnlock();
-
     return MSG_OK;
 }
 
