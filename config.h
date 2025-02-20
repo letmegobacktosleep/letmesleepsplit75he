@@ -11,7 +11,7 @@
 // number of ADC channels (whichever has more * 2)
 /* any changes to this definition also requires modifying custom_analog.c */
 #define MATRIX_ROWS 8
-// number of direct pins (cannot be greater than 16) // MATRIX_DIRECT_RIGHT
+// number of direct pins (can span multiple ADCs) // MATRIX_DIRECT_RIGHT
 /* any changes to this definition also requires modifying custom_analog.c */
 #define MATRIX_DIRECT 4
 // max number of multiplexers per ADC

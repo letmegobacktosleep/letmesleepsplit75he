@@ -32,6 +32,13 @@ void initADCGroups(void) {
     adcManager.completedConversions = 0;
     chSemObjectInit(&adcManager.sem, 0);
 
+    // Set input mode of pins to analog
+    for (uint8_t i = 0; i < ROWS_PER_HAND; i++) {
+        if (row_pins[i] != NO_PIN){ // row pins are set in matrix_init
+            palSetLineMode(row_pins[i], PAL_MODE_INPUT_ANALOG);
+        }
+    }
+
 #ifdef DIRECT_PINS
     const pin_t direct_pins[MATRIX_DIRECT] = DIRECT_PINS;
     if (is_keyboard_left()){
@@ -48,13 +55,6 @@ void initADCGroups(void) {
         }
     }
 #endif
-
-    // Set input mode of pins to analog
-    for (uint8_t i = 0; i < ROWS_PER_HAND; i++) {
-        if (row_pins[i] != NO_PIN){ // row pins are set in matrix_init
-            palSetLineMode(row_pins[i], PAL_MODE_INPUT_ANALOG);
-        }
-    }
     
     // Start ADCs
     if (is_keyboard_left()){ // Left side uses 1,2,4

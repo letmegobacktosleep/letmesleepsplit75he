@@ -73,28 +73,27 @@ void set_default_analog_key(void){
 }
 
 void set_default_calibration_parameters(void){
-    // https://www.desmos.com/calculator/z87qmchhxo
-    calibration_parameters.displacement.lut_a = -327.139936442;
-    calibration_parameters.displacement.lut_b = -0.0121889345488;
-    calibration_parameters.displacement.lut_c =  1.23019502339;
-    calibration_parameters.displacement.lut_d =  1120.22596313;
+    
+    calibration_parameters.displacement.lut_a =  4.2203566951856235;
+    calibration_parameters.displacement.lut_b =  0.012188934550872534;
+    calibration_parameters.displacement.lut_c =  3.1428764382410472;
+    calibration_parameters.displacement.lut_d = -97.22596301964597;
     calibration_parameters.displacement.max_input  = ANALOG_CAL_MAX_VALUE;
-    calibration_parameters.displacement.max_output = 200;
+    calibration_parameters.displacement.max_output = 200; // travel distance in mm * 50
 
-    calibration_parameters.joystick.lut_a = -209.66200686;
-    calibration_parameters.joystick.lut_b = -0.0191951725178;
-    calibration_parameters.joystick.lut_c =  1.67508629998;
-    calibration_parameters.joystick.lut_d =  1120.22596313;
+    calibration_parameters.joystick.lut_a =  8.332998834719378;
+    calibration_parameters.joystick.lut_b =  0.019195172497926963;
+    calibration_parameters.joystick.lut_c =  2.4625727130493122;
+    calibration_parameters.joystick.lut_d = -97.2259635251049;
     calibration_parameters.joystick.max_input  = ANALOG_CAL_MAX_VALUE;
     calibration_parameters.joystick.max_output = 127;
     
-    // https://www.desmos.com/calculator/kdmc2y3smp
-    calibration_parameters.multiplier.lut_a = -395.505389405;
-    calibration_parameters.multiplier.lut_b = -0.000677232223312;
-    calibration_parameters.multiplier.lut_c =  0.704447313739;
-    calibration_parameters.multiplier.lut_d =  1600;
-    calibration_parameters.multiplier.max_input  = ANALOG_RAW_MAX_VALUE; // lut_multiplier is a lookup table of uint16_t (2048 long)
-    calibration_parameters.multiplier.max_output = ANALOG_RAW_MAX_VALUE; // is the predicted absolute difference between rest and down
+    calibration_parameters.multiplier.lut_a =  0;
+    calibration_parameters.multiplier.lut_b =  0;
+    calibration_parameters.multiplier.lut_c =  0;
+    calibration_parameters.multiplier.lut_d =  861;
+    calibration_parameters.multiplier.max_input  = ANALOG_MULTIPLIER_LUT_SIZE; // lut_multiplier is a lookup table of uint16_t (2048 long)
+    calibration_parameters.multiplier.max_output = ANALOG_RAW_MAX_VALUE;       // is the predicted absolute difference between rest and down
     
     return;
 }
