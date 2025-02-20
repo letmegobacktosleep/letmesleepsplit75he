@@ -35,7 +35,6 @@ static uint8_t row_offset = 0;
 static const matrix_row_t custom_matrix_mask[MATRIX_ROWS] = CUSTOM_MATRIX_MASK;
 
 // External definitions
-extern ADCManager adcManager;
 extern uint8_t virtual_axes_toggle;
 
 // Initialize everything to zero
