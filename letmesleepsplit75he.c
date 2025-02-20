@@ -480,17 +480,17 @@ void bootmagic_scan(void) {
 # if (defined(BOOTMAGIC_ROW) && defined(BOOTMAGIC_COLUMN))
     if (is_keyboard_left()){
         select_multiplexer_channel(BOOTMAGIC_COLUMN);
-        adcStartAllConversions(&adcManager, BOOTMAGIC_COLUMN);
-        adcWaitForConversions(&adcManager);
-        bootmagic_key_value = getADCSample(&adcManager, BOOTMAGIC_ROW);
+        adcStartAllConversions(BOOTMAGIC_COLUMN);
+        adcWaitForConversions();
+        bootmagic_key_value = getADCSample(BOOTMAGIC_ROW);
     }
 # endif
 # if (defined(BOOTMAGIC_ROW_RIGHT) && defined(BOOTMAGIC_COLUMN_RIGHT))
     if (!is_keyboard_left()){
         select_multiplexer_channel(BOOTMAGIC_COLUMN_RIGHT);
-        adcStartAllConversions(&adcManager, BOOTMAGIC_COLUMN_RIGHT);
-        adcWaitForConversions(&adcManager);
-        bootmagic_key_value = getADCSample(&adcManager, BOOTMAGIC_ROW_RIGHT);
+        adcStartAllConversions(BOOTMAGIC_COLUMN_RIGHT);
+        adcWaitForConversions();
+        bootmagic_key_value = getADCSample(BOOTMAGIC_ROW_RIGHT);
     }
 #endif
 

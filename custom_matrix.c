@@ -127,7 +127,7 @@ void matrix_init_custom(void){
     // Initialize multiplexer GPIO pins
     multiplexer_init();
     // Initialize ADC pins
-    initADCGroups(&adcManager);
+    initADCGroups();
     // Wait some time for ADCs to start
     wait_ms(100);
     return;
@@ -163,18 +163,18 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
     // switch multiplexer to first column
     select_multiplexer_channel(current_col);
     // start first adc scan
-    adcStartAllConversions(&adcManager, current_col);
+    adcStartAllConversions(current_col);
 
     // loop through columns
     for (uint8_t current_col = 0; current_col < MATRIX_COLS; current_col++){
 
         // wait for adc to finish
-        adcWaitForConversions(&adcManager);
+        adcWaitForConversions();
 
         // fetch adc values
         static uint16_t raw_values[ROWS_PER_HAND];
         for (uint8_t current_row = 0; current_row < ROWS_PER_HAND; current_row++){
-            raw_values[current_row] = getADCSample(&adcManager, current_row + row_offset, current_col);
+            raw_values[current_row] = getADCSample(current_row + row_offset);
         }
 
         // start next adc read
@@ -182,7 +182,7 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
             // switch multiplexer to next column
             select_multiplexer_channel(current_col + 1);
             // start next adc scan
-            adcStartAllConversions(&adcManager, current_col + 1);
+            adcStartAllConversions(current_col + 1);
         }
 
         // iterate through rows

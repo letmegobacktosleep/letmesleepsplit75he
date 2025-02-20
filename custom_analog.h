@@ -19,8 +19,8 @@ typedef struct {
 extern ADCManager adcManager;
 
 // Function Prototypes
-void initADCGroups(ADCManager *adcManager);
+void initADCGroups(void);
 void adcErrorCallback(ADCDriver *adcp, adcerror_t err);
-msg_t adcStartAllConversions(ADCManager *adcManager, uint8_t current_col);
-msg_t adcWaitForConversions(ADCManager *adcManager);
-adcsample_t getADCSample(const ADCManager *adcManager, uint8_t current_row);
+msg_t adcStartAllConversions(uint8_t current_col);
+msg_t adcWaitForConversions(void);
+adcsample_t getADCSample(uint8_t current_row);

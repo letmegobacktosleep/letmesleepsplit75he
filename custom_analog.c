@@ -28,9 +28,9 @@ static void adcCompleteCallback(ADCDriver *adcp) {
     osalSysUnlockFromISR();
 }
 
-void initADCGroups(ADCManager *adcManager) {
-    adcManager->completedConversions = 0;
-    chSemObjectInit(&adcManager->sem, 0);
+void initADCGroups(void) {
+    adcManager.completedConversions = 0;
+    chSemObjectInit(&adcManager.sem, 0);
 
 #ifdef DIRECT_PINS
     const pin_t direct_pins[MATRIX_DIRECT] = DIRECT_PINS;
@@ -71,70 +71,70 @@ void initADCGroups(ADCManager *adcManager) {
 
 msg_t adcStartAllConversions(ADCManager *adcManager, uint8_t current_col){
     osalSysLock();
-    adcManager->completedConversions = 0;
+    adcManager.completedConversions = 0;
 
     // Start conversion groups
     if (is_keyboard_left()){
         // Scan multiplexers
-        adcStartConversionI(&ADCD1, &adcConversionGroup1, adcManager->sampleBuffer0, 1);
-        adcStartConversionI(&ADCD4, &adcConversionGroup4, adcManager->sampleBuffer1, 1);
+        adcStartConversionI(&ADCD1, &adcConversionGroup1, adcManager.sampleBuffer0, 1);
+        adcStartConversionI(&ADCD4, &adcConversionGroup4, adcManager.sampleBuffer1, 1);
         // Scan direct pins - only scan one channel, regardless of how many channels are scanned on other ADCs
         switch (current_col){
             case 0: // W
-                adcStartConversionI(&ADCD2, &adcConversionGroup3, adcManager->sampleBuffer2, 1);
+                adcStartConversionI(&ADCD2, &adcConversionGroup3, adcManager.sampleBuffer2, 1);
                 break;
             case 1: // A
-                adcStartConversionI(&ADCD2, &adcConversionGroup4, adcManager->sampleBuffer2, 1);
+                adcStartConversionI(&ADCD2, &adcConversionGroup4, adcManager.sampleBuffer2, 1);
                 break;
             case 2: // S
-                adcStartConversionI(&ADCD2, &adcConversionGroup2, adcManager->sampleBuffer2, 1);
+                adcStartConversionI(&ADCD2, &adcConversionGroup2, adcManager.sampleBuffer2, 1);
                 break;
             case 3: // D
-                adcStartConversionI(&ADCD2, &adcConversionGroup1, adcManager->sampleBuffer2, 1);
+                adcStartConversionI(&ADCD2, &adcConversionGroup1, adcManager.sampleBuffer2, 1);
                 break;
             default: // increment completedConversions without doing an ADC conversion
-                adcManager->sampleBuffer2[0] = ANALOG_RAW_MAX_VALUE;
-                adcManager->completedConversions++;
+                adcManager.sampleBuffer2[0] = ANALOG_RAW_MAX_VALUE;
+                adcManager.completedConversions++;
                 break;
         }
     }
     else {
-        adcStartConversionI(&ADCD1, &adcConversionGroup4, adcManager->sampleBuffer3, 1);
-        adcStartConversionI(&ADCD3, &adcConversionGroup1, adcManager->sampleBuffer4, 1);
-        adcStartConversionI(&ADCD4, &adcConversionGroup3, adcManager->sampleBuffer5, 1);
+        adcStartConversionI(&ADCD1, &adcConversionGroup4, adcManager.sampleBuffer3, 1);
+        adcStartConversionI(&ADCD3, &adcConversionGroup1, adcManager.sampleBuffer4, 1);
+        adcStartConversionI(&ADCD4, &adcConversionGroup3, adcManager.sampleBuffer5, 1);
     }
     
     osalSysUnlock();
     return MSG_OK;
 }
 
-msg_t adcWaitForConversions(ADCManager *adcManager){
+msg_t adcWaitForConversions(void){
     
-    chSemWaitTimeout(&adcManager->sem, TIME_INFINITE);
+    chSemWait(&adcManager.sem);
 
     return MSG_OK;
 }
 
-adcsample_t getADCSample(const ADCManager *adcManager, uint8_t current_row) {
+adcsample_t getADCSample(uint8_t current_row) {
     switch (current_row) {
 
         // Left
         case 0:
-            return adcManager->sampleBuffer0[0];
+            return adcManager.sampleBuffer0[0];
         case 1:
-            return adcManager->sampleBuffer1[0];
+            return adcManager.sampleBuffer1[0];
         case 2:
-            return adcManager->sampleBuffer2[0];
+            return adcManager.sampleBuffer2[0];
         case 3:
             return ANALOG_RAW_MAX_VALUE; // This row is used for DKS
 
         // Right
         case 4:
-            return adcManager->sampleBuffer3[0];
+            return adcManager.sampleBuffer3[0];
         case 5:
-            return adcManager->sampleBuffer4[0];
+            return adcManager.sampleBuffer4[0];
         case 6:
-            return adcManager->sampleBuffer5[0];
+            return adcManager.sampleBuffer5[0];
         case 7:
             return ANALOG_RAW_MAX_VALUE; // This row is used for DKS
 
