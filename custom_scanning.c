@@ -76,7 +76,6 @@ bool actuation(analog_config_t *config, analog_key_t *key, matrix_row_t *current
 
         case 3: // rapid trigger, moving up, pressed
             if (current < config->upper){ // top deadzone
-                key->old = current;
                 key->mode = 2;
                 DEREGISTER_KEY(current_row, current_col);
                 return 0;
@@ -145,7 +144,9 @@ bool actuation(analog_config_t *config, analog_key_t *key, matrix_row_t *current
         case 8: // inv rapid trigger, moving down, not pressed
             if (
                 (current < config->upper) || // top deadzone
-                (current > key->old)){ // update lowest position
+                (current > key->old) // update lowest position
+            )
+            {
                 key->old = current;
             }
             else if (current < key->old - config->up){ // rapid un-untrigger

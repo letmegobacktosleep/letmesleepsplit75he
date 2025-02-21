@@ -51,12 +51,15 @@
                 "label": "Mode",
                 "type": "dropdown",
                 "options": [
-                  ["Fixed", 0],
-                  ["Rapid Trigger", 2]
+                  ["Normal",        0],
+                  ["Rapid Trigger", 2],
+                  ["Inverted",      5],
+                  ["Inverted RT",   8]
                 ],
                 "content": ["id_mode", 0, 1]
               },
               {
+                "showIf": "{id_mode} == 0 || {id_mode} == 2 || {id_mode} == 5",
                 "label": "Actuation Point",
                 "type": "range",
                 "options": [5, 200],
@@ -69,14 +72,14 @@
                 "content": ["id_deadzone", 0, 2]
               },
               {
-                "showIf": "{id_mode} == 2",
+                "showIf": "{id_mode} == 2 || {id_mode} == 5 || {id_mode} == 8",
                 "label": "Up Sensitivity",
                 "type": "range",
                 "options": [5, 200],
                 "content": ["id_down", 0, 2]
               },
               {
-                "showIf": "{id_mode} == 2",
+                "showIf": "{id_mode} == 2 || {id_mode} == 8",
                 "label": "Down Sensitivity",
                 "type": "range",
                 "options": [5, 200],
