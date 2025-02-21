@@ -451,38 +451,38 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     if (BIT_GET(virtual_axes_toggle, va_joystick)){
         // Left joystick
         rgb_matrix_set_color(15, brightness, brightness, brightness);
-        rgb_matrix_set_color(20, brightness, brightness, brightness);
         rgb_matrix_set_color(21, brightness, brightness, brightness);
         rgb_matrix_set_color(22, brightness, brightness, brightness);
+        rgb_matrix_set_color(23, brightness, brightness, brightness);
         // Right joystick
         rgb_matrix_set_color(56, brightness, brightness, brightness);
+        rgb_matrix_set_color(63, brightness, brightness, brightness);
         rgb_matrix_set_color(64, brightness, brightness, brightness);
         rgb_matrix_set_color(65, brightness, brightness, brightness);
-        rgb_matrix_set_color(66, brightness, brightness, brightness);
     }
 # endif
 # ifdef MOUSE_COORDINATES
     // Highlight left mouse buttons
     if (BIT_GET(virtual_axes_toggle, va_mouse)){
         rgb_matrix_set_color(15, brightness, brightness, brightness);
-        rgb_matrix_set_color(20, brightness, brightness, brightness);
+        rgb_matrix_set_color(21, brightness, brightness, brightness);
         rgb_matrix_set_color(22, brightness, brightness, brightness);
         rgb_matrix_set_color(23, brightness, brightness, brightness);
         // Left scroll
         rgb_matrix_set_color(14, brightness, brightness, brightness);
         rgb_matrix_set_color(16, brightness, brightness, brightness);
         rgb_matrix_set_color(17, brightness, brightness, brightness);
-        rgb_matrix_set_color(21, brightness, brightness, brightness);
+        rgb_matrix_set_color(20, brightness, brightness, brightness);
     }
 # endif
 # ifdef MOUSE_COORDINATES_RIGHT
     // Highlight right mouse buttons
     if (BIT_GET(virtual_axes_toggle, va_mouse_right)){
         // Right mouse
-        rgb_matrix_set_color(74, brightness, brightness, brightness);
-        rgb_matrix_set_color(76, brightness, brightness, brightness);
+        rgb_matrix_set_color(75, brightness, brightness, brightness);
         rgb_matrix_set_color(77, brightness, brightness, brightness);
         rgb_matrix_set_color(78, brightness, brightness, brightness);
+        rgb_matrix_set_color(79, brightness, brightness, brightness);
         // Right scroll
         rgb_matrix_set_color(61, brightness, brightness, brightness);
         rgb_matrix_set_color(76, brightness, brightness, brightness);
