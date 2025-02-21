@@ -1,9 +1,9 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 #pragma once
 
-// comment out the next line to disable all joystick/mouse related code
+// enable processing of mouse and joystick
 #define ANALOG_KEY_VIRTUAL_AXES
-// comment out next line to disable processing of DKS
+// enable processing of DKS
 #define DKS_ENABLE
 
 // number of multiplexer channels (must be 8 or 16 or 32)
@@ -112,42 +112,37 @@ ADC2_IN1 = D */
 # define JOYSTICK_AXIS_COUNT 4
 # define JOYSTICK_AXIS_RESOLUTION 8
 // rows and cols which make up the virtual axes
-// order: left right up down
-# define JOYSTICK_COORDINATES_LEFT { \
-    {2, 1},  \
-    {2, 3},  \
-    {2, 0},  \
-    {2, 2}   \
+// order: left right up down, left right up down
+# define JOYSTICK_COORDINATES { \
+    {2, 1},     \
+    {2, 3},     \
+    {2, 0},     \
+    {2, 2},     \
+    {4, 9},     \
+    {4, 15},    \
+    {4, 7},     \
+    {4, 8}      \
 }
-# define JOYSTICK_COORDINATES_RIGHT { \
-    {4, 9},  \
-    {4, 15}, \
-    {4, 7},  \
-    {4, 8}   \
-}
-# define MOUSE_COORDINATES_LEFT { \
-    {2, 1},  \
-    {2, 3},  \
-    {2, 0},  \
-    {2, 2}   \
+# define MOUSE_COORDINATES { \
+    {2, 1},     \
+    {2, 3},     \
+    {2, 0},     \
+    {2, 2},     \
+    {0, 0},     \
+    {1, 9},     \
+    {1, 10},    \
+    {1, 8}      \
 }
 # define MOUSE_COORDINATES_RIGHT { \
-    {5, 10}, \
-    {5, 13}, \
-    {5, 11}, \
-    {5, 12}  \
-}
-# define SCROLL_COORDINATES_LEFT { \
-    {1, 10}, \
-    {1, 8},  \
-    {0, 0},  \
-    {1, 9}   \
-}
-# define SCROLL_COORDINATES_RIGHT { \
-    {6, 15}, \
-    {6, 14}, \
-    {7, 0},  \
-    {7, 0}   \
+    {5, 10},    \
+    {5, 13},    \
+    {5, 11},    \
+    {5, 12},    \
+    {255, 255}, \
+    {255, 255}, \
+    {6, 15},    \
+    {6, 14}     \
+
 }
 #endif
 

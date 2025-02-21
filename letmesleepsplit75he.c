@@ -21,32 +21,24 @@ extern analog_config_t analog_config[MATRIX_ROWS][MATRIX_COLS];
 extern calibration_parameters_t calibration_parameters;
 // External joystick definitions
 #ifdef ANALOG_KEY_VIRTUAL_AXES
-extern uint8_t virtual_axes_from_self[4][4];
-extern uint8_t virtual_axes_from_slave[4][4];
-# ifdef JOYSTICK_COORDINATES_LEFT
-extern const uint8_t joystick_coordinates_left[4][2];
+extern uint8_t virtual_axes_from_self[2][8];
+extern uint8_t virtual_axes_from_slave[2][8];
+# ifdef JOYSTICK_COORDINATES
+extern const uint8_t joystick_coordinates[2][8];
 # endif
-# ifdef JOYSTICK_COORDINATES_RIGHT
-extern const uint8_t joystick_coordinates_right[4][2];
-# endif
-# ifdef MOUSE_COORDINATES_LEFT
-extern const uint8_t mouse_coordinates_left[4][2];
+# ifdef MOUSE_COORDINATES
+extern const uint8_t mouse_coordinates[2][8];
 # endif
 # ifdef MOUSE_COORDINATES_RIGHT
-extern const uint8_t mouse_coordinates_right[4][2];
-# endif
-# ifdef SCROLL_COORDINATES_LEFT
-extern const uint8_t scroll_coordinates_left[4][2];
-# endif
-# ifdef SCROLL_COORDINATES_RIGHT
-extern const uint8_t scroll_coordinates_right[4][2];
+extern const uint8_t mouse_coordinates_right[2][8];
 # endif
 #endif
 
+// bit 0 = should disable virtual axes keys
 // bit 1 = joystick toggle
 // bit 2 = left mouse toggle
 // bit 3 = right mouse toggle
-uint8_t virtual_axes_toggle = 0;
+uint8_t virtual_axes_toggle = 0b00000001;
 
 #ifdef RGB_MATRIX_ENABLE
 static const pin_t rgb_enable_pin = CUSTOM_RGB_ENABLE_PIN;
@@ -114,8 +106,8 @@ void user_write_new_config(uint8_t row, uint8_t col){
 
 void handle_virtual_mouse_layer(uint8_t virtual_axes_toggle){
     if (
-        BIT_GET(virtual_axes_toggle, 1) || 
-        BIT_GET(virtual_axes_toggle, 2)
+        BIT_GET(virtual_axes_toggle, va_mouse) || 
+        BIT_GET(virtual_axes_toggle, va_mouse_right)
     )
     {
         layer_on(MOUSE_LAYER); // turn on mouse layer
@@ -124,6 +116,23 @@ void handle_virtual_mouse_layer(uint8_t virtual_axes_toggle){
         layer_off(MOUSE_LAYER); // turn off mouse layer
     }
     return;
+}
+
+void handle_virtual_axes_keys(uint8_t coordinates[8][2], bool should_ignore){
+    if (BIT_GET(virtual_axes_toggle, va_ignore_keypresses)){
+        for (uint8_t i = 0; i < 8, i++){
+            row = coordinates[i][0];
+            col = coordinates[i][1];
+            if (row != 255 && col != 255){
+                if (should_ignore){
+                    analog_key[row][col] = 255;
+                }
+                else {
+                    analog_key[row][col] = analog_config[row][col];
+                }
+            }
+        }
+    }
 }
 
 #if (JOYSTICK_AXIS_COUNT == 4)
@@ -176,64 +185,78 @@ void housekeeping_task_kb(void) {
 #    ifdef SPLIT_KEYBOARD
         if (is_keyboard_master()) {
             if (
-                BIT_GET(virtual_axes_toggle, 0) || // joystick
-                BIT_GET(virtual_axes_toggle, 1) || // left mouse
-                BIT_GET(virtual_axes_toggle, 2)    // right mouse
+                BIT_GET(virtual_axes_toggle, va_joystick) || // joystick
+                BIT_GET(virtual_axes_toggle, va_mouse)    || // left mouse
+                BIT_GET(virtual_axes_toggle, va_mouse_right) // right mouse
             )
             {
                 // send the virtual axes toggle to the slave, receive its virtual axes
-                if (transaction_rpc_exec(KEYBOARD_SYNC_A, sizeof(virtual_axes_toggle), &virtual_axes_toggle, sizeof(virtual_axes_from_slave), &virtual_axes_from_slave)) {
+                if (
+                    transaction_rpc_exec(
+                        KEYBOARD_SYNC_A, 
+                        sizeof(virtual_axes_toggle),     &virtual_axes_toggle, 
+                        sizeof(virtual_axes_from_slave), &virtual_axes_from_slave
+                    )
+                )
+                {
                     last_sync = timer_read32();
                 }
             }
         }
 #    endif
-        static int8_t virtual_axes_combined[6][2];
-        for (uint8_t i = 0; i < 4; i++){
-            virtual_axes_combined[i][0] = MAX(-127, MIN(127, virtual_axes_from_self[i][1] + virtual_axes_from_slave[i][1] - virtual_axes_from_self[i][0] - virtual_axes_from_slave[i][0]));
-            virtual_axes_combined[i][1] = MAX(-127, MIN(127, virtual_axes_from_self[i][3] + virtual_axes_from_slave[i][3] - virtual_axes_from_self[i][2] - virtual_axes_from_slave[i][2]));
+        static int8_t virtual_axes_combined[2][4];
+        for (uint8_t i = 0; i < 2; i++){
+            for (uint8_t j = 0; j < 8; j += 2){
+                virtual_axes_combined[i][j/2] = MAX(-127, MIN(127, 
+                    virtual_axes_from_self [i][j+1] + 
+                    virtual_axes_from_slave[i][j+1] - 
+                    virtual_axes_from_self [i][j] - 
+                    virtual_axes_from_slave[i][j]
+                ));
+            }
         }
         
-#    if (defined(JOYSTICK_COORDINATES_LEFT) || defined(JOYSTICK_COORDINATES_RIGHT))
+#    if defined(JOYSTICK_COORDINATES)
         // Only run joystick if toggled on
         // https://docs.qmk.fm/features/joystick#virtual-axes
         if (
-            BIT_GET(virtual_axes_toggle, 0)
+            BIT_GET(virtual_axes_toggle, va_joystick)
         )
         {
-#        ifdef JOYSTICK_COORDINATES_LEFT
             // Left joystick
             joystick_set_axis(0, virtual_axes_combined[0][0]);
             joystick_set_axis(1, virtual_axes_combined[0][1]);
-#        endif
-#        ifdef JOYSTICK_COORDINATES_RIGHT
+
             // Right joystick
-            joystick_set_axis(2, virtual_axes_combined[1][0]);
-            joystick_set_axis(3, virtual_axes_combined[1][1]);
-#        endif
+            joystick_set_axis(2, virtual_axes_combined[0][2]);
+            joystick_set_axis(3, virtual_axes_combined[0][3]);
+
             // Send joystick report
             joystick_flush();
         }
 #    endif
-#    if (defined(MOUSE_COORDINATES_LEFT) || defined(MOUSE_COORDINATES_RIGHT) || defined(SCROLL_COORDINATES_LEFT) || defined(SCROLL_COORDINATES_RIGHT))
-        // How much time until next scroll report
-        static uint8_t next_scroll[2] = { 0 };        
+#    if (defined(MOUSE_COORDINATES) || defined(MOUSE_COORDINATES_RIGHT))      
         // Only run mouse if toggled on
+        // https://docs.qmk.fm/features/pointing_device#manipulating-mouse-reports
         if (
-            BIT_GET(virtual_axes_toggle, 1) ||
-            BIT_GET(virtual_axes_toggle, 2)
+            BIT_GET(virtual_axes_toggle, va_mouse) ||
+            BIT_GET(virtual_axes_toggle, va_mouse_right)
         )
         {
             // Get current report
             report_mouse_t currentReport = pointing_device_get_report();
-#        if (defined(MOUSE_COORDINATES_LEFT) || defined(MOUSE_COORDINATES_LEFT))
+
             // Set mouse movement
-            currentReport.x = virtual_axes_combined[2][0];
-            currentReport.y = virtual_axes_combined[2][1];
-#        endif
-#        if (defined(SCROLL_COORDINATES_LEFT) || defined(SCROLL_COORDINATES_RIGHT))
-            int8_t mouse_v = virtual_axes_combined[3][0];
-            int8_t mouse_h = virtual_axes_combined[3][1]; 
+            currentReport.x = virtual_axes_combined[1][0];
+            currentReport.y = virtual_axes_combined[1][1];
+
+            // How much time until next scroll report
+            static uint8_t next_scroll[2] = { 0 };  
+
+            // Get scroll speed
+            int8_t mouse_v = virtual_axes_combined[1][2];
+            int8_t mouse_h = virtual_axes_combined[1][3]; 
+
             // Vertical scroll
             if (next_scroll[0] == 0){
                 if (mouse_v > MOUSE_DEADZONE){
@@ -248,6 +271,7 @@ void housekeeping_task_kb(void) {
             else {
                 next_scroll[0]--;
             }
+
             // Horizontal scroll
             if (next_scroll[1] == 0){
                 if (mouse_h > MOUSE_DEADZONE){
@@ -262,9 +286,8 @@ void housekeeping_task_kb(void) {
             else {
                 next_scroll[1]--;
             }
-#        endif
+
             // Override current report & send
-            // https://docs.qmk.fm/features/pointing_device#manipulating-mouse-reports
             pointing_device_set_report(currentReport);
             pointing_device_send();
         }
@@ -286,109 +309,115 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
         // check for keycodes which toggle joystick or mouse
         case KC_JS_TG:
             if (record->event.pressed){ // only change state on key press
-                BIT_FLP(virtual_axes_toggle, 0);
+                BIT_FLP(virtual_axes_toggle, va_joystick);
             }
+            // set mode of joystick keys to 255
+            handle_virtual_axes_keys(
+                joystick_coordinates, 
+                (bool) BIT_GET(virtual_axes_toggle, va_joystick)
+            );
             return false;
 
         case KC_MS_TG:
             if (record->event.pressed){ // only change state on key press
-                BIT_FLP(virtual_axes_toggle, 1);
-                BIT_FLP(virtual_axes_toggle, 2);
+                BIT_FLP(virtual_axes_toggle, va_mouse);
+                BIT_FLP(virtual_axes_toggle, va_mouse_right);
             }
+            // switch mouse layer
             handle_virtual_mouse_layer(virtual_axes_toggle);
+            // set mode of mouse keys to 255
+            handle_virtual_axes_keys(
+                mouse_coordinates, 
+                (bool) BIT_GET(virtual_axes_toggle, va_mouse)
+            );
+            handle_virtual_axes_keys(
+                mouse_coordinates_right, 
+                (bool) BIT_GET(virtual_axes_toggle, va_mouse_right)
+            );
             return false;
             
         case KC_MS_MO:
             if (record->event.pressed){
-                BIT_SET(virtual_axes_toggle, 1);
-                BIT_SET(virtual_axes_toggle, 2);
+                BIT_SET(virtual_axes_toggle, va_mouse);
+                BIT_SET(virtual_axes_toggle, va_mouse_right);
             }
             else {
-                BIT_CLR(virtual_axes_toggle, 1);
-                BIT_CLR(virtual_axes_toggle, 2);
+                BIT_CLR(virtual_axes_toggle, va_mouse);
+                BIT_CLR(virtual_axes_toggle, va_mouse_right);
             }
+            // switch mouse layer
             handle_virtual_mouse_layer(virtual_axes_toggle);
+            // set mode of mouse keys to 255
+            handle_virtual_axes_keys(
+                mouse_coordinates, 
+                (bool) BIT_GET(virtual_axes_toggle, va_mouse)
+            );
+            handle_virtual_axes_keys(
+                mouse_coordinates_right, 
+                (bool) BIT_GET(virtual_axes_toggle, va_mouse_right)
+            );
             return false;
 
         case KC_MS_TG1:
             if (record->event.pressed){ // only change state on key press
-                BIT_FLP(virtual_axes_toggle, 1);
+                BIT_FLP(virtual_axes_toggle, va_mouse);
             }
+            // switch mouse layer
             handle_virtual_mouse_layer(virtual_axes_toggle);
+            // set mode of mouse keys to 255
+            handle_virtual_axes_keys(
+                mouse_coordinates, 
+                (bool) BIT_GET(virtual_axes_toggle, va_mouse)
+            );
             return false;
             
         case KC_MS_MO1:
             if (record->event.pressed){
-                BIT_SET(virtual_axes_toggle, 1);
+                BIT_SET(virtual_axes_toggle, va_mouse);
             }
             else {
-                BIT_CLR(virtual_axes_toggle, 1);
+                BIT_CLR(virtual_axes_toggle, va_mouse);
             }
+            // switch mouse layer
             handle_virtual_mouse_layer(virtual_axes_toggle);
+            // set mode of mouse keys to 255
+            handle_virtual_axes_keys(
+                mouse_coordinates, 
+                (bool) BIT_GET(virtual_axes_toggle, va_mouse)
+            );
             return false;
 
         case KC_MS_TG2:
             if (record->event.pressed){ // only change state on key press
-                BIT_FLP(virtual_axes_toggle, 2);
+                BIT_FLP(virtual_axes_toggle, va_mouse_right);
             }
+            // switch mouse layer
             handle_virtual_mouse_layer(virtual_axes_toggle);
+            // set mode of mouse keys to 255
+            handle_virtual_axes_keys(
+                mouse_coordinates_right, 
+                (bool) BIT_GET(virtual_axes_toggle, va_mouse_right)
+            );
             return false;
             
         case KC_MS_MO2:
             if (record->event.pressed){
-                BIT_SET(virtual_axes_toggle, 2);
+                BIT_SET(virtual_axes_toggle, va_mouse_right);
             }
             else {
-                BIT_CLR(virtual_axes_toggle, 2);
+                BIT_CLR(virtual_axes_toggle, va_mouse_right);
             }
+            // switch mouse layer
             handle_virtual_mouse_layer(virtual_axes_toggle);
+            // set mode of mouse keys to 255
+            handle_virtual_axes_keys(
+                mouse_coordinates_right, 
+                (bool) BIT_GET(virtual_axes_toggle, va_mouse_right)
+            );
             return false;
 #    endif
 
         default:
-
-#        ifdef ANALOG_KEY_VIRTUAL_AXES
-            // ignore keys with virtual axes
-            for (uint8_t k = 0; k < 4; k++){ // ignore keys if joystick or mouse is toggled
-                if (BIT_GET(virtual_axes_toggle, 0)){
-#                ifdef JOYSTICK_COORDINATES_LEFT     
-                    if (record->event.key.row == joystick_coordinates_left[k][0] && record->event.key.col == joystick_coordinates_left[k][1]){
-                        return false;
-                    }
-#                endif
-#                ifdef JOYSTICK_COORDINATES_RIGHT
-                    if (record->event.key.row == joystick_coordinates_right[k][0] && record->event.key.col == joystick_coordinates_right[k][1]){
-                        return false;
-                    }
-#                endif
-                }
-                if (BIT_GET(virtual_axes_toggle, 1)){
-#                ifdef MOUSE_COORDINATES_LEFT
-                    if (record->event.key.row == mouse_coordinates_left[k][0] && record->event.key.col == mouse_coordinates_left[k][1]){
-                        return false;
-                    }
-#                endif
-#                ifdef SCROLL_COORDINATES_LEFT
-                    if (record->event.key.row == scroll_coordinates_left[k][0] && record->event.key.col == scroll_coordinates_left[k][1]){
-                        return false;
-                    }
-#                endif
-                }
-                if (BIT_GET(virtual_axes_toggle, 2)){
-#                ifdef MOUSE_COORDINATES_RIGHT
-                    if (record->event.key.row == mouse_coordinates_right[k][0] && record->event.key.col == mouse_coordinates_right[k][1]){
-                        return false;
-                    }
-#                endif
-#                ifdef SCROLL_COORDINATES_RIGHT
-                    if (record->event.key.row == scroll_coordinates_right[k][0] && record->event.key.col == scroll_coordinates_right[k][1]){
-                        return false;
-                    }
-#                endif
-                }
-            }
-#        endif
-
             return true;
     }
 }
@@ -396,76 +425,73 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 #ifdef RGB_MATRIX_ENABLE
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     static bool value_was_zero = true;
-    static uint8_t base_brightness = 64;
+    static uint8_t brightness = 64;
+    static uint8_t caps_brightness = 192;
 
     // Get current value
-    base_brightness = rgb_matrix_get_val();
+    brightness = rgb_matrix_get_val();
 
     // Light up Esc if CapsLock
     if (host_keyboard_led_state().caps_lock){
         // Always make brightness brighter than current brightness
-        uint8_t brightness = MIN(255, base_brightness + 128);
-        rgb_matrix_set_color(0, brightness, brightness, brightness);
+        caps_brightness = MIN(255, brightness + 128);
+        rgb_matrix_set_color(0, caps_brightness, caps_brightness, caps_brightness);
     }
 
-# ifdef ANALOG_KEY_VIRTUAL_AXES
+    // Cut power to all other LEDs if brightness is zero
+    if (!value_was_zero && brightness == 0){
+        palClearLine(rgb_enable_pin); // gpio_write_pin_low(rgb_enable_pin);
+        value_was_zero = true;
+    }
+    else if (value_was_zero && brightness != 0){
+        palSetLine(rgb_enable_pin); // gpio_write_pin_high(rgb_enable_pin);
+        value_was_zero = false;
+    }
+
+#ifdef ANALOG_KEY_VIRTUAL_AXES
+# ifdef JOYSTICK_COORDINATES
     // Highlight joystick buttons
-    if (BIT_GET(virtual_axes_toggle, 0)){
-        uint8_t brightness = MIN(255, base_brightness + 64);
-#    ifdef JOYSTICK_COORDINATES_LEFT
+    if (BIT_GET(virtual_axes_toggle, va_joystick)){
+        // Left joystick
         rgb_matrix_set_color(15, brightness, brightness, brightness);
         rgb_matrix_set_color(20, brightness, brightness, brightness);
         rgb_matrix_set_color(21, brightness, brightness, brightness);
         rgb_matrix_set_color(22, brightness, brightness, brightness);
-#    endif
-#    ifdef JOYSTICK_COORDINATES_RIGHT
+        // Right joystick
         rgb_matrix_set_color(56, brightness, brightness, brightness);
         rgb_matrix_set_color(64, brightness, brightness, brightness);
         rgb_matrix_set_color(65, brightness, brightness, brightness);
         rgb_matrix_set_color(66, brightness, brightness, brightness);
-#    endif
     }
+# endif
+# ifdef MOUSE_COORDINATES
     // Highlight left mouse buttons
-    if (BIT_GET(virtual_axes_toggle, 1)){
-        uint8_t brightness = MIN(255, base_brightness + 64);
-#    ifdef MOUSE_COORDINATES_LEFT
+    if (BIT_GET(virtual_axes_toggle, va_mouse)){
         rgb_matrix_set_color(15, brightness, brightness, brightness);
         rgb_matrix_set_color(20, brightness, brightness, brightness);
         rgb_matrix_set_color(22, brightness, brightness, brightness);
         rgb_matrix_set_color(23, brightness, brightness, brightness);
-#    endif
-#    ifdef SCROLL_COORDINATES_LEFT
+        // Left scroll
         rgb_matrix_set_color(14, brightness, brightness, brightness);
         rgb_matrix_set_color(16, brightness, brightness, brightness);
         rgb_matrix_set_color(17, brightness, brightness, brightness);
         rgb_matrix_set_color(21, brightness, brightness, brightness);
-#    endif
     }
+# endif
+# ifdef MOUSE_COORDINATES_RIGHT
     // Highlight right mouse buttons
-    if (BIT_GET(virtual_axes_toggle, 2)){
-        uint8_t brightness = MIN(255, base_brightness + 64);
-#    ifdef MOUSE_COORDINATES_RIGHT
+    if (BIT_GET(virtual_axes_toggle, va_mouse_right)){
+        // Right mouse
         rgb_matrix_set_color(74, brightness, brightness, brightness);
         rgb_matrix_set_color(76, brightness, brightness, brightness);
         rgb_matrix_set_color(77, brightness, brightness, brightness);
         rgb_matrix_set_color(78, brightness, brightness, brightness);
-#    endif
-#    ifdef SCROLL_COORDINATES_RIGHT
+        // Right scroll
         rgb_matrix_set_color(61, brightness, brightness, brightness);
         rgb_matrix_set_color(76, brightness, brightness, brightness);
-#    endif
     }
 # endif
-
-    // Cut power to most LEDs if brightness is zero
-    if (!value_was_zero && base_brightness == 0){
-        palClearLine(rgb_enable_pin); // gpio_write_pin_low(rgb_enable_pin);
-        value_was_zero = true;
-    }
-    else if (value_was_zero && base_brightness != 0){
-        palSetLine(rgb_enable_pin); // gpio_write_pin_high(rgb_enable_pin);
-        value_was_zero = false;
-    }
+#endif
 
     // Always return false
     return false;
