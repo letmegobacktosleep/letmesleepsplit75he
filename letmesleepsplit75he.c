@@ -38,7 +38,7 @@ extern const uint8_t mouse_coordinates_right[2][8];
 // bit 1 = joystick toggle
 // bit 2 = left mouse toggle
 // bit 3 = right mouse toggle
-uint8_t virtual_axes_toggle = 0b00000001;
+uint8_t virtual_axes_toggle = 0x00; // 0x01 if should disable virtual axes keys
 
 #ifdef RGB_MATRIX_ENABLE
 static const pin_t rgb_enable_pin = CUSTOM_RGB_ENABLE_PIN;
@@ -311,11 +311,8 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             if (record->event.pressed){ // only change state on key press
                 BIT_FLP(virtual_axes_toggle, va_joystick);
             }
-            // set mode of joystick keys to 255
-            handle_virtual_axes_keys(
-                joystick_coordinates, 
-                (bool) BIT_GET(virtual_axes_toggle, va_joystick)
-            );
+            // always set mode of joystick keys to 255
+            handle_virtual_axes_keys(joystick_coordinates, true);
             return false;
 
         case KC_MS_TG:
