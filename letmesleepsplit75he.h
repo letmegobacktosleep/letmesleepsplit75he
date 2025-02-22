@@ -21,13 +21,13 @@ enum virtual_axes_bits {
 
 // Custom keycodes
 enum custom_keycodes {
-    KC_JS_TG = QK_KB_0,
-    KC_MS_TG,
-    KC_MS_MO,
-    KC_MS_TG1,
-    KC_MS_MO1,
-    KC_MS_TG2,
-    KC_MS_MO2,
+    J_TG = QK_KB_0,
+    M_TG,
+    M_MO,
+    M_TG1,
+    M_MO1,
+    M_TG2,
+    M_MO2,
 };
 /* This goes in the vial.json
 "customKeycodes": [

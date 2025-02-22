@@ -407,41 +407,55 @@ void housekeeping_task_kb(void) {
             // Get current report
             report_mouse_t currentReport = pointing_device_get_report();
 
-            // Set mouse movement
-            currentReport.x = virtual_axes_combined[1][0];
-            currentReport.y = virtual_axes_combined[1][1];
+            // Get current mouse speed
+            int8_t mouse_x = virtual_axes_combined[1][0];
+            int8_t mouse_y = virtual_axes_combined[1][1];
+            int8_t mouse_h = virtual_axes_combined[1][2];
+            int8_t mouse_v = virtual_axes_combined[1][3];
+
+            // Horizontal mouse
+            if (mouse_x > MOUSE_DEADZONE){
+                currentReport.x = mouse_x - MOUSE_DEADZONE;
+            }
+            else if (mouse_x < - MOUSE_DEADZONE){
+                currentReport.x = mouse_x + MOUSE_DEADZONE;
+            }
+
+            // Vertical mouse
+            if (mouse_y > MOUSE_DEADZONE){
+                currentReport.y = mouse_y - MOUSE_DEADZONE;
+            }
+            else if (mouse_y < - MOUSE_DEADZONE){
+                currentReport.y = mouse_y + MOUSE_DEADZONE;
+            }
 
             // How much time until next scroll report
-            static uint8_t next_scroll[2] = { 0 };  
+            static uint8_t next_scroll[2] = { 0 };
 
-            // Get scroll speed
-            int8_t mouse_v = virtual_axes_combined[1][2];
-            int8_t mouse_h = virtual_axes_combined[1][3]; 
-
-            // Vertical scroll
+            // Horizontal scroll
             if (next_scroll[0] == 0){
-                if (mouse_v > MOUSE_DEADZONE){
-                    currentReport.v = 1;
-                    next_scroll[0] = 32 - (abs(mouse_v) / 4);
+                if (mouse_h > MOUSE_DEADZONE){
+                    currentReport.h = 1;
+                    next_scroll[0] = 32 - (abs(mouse_h) / 4);
                 }
-                else if (mouse_v < -MOUSE_DEADZONE){
-                    currentReport.v = -1;
-                    next_scroll[0] = 32 - (abs(mouse_v) / 4);
+                else if (mouse_h < - MOUSE_DEADZONE){
+                    currentReport.h = -1;
+                    next_scroll[0] = 32 - (abs(mouse_h) / 4);
                 }
             }
             else {
                 next_scroll[0]--;
             }
 
-            // Horizontal scroll
+            // Vertical scroll
             if (next_scroll[1] == 0){
-                if (mouse_h > MOUSE_DEADZONE){
-                    currentReport.h = 1;
-                    next_scroll[1] = 32 - (abs(mouse_h) / 4);
+                if (mouse_v > MOUSE_DEADZONE){
+                    currentReport.v = 1;
+                    next_scroll[1] = 32 - (abs(mouse_v) / 4);
                 }
-                else if (mouse_h < -MOUSE_DEADZONE){
-                    currentReport.h = -1;
-                    next_scroll[1] = 32 - (abs(mouse_h) / 4);
+                else if (mouse_v < - MOUSE_DEADZONE){
+                    currentReport.v = -1;
+                    next_scroll[1] = 32 - (abs(mouse_v) / 4);
                 }
             }
             else {
@@ -535,19 +549,6 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 
 #if defined(VIA_ENABLE) && !defined(VIAL_ENABLE)
 
-#define ITERATE_ALL_PHYSICAL_KEYS(__user_code)              \
-for (uint8_t row = 0; row < MATRIX_ROWS; row++){	        \
-    if (                                                    \
-        (row != ROWS_PER_HAND - 1) &&                       \
-        (row != MATRIX_ROWS - 1)                            \
-    )                                                       \
-    {                                                       \
-        for (uint8_t col = 0; col < MATRIX_COLS; col++){    \
-            __user_code  								    \
-        }                                                   \
-	}												        \
-}
-
 enum via_hall_effect {
 	id_mode = 1,
 	id_actuation_point,
@@ -611,12 +612,10 @@ void via_config_set_value(uint8_t *data) {
         {   
             // loop through columns
             for (uint8_t col = 0; col < MATRIX_COLS; col++){
-                
-                // set the correct config
                 switch (*value_id) {
                     case id_mode:
+                        analog_key[row][col].mode = *value_data;    
                         analog_config[row][col].mode = *value_data;
-                        analog_key[row][col].mode = *value_data;
                         break;
                     case id_actuation_point:
                         analog_config[row][col].lower = *value_data;

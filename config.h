@@ -106,7 +106,8 @@ ADC2_IN1 = D */
 #ifdef ANALOG_KEY_VIRTUAL_AXES
 // the layer containing mouse keys
 # define MOUSE_LAYER 3
-# define MOUSE_DEADZONE 16
+// deadzone of around 0.5mm
+# define MOUSE_DEADZONE 15
 // qmk requires these
 # define JOYSTICK_BUTTON_COUNT 0
 # define JOYSTICK_AXIS_COUNT 4
@@ -123,6 +124,7 @@ ADC2_IN1 = D */
     {4, 7},     \
     {4, 8}      \
 }
+// order: left right up down, left right up down
 # define MOUSE_COORDINATES { \
     {2, 1},     \
     {2, 3},     \
@@ -133,6 +135,7 @@ ADC2_IN1 = D */
     {1, 10},    \
     {1, 8}      \
 }
+// order: left right up down, left right up down
 # define MOUSE_COORDINATES_RIGHT { \
     {5, 10},    \
     {5, 13},    \
