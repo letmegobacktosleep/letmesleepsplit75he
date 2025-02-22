@@ -220,10 +220,11 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
                     for (uint8_t k = 0; k < 4; k++){
                         this_col = k + (4 * (analog_key[this_row][this_col].mode - 10));
 #                    ifdef SPLIT_KEYBOARD
-                        this_row = ROWS_PER_HAND * (1 + this_col / MATRIX_COLS) - 1; // last row on left, last row on right
+                        this_row = ROWS_PER_HAND * (1 + (this_col / MATRIX_COLS)) - 1; // last row on left, last row on right
 #                    else
-                        this_row = ROWS_PER_HAND + (    this_col / MATRIX_COLS) - 2; // second last row, last row
+                        this_row = ROWS_PER_HAND + (     this_col / MATRIX_COLS ) - 2; // second last row, last row
 #                    endif
+                        this_col %= MATRIX_COLS;
                         
                         if (
                             // run actuation
