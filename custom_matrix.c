@@ -99,10 +99,6 @@ void matrix_init_custom(void){
 #    endif
         // set row offset if right hand
         row_offset = ROWS_PER_HAND;
-
-        /* thisHand and thatHand are already defined in "matrix_common.c"
-        thisHand = isLeftHand ? 0 : (ROWS_PER_HAND);
-        thatHand = ROWS_PER_HAND - thisHand; */
     }
 #endif
     
@@ -219,10 +215,15 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
 
 #            ifdef DKS_ENABLE
                 // handle DKS
-                if (analog_config[this_row][this_col].mode >= 10){
-                    this_row = row_offset + ROWS_PER_HAND - 1; // last row on current hand
-                    for (uint8_t k = 0; k < 4; k++){ // run actuation on four keys
-                        this_col = k + (4 * (analog_config[this_row][this_col].mode - 10));
+                if (analog_key[this_row][this_col].mode >= 10){
+                    // run actuation on four keys
+                    for (uint8_t k = 0; k < 4; k++){
+                        this_col = k + (4 * (analog_key[this_row][this_col].mode - 10));
+#                    ifdef SPLIT_KEYBOARD
+                        this_row = ROWS_PER_HAND * (1 + this_col / MATRIX_COLS) - 1; // last row on left, last row on right
+#                    else
+                        this_row = ROWS_PER_HAND + (    this_col / MATRIX_COLS) - 2; // second last row, last row
+#                    endif
                         
                         if (
                             // run actuation

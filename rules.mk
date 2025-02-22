@@ -3,6 +3,9 @@ SRC += custom_matrix.c custom_analog.c custom_calibration.c custom_scanning.c ee
 MCU_LDSCRIPT = STM32F303xB_tinyuf2
 WEAR_LEVELING_DRIVER = embedded_flash
 
+OPT = 2
+# set optimization level to 2
+
 # DEBOUNCE_TYPE = sym_defer_g
 # if debounce is required, uncomment this and
 # set debounce to 5 milliseconds in config.h

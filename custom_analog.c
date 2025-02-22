@@ -18,8 +18,8 @@ static void adcCompleteCallback(ADCDriver *adcp) {
     adcManager.completedConversions++;
 
     if (
-        ( is_keyboard_left() && adcManager.completedConversions == N_ADCS_SCANNED) || 
-        (!is_keyboard_left() && adcManager.completedConversions == N_ADCS_SCANNED_RIGHT)
+        ( is_keyboard_left() && adcManager.completedConversions >= N_ADCS_SCANNED) || 
+        (!is_keyboard_left() && adcManager.completedConversions >= N_ADCS_SCANNED_RIGHT)
     )
     {
         chSemSignalI(&adcManager.sem);

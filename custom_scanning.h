@@ -4,7 +4,7 @@
 #include "hal.h"
 
 // Macros to register, deregister keys
-#define REGISTER_KEY(current_row, current_col) *current_row |= (1 << current_col)
+#define REGISTER_KEY(current_row, current_col)   *current_row |=  (1 << current_col)
 #define DEREGISTER_KEY(current_row, current_col) *current_row &= ~(1 << current_col)
 /*
 #define bitset(byte,nbit)   ((byte) |=  (1<<(nbit)))

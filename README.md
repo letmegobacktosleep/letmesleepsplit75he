@@ -34,3 +34,7 @@ DKS 1 = 10
 DKS 2 = 11
 DKS 3 = 12
 DKS 4 = 13
+DKS 5 = 14
+DKS 6 = 15
+DKS 7 = 16
+DKS 8 = 17

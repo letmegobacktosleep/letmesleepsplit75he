@@ -18,8 +18,12 @@ void set_default_analog_config(void){
 #        ifdef DKS_ENABLE
             // normal keys
             if (
-                (row != ROWS_PER_HAND - 1) && 
-                (row != MATRIX_ROWS - 1)
+                (row != MATRIX_ROWS - 1) &&
+#            ifdef SPLIT_KEYBOARD
+                (row != ROWS_PER_HAND - 1) // last row on each hand
+#            else
+                (row != MATRIX_ROWS - 2) // last two rows
+#            endif
             )
             {
 #        endif
