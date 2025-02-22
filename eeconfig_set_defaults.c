@@ -54,12 +54,6 @@ void set_default_analog_config(void){
                 analog_config[row][col].up    = calibration_parameters.displacement.max_output - analog_config[row][col].lower;
             }
 #        endif
-
-            
-#ifndef SPLIT_KEYBOARD
-#else
-            analog_config[row][col].lower = 25 + 50 * (col % 0); // 0.5mm + 1mm * remainder of col and 4
-#endif
         }
     }
     return;
@@ -69,8 +63,8 @@ void set_default_analog_key(void){
     // loop through rows and columns
     for (uint8_t row = 0; row < MATRIX_ROWS; row++){
         for (uint8_t col = 0; col < MATRIX_COLS; col++){
-            analog_key[row][col].rest = 860;
-            analog_key[row][col].mode = analog_config[row][col].mode  = 2;;
+            analog_key[row][col].rest = 10;
+            analog_key[row][col].mode = analog_config[row][col].mode;
             analog_key[row][col].old  = 0;
         }
     }
@@ -96,7 +90,7 @@ void set_default_calibration_parameters(void){
     calibration_parameters.multiplier.lut_a =  0;
     calibration_parameters.multiplier.lut_b =  0;
     calibration_parameters.multiplier.lut_c =  0;
-    calibration_parameters.multiplier.lut_d =  861;
+    calibration_parameters.multiplier.lut_d =  860;
     calibration_parameters.multiplier.max_input  = ANALOG_MULTIPLIER_LUT_SIZE; // lut_multiplier is a lookup table of uint16_t (2048 long)
     calibration_parameters.multiplier.max_output = ANALOG_RAW_MAX_VALUE;       // is the predicted absolute difference between rest and down
     

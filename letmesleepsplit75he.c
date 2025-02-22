@@ -175,126 +175,43 @@ void keyboard_post_init_kb(void) {
 #endif
 }
 
-// Tasks that will be run repeatedly
+#ifdef BOOTMAGIC_ENABLE
+void bootmagic_scan(void) {
 
-void housekeeping_task_kb(void) {
-    // Sync virtual axes, if enabled https://docs.qmk.fm/features/split_keyboard#custom-data-sync
-#ifdef ANALOG_KEY_VIRTUAL_AXES
-    static uint32_t last_sync = 0;
-    if (timer_elapsed32(last_sync) > 10){ // Only update every 10ms
-#    ifdef SPLIT_KEYBOARD
-        if (is_keyboard_master()) {
-            if (
-                BIT_GET(virtual_axes_toggle, va_joystick) || // joystick
-                BIT_GET(virtual_axes_toggle, va_mouse)    || // left mouse
-                BIT_GET(virtual_axes_toggle, va_mouse_right) // right mouse
-            )
-            {
-                // send the virtual axes toggle to the slave, receive its virtual axes
-                if (
-                    transaction_rpc_exec(
-                        KEYBOARD_SYNC_A, 
-                        sizeof(virtual_axes_toggle),     &virtual_axes_toggle, 
-                        sizeof(virtual_axes_from_slave), &virtual_axes_from_slave
-                    )
-                )
-                {
-                    last_sync = timer_read32();
-                }
-            }
-        }
-#    endif
-        static int8_t virtual_axes_combined[2][4];
-        for (uint8_t i = 0; i < 2; i++){
-            for (uint8_t j = 0; j < 8; j += 2){
-                virtual_axes_combined[i][j/2] = MAX(-127, MIN(127, 
-                    virtual_axes_from_self [i][j+1] + 
-                    virtual_axes_from_slave[i][j+1] - 
-                    virtual_axes_from_self [i][j] - 
-                    virtual_axes_from_slave[i][j]
-                ));
-            }
-        }
-        
-#    if defined(JOYSTICK_COORDINATES)
-        // Only run joystick if toggled on
-        // https://docs.qmk.fm/features/joystick#virtual-axes
-        if (
-            BIT_GET(virtual_axes_toggle, va_joystick)
-        )
-        {
-            // Left joystick
-            joystick_set_axis(0, virtual_axes_combined[0][0]);
-            joystick_set_axis(1, virtual_axes_combined[0][1]);
+    uint16_t bootmagic_key_value = 0;
 
-            // Right joystick
-            joystick_set_axis(2, virtual_axes_combined[0][2]);
-            joystick_set_axis(3, virtual_axes_combined[0][3]);
-
-            // Send joystick report
-            joystick_flush();
-        }
-#    endif
-#    if (defined(MOUSE_COORDINATES) || defined(MOUSE_COORDINATES_RIGHT))      
-        // Only run mouse if toggled on
-        // https://docs.qmk.fm/features/pointing_device#manipulating-mouse-reports
-        if (
-            BIT_GET(virtual_axes_toggle, va_mouse) ||
-            BIT_GET(virtual_axes_toggle, va_mouse_right)
-        )
-        {
-            // Get current report
-            report_mouse_t currentReport = pointing_device_get_report();
-
-            // Set mouse movement
-            currentReport.x = virtual_axes_combined[1][0];
-            currentReport.y = virtual_axes_combined[1][1];
-
-            // How much time until next scroll report
-            static uint8_t next_scroll[2] = { 0 };  
-
-            // Get scroll speed
-            int8_t mouse_v = virtual_axes_combined[1][2];
-            int8_t mouse_h = virtual_axes_combined[1][3]; 
-
-            // Vertical scroll
-            if (next_scroll[0] == 0){
-                if (mouse_v > MOUSE_DEADZONE){
-                    currentReport.v = 1;
-                    next_scroll[0] = 32 - (abs(mouse_v) / 4);
-                }
-                else if (mouse_v < -MOUSE_DEADZONE){
-                    currentReport.v = -1;
-                    next_scroll[0] = 32 - (abs(mouse_v) / 4);
-                }
-            }
-            else {
-                next_scroll[0]--;
-            }
-
-            // Horizontal scroll
-            if (next_scroll[1] == 0){
-                if (mouse_h > MOUSE_DEADZONE){
-                    currentReport.h = 1;
-                    next_scroll[1] = 32 - (abs(mouse_h) / 4);
-                }
-                else if (mouse_h < -MOUSE_DEADZONE){
-                    currentReport.h = -1;
-                    next_scroll[1] = 32 - (abs(mouse_h) / 4);
-                }
-            }
-            else {
-                next_scroll[1]--;
-            }
-
-            // Override current report & send
-            pointing_device_set_report(currentReport);
-            pointing_device_send();
-        }
-#    endif
+# if (defined(BOOTMAGIC_ROW) && defined(BOOTMAGIC_COLUMN))
+    if (is_keyboard_left()){
+        select_multiplexer_channel(BOOTMAGIC_COLUMN);
+        adcStartAllConversions(BOOTMAGIC_COLUMN);
+        adcWaitForConversions();
+        bootmagic_key_value = getADCSample(BOOTMAGIC_ROW);
+    }
+# endif
+# if (defined(BOOTMAGIC_ROW_RIGHT) && defined(BOOTMAGIC_COLUMN_RIGHT))
+    if (!is_keyboard_left()){
+        select_multiplexer_channel(BOOTMAGIC_COLUMN_RIGHT);
+        adcStartAllConversions(BOOTMAGIC_COLUMN_RIGHT);
+        adcWaitForConversions();
+        bootmagic_key_value = getADCSample(BOOTMAGIC_ROW_RIGHT);
     }
 #endif
+
+    if (bootmagic_key_value <= ANALOG_RAW_MAX_VALUE){
+        bootmagic_key_value = ANALOG_RAW_MAX_VALUE - bootmagic_key_value ;
+    }
+    else { // bootmagic_key_value > 2047
+        bootmagic_key_value = bootmagic_key_value - ANALOG_RAW_MAX_VALUE - 1;
+    }
+
+    // greater than the max rest value
+    if (bootmagic_key_value > ANALOG_MULTIPLIER_LUT_SIZE) {
+        bootloader_jump();
+    }
 }
+#endif
+
+
 
 bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
     switch (keycode){
@@ -419,6 +336,127 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
     }
 }
 
+
+
+void housekeeping_task_kb(void) {
+    // Sync virtual axes, if enabled https://docs.qmk.fm/features/split_keyboard#custom-data-sync
+#ifdef ANALOG_KEY_VIRTUAL_AXES
+    static uint32_t last_sync = 0;
+    if (timer_elapsed32(last_sync) > 10){ // Only update every 10ms
+#    ifdef SPLIT_KEYBOARD
+        if (is_keyboard_master()) {
+            if (
+                BIT_GET(virtual_axes_toggle, va_joystick) || // joystick
+                BIT_GET(virtual_axes_toggle, va_mouse)    || // left mouse
+                BIT_GET(virtual_axes_toggle, va_mouse_right) // right mouse
+            )
+            {
+                // send the virtual axes toggle to the slave, receive its virtual axes
+                if (
+                    transaction_rpc_exec(
+                        KEYBOARD_SYNC_A, 
+                        sizeof(virtual_axes_toggle),     &virtual_axes_toggle, 
+                        sizeof(virtual_axes_from_slave), &virtual_axes_from_slave
+                    )
+                )
+                {
+                    last_sync = timer_read32();
+                }
+            }
+        }
+#    endif
+        static int8_t virtual_axes_combined[2][4];
+        for (uint8_t i = 0; i < 2; i++){
+            for (uint8_t j = 0; j < 8; j += 2){
+                virtual_axes_combined[i][j/2] = MAX(-127, MIN(127, 
+                    virtual_axes_from_self [i][j+1] + 
+                    virtual_axes_from_slave[i][j+1] - 
+                    virtual_axes_from_self [i][j] - 
+                    virtual_axes_from_slave[i][j]
+                ));
+            }
+        }
+        
+#    if defined(JOYSTICK_COORDINATES)
+        // Only run joystick if toggled on
+        // https://docs.qmk.fm/features/joystick#virtual-axes
+        if (
+            BIT_GET(virtual_axes_toggle, va_joystick)
+        )
+        {
+            // Left joystick
+            joystick_set_axis(0, virtual_axes_combined[0][0]);
+            joystick_set_axis(1, virtual_axes_combined[0][1]);
+
+            // Right joystick
+            joystick_set_axis(2, virtual_axes_combined[0][2]);
+            joystick_set_axis(3, virtual_axes_combined[0][3]);
+
+            // Send joystick report
+            joystick_flush();
+        }
+#    endif
+#    if (defined(MOUSE_COORDINATES) || defined(MOUSE_COORDINATES_RIGHT))      
+        // Only run mouse if toggled on
+        // https://docs.qmk.fm/features/pointing_device#manipulating-mouse-reports
+        if (
+            BIT_GET(virtual_axes_toggle, va_mouse) ||
+            BIT_GET(virtual_axes_toggle, va_mouse_right)
+        )
+        {
+            // Get current report
+            report_mouse_t currentReport = pointing_device_get_report();
+
+            // Set mouse movement
+            currentReport.x = virtual_axes_combined[1][0];
+            currentReport.y = virtual_axes_combined[1][1];
+
+            // How much time until next scroll report
+            static uint8_t next_scroll[2] = { 0 };  
+
+            // Get scroll speed
+            int8_t mouse_v = virtual_axes_combined[1][2];
+            int8_t mouse_h = virtual_axes_combined[1][3]; 
+
+            // Vertical scroll
+            if (next_scroll[0] == 0){
+                if (mouse_v > MOUSE_DEADZONE){
+                    currentReport.v = 1;
+                    next_scroll[0] = 32 - (abs(mouse_v) / 4);
+                }
+                else if (mouse_v < -MOUSE_DEADZONE){
+                    currentReport.v = -1;
+                    next_scroll[0] = 32 - (abs(mouse_v) / 4);
+                }
+            }
+            else {
+                next_scroll[0]--;
+            }
+
+            // Horizontal scroll
+            if (next_scroll[1] == 0){
+                if (mouse_h > MOUSE_DEADZONE){
+                    currentReport.h = 1;
+                    next_scroll[1] = 32 - (abs(mouse_h) / 4);
+                }
+                else if (mouse_h < -MOUSE_DEADZONE){
+                    currentReport.h = -1;
+                    next_scroll[1] = 32 - (abs(mouse_h) / 4);
+                }
+            }
+            else {
+                next_scroll[1]--;
+            }
+
+            // Override current report & send
+            pointing_device_set_report(currentReport);
+            pointing_device_send();
+        }
+#    endif
+    }
+#endif
+}
+
 #ifdef RGB_MATRIX_ENABLE
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     static bool value_was_zero = true;
@@ -495,42 +533,6 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 }
 #endif
 
-#ifdef BOOTMAGIC_ENABLE
-void bootmagic_scan(void) {
-
-    uint16_t bootmagic_key_value = 0;
-
-# if (defined(BOOTMAGIC_ROW) && defined(BOOTMAGIC_COLUMN))
-    if (is_keyboard_left()){
-        select_multiplexer_channel(BOOTMAGIC_COLUMN);
-        adcStartAllConversions(BOOTMAGIC_COLUMN);
-        adcWaitForConversions();
-        bootmagic_key_value = getADCSample(BOOTMAGIC_ROW);
-    }
-# endif
-# if (defined(BOOTMAGIC_ROW_RIGHT) && defined(BOOTMAGIC_COLUMN_RIGHT))
-    if (!is_keyboard_left()){
-        select_multiplexer_channel(BOOTMAGIC_COLUMN_RIGHT);
-        adcStartAllConversions(BOOTMAGIC_COLUMN_RIGHT);
-        adcWaitForConversions();
-        bootmagic_key_value = getADCSample(BOOTMAGIC_ROW_RIGHT);
-    }
-#endif
-
-    if (bootmagic_key_value <= ANALOG_RAW_MAX_VALUE){
-        bootmagic_key_value = ANALOG_RAW_MAX_VALUE - bootmagic_key_value ;
-    }
-    else { // bootmagic_key_value > 2047
-        bootmagic_key_value = bootmagic_key_value - ANALOG_RAW_MAX_VALUE - 1;
-    }
-
-    // greater than the max rest value
-    if (bootmagic_key_value > ANALOG_MULTIPLIER_LUT_SIZE) {
-        bootloader_jump();
-    }
-}
-#endif
-
 #if defined(VIA_ENABLE) && !defined(VIAL_ENABLE)
 
 #define ITERATE_ALL_PHYSICAL_KEYS(__user_code)              \
@@ -594,24 +596,45 @@ void via_config_set_value(uint8_t *data) {
     uint8_t *value_id   = &(data[0]);
     uint8_t *value_data = &(data[1]);
 
-    switch (*value_id) {
-        case id_mode:
-			ITERATE_ALL_PHYSICAL_KEYS(analog_config[row][col].mode = *value_data; analog_key[row][col].mode = *value_data;)
-            break;
-        case id_actuation_point:
-			ITERATE_ALL_PHYSICAL_KEYS(analog_config[row][col].lower = *value_data;)
-            break;
-        case id_deadzone:
-			ITERATE_ALL_PHYSICAL_KEYS(analog_config[row][col].upper = *value_data;)
-            break;
-        case id_down:
-			ITERATE_ALL_PHYSICAL_KEYS(analog_config[row][col].down = *value_data;)
-            break;
-        case id_up:
-			ITERATE_ALL_PHYSICAL_KEYS(analog_config[row][col].up = *value_data;)
-            break;
-        default:
-            break;
+    // loop through rows
+    for (uint8_t row = 0; row < MATRIX_ROWS; row++){
+        // only run if row isn't DKS
+        if (
+# ifdef SPLIT_KEYBOARD
+            (row != MATRIX_ROWS   - 1) && // last row on right
+            (row != ROWS_PER_HAND - 1) // last row on left
+# else
+            (row != MATRIX_ROWS   - 1) && // last row
+            (row != MATRIX_ROWS   - 2) // second last row
+# endif
+        )
+        {   
+            // loop through columns
+            for (uint8_t col = 0; col < MATRIX_COLS; col++){
+                
+                // set the correct config
+                switch (*value_id) {
+                    case id_mode:
+                        analog_config[row][col].mode = *value_data;
+                        analog_key[row][col].mode = *value_data;
+                        break;
+                    case id_actuation_point:
+                        analog_config[row][col].lower = *value_data;
+                        break;
+                    case id_deadzone:
+                        analog_config[row][col].upper = *value_data;
+                        break;
+                    case id_down:
+                        analog_config[row][col].down = *value_data;
+                        break;
+                    case id_up:
+                        analog_config[row][col].up = *value_data;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
     }
 }
 

@@ -56,17 +56,15 @@ void initADCGroups(void) {
     }
 #endif
     
-    // Start ADCs
-    if (is_keyboard_left()){ // Left side uses 1,2,4
-        adcStart(&ADCD1, NULL);
-        adcStart(&ADCD2, NULL);
-        adcStart(&ADCD4, NULL);
-    }
-    else { // Right side uses 1,3,4
-        adcStart(&ADCD1, NULL);
-        adcStart(&ADCD3, NULL);
-        adcStart(&ADCD4, NULL);
-    }
+    /* Start ADCs
+    Left uses 1,2,4
+    Right uses 1,3,4 */
+    adcStart(&ADCD1, NULL);
+    adcStart(&ADCD2, NULL);
+    adcStart(&ADCD3, NULL);
+    adcStart(&ADCD4, NULL);
+
+    return;
 }
 
 msg_t adcStartAllConversions(ADCManager *adcManager, uint8_t current_col){
@@ -243,6 +241,25 @@ static const ADCConversionGroup adcConversionGroup4 = { // Channel 4 only
     },
     .sqr          = {
         ADC_SQR1_SQ1_N(ADC_CHANNEL_IN4),
+    }
+};
+
+static const ADCConversionGroup adcConversionGroup4 = { // Channel 5 only
+    .circular     = false,
+    .num_channels = 1U,
+    .end_cb       = adcCompleteCallback,
+    .error_cb     = adcErrorCallback,
+    .cfgr         = ADC_RESOLUTION,
+    .tr1          = ADC_TR_DISABLED,
+    .tr2          = ADC_TR_DISABLED,
+    .tr3          = ADC_TR_DISABLED,
+    .awd2cr       = 0U,
+    .awd3cr       = 0U,
+    .smpr         = {
+        ADC_SMPR1_SMP_AN5(ADC_SAMPLING_TIME),
+    },
+    .sqr          = {
+        ADC_SQR1_SQ1_N(ADC_CHANNEL_IN5),
     }
 };
 
