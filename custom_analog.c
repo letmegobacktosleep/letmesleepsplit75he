@@ -7,7 +7,7 @@
 #include "custom_analog.h"
 
 // Define the global ADC manager instance
-ADCManager adcManager;
+static ADCManager adcManager;
 
 // External definitions
 extern SPLIT_MUTABLE_ROW pin_t row_pins[ROWS_PER_HAND];
