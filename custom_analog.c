@@ -6,12 +6,14 @@
 #include "custom_matrix.h"
 #include "custom_analog.h"
 
-// Define the global ADC manager instance
+// Declare the ADC manager instance in core-coupled-memory (ram4)
+__attribute__((section(".ram4")))
 static ADCManager adcManager;
 
 // External definitions
 extern SPLIT_MUTABLE_ROW pin_t row_pins[ROWS_PER_HAND];
 
+// called whenever an adc conversion is completed
 static void adcCompleteCallback(ADCDriver *adcp) {
     (void)adcp; // Unused parameter
     osalSysLockFromISR();
@@ -28,6 +30,7 @@ static void adcCompleteCallback(ADCDriver *adcp) {
     osalSysUnlockFromISR();
 }
 
+// initialise adc pins and start the adcs
 void initADCGroups(void) {
     adcManager.completedConversions = 0;
     chSemObjectInit(&adcManager.sem, 0);
@@ -67,6 +70,7 @@ void initADCGroups(void) {
     return;
 }
 
+// start converting (non-continuous)
 msg_t adcStartAllConversions(ADCManager *adcManager, uint8_t current_col){
     osalSysLock();
     adcManager.completedConversions = 0;
@@ -106,6 +110,7 @@ msg_t adcStartAllConversions(ADCManager *adcManager, uint8_t current_col){
     return MSG_OK;
 }
 
+// wait until the semaphore is triggered
 msg_t adcWaitForConversions(void){
     
     chSemWait(&adcManager.sem);
@@ -113,6 +118,7 @@ msg_t adcWaitForConversions(void){
     return MSG_OK;
 }
 
+// retrieve an adc sample
 adcsample_t getADCSample(uint8_t current_row) {
     switch (current_row) {
 
@@ -142,6 +148,7 @@ adcsample_t getADCSample(uint8_t current_row) {
     }
 }
 
+// print errors to the console
 void adcErrorCallback(ADCDriver *adcp, adcerror_t err) {
     (void)adcp; // Unused parameter
     osalSysLockFromISR();
