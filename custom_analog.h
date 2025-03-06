@@ -15,9 +15,6 @@ typedef struct {
     semaphore_t sem;
 } ADCManager;
 
-// Extern ADCManager instance
-extern ADCManager adcManager;
-
 // Function Prototypes
 void initADCGroups(void);
 void adcErrorCallback(ADCDriver *adcp, adcerror_t err);
