@@ -150,24 +150,18 @@
   ],
   [
     {
-      "w": 1.25
+      "w": 1.5
     },
     "KC_LCTL\n\n\n\n0\n9",
-    {
-      "w": 1.25
-    },
     "KC_LGUI\n\n\n\n0\n10",
     {
-      "w": 1.25
+      "w": 1.5
     },
     "KC_LALT\n\n\n\n0\n11",
     {
       "w": 2.25
     },
     "KC_SPC\n\n\n\n0\n12",
-    {
-      "w": 1.25
-    },
     "MO(1)\n\n\n\n1\n12",
     {
       "x": 1,
@@ -183,129 +177,62 @@
   ],
   [
     {
-      "y": 0.25
+      "y": 0.5
     },
     "KC_NO\n\n\n\n3\n0",
-    {
-      "x": 0.25
-    },
-    "KC_NO\n\n\n\n3\n4",
-    {
-      "x": 0.25
-    },
-    "KC_NO\n\n\n\n3\n8",
-    {
-      "x": 0.25
-    },
-    "KC_NO\n\n\n\n3\n12",
-    {
-      "x": 3.5
-    },
-    "KC_NO\n\n\n\n7\n0",
-    {
-      "x": 0.25
-    },
-    "KC_NO\n\n\n\n7\n4",
-    {
-      "x": 0.25
-    },
-    "KC_NO\n\n\n\n7\n8",
-    {
-      "x": 0.25
-    },
-    "KC_NO\n\n\n\n7\n12"
-  ],
-  [
     "KC_NO\n\n\n\n3\n1",
-    {
-      "x": 0.25
-    },
-    "KC_NO\n\n\n\n3\n5",
-    {
-      "x": 0.25
-    },
-    "KC_NO\n\n\n\n3\n9",
-    {
-      "x": 0.25
-    },
-    "KC_NO\n\n\n\n3\n13",
-    {
-      "x": 3.5
-    },
-    "KC_NO\n\n\n\n7\n1",
-    {
-      "x": 0.25
-    },
-    "KC_NO\n\n\n\n7\n5",
-    {
-      "x": 0.25
-    },
-    "KC_NO\n\n\n\n7\n9",
-    {
-      "x": 0.25
-    },
-    "KC_NO\n\n\n\n7\n13"
-  ],
-  [
     "KC_NO\n\n\n\n3\n2",
-    {
-      "x": 0.25
-    },
-    "KC_NO\n\n\n\n3\n6",
-    {
-      "x": 0.25
-    },
-    "KC_NO\n\n\n\n3\n10",
-    {
-      "x": 0.25
-    },
-    "KC_NO\n\n\n\n3\n14",
-    {
-      "x": 3.5
-    },
-    "KC_NO\n\n\n\n7\n2",
-    {
-      "x": 0.25
-    },
-    "KC_NO\n\n\n\n7\n6",
-    {
-      "x": 0.25
-    },
-    "KC_NO\n\n\n\n7\n10",
-    {
-      "x": 0.25
-    },
-    "KC_NO\n\n\n\n7\n14"
-  ],
-  [
     "KC_NO\n\n\n\n3\n3",
     {
       "x": 0.25
     },
+    "KC_NO\n\n\n\n3\n4",
+    "KC_NO\n\n\n\n3\n5",
+    "KC_NO\n\n\n\n3\n6",
     "KC_NO\n\n\n\n3\n7",
     {
-      "x": 0.25
+      "x": 0.5
     },
-    "KC_NO\n\n\n\n3\n11",
-    {
-      "x": 0.25
-    },
-    "KC_NO\n\n\n\n3\n15",
-    {
-      "x": 3.5
-    },
+    "KC_NO\n\n\n\n7\n0",
+    "KC_NO\n\n\n\n7\n1",
+    "KC_NO\n\n\n\n7\n2",
     "KC_NO\n\n\n\n7\n3",
     {
       "x": 0.25
     },
-    "KC_NO\n\n\n\n7\n7",
+    "KC_NO\n\n\n\n7\n4",
+    "KC_NO\n\n\n\n7\n5",
+    "KC_NO\n\n\n\n7\n6",
+    "KC_NO\n\n\n\n7\n7"
+  ],
+  [
+    {
+      "y": 0.25
+    },
+    "KC_NO\n\n\n\n3\n8",
+    "KC_NO\n\n\n\n3\n9",
+    "KC_NO\n\n\n\n3\n10",
+    "KC_NO\n\n\n\n3\n11",
     {
       "x": 0.25
     },
+    "KC_NO\n\n\n\n3\n12",
+    "KC_NO\n\n\n\n3\n13",
+    "KC_NO\n\n\n\n3\n14",
+    "KC_NO\n\n\n\n3\n15",
+    {
+      "x": 0.5
+    },
+    "KC_NO\n\n\n\n7\n8",
+    "KC_NO\n\n\n\n7\n9",
+    "KC_NO\n\n\n\n7\n10",
     "KC_NO\n\n\n\n7\n11",
     {
       "x": 0.25
     },
+    "KC_NO\n\n\n\n7\n12",
+    "KC_NO\n\n\n\n7\n13",
+    "KC_NO\n\n\n\n7\n14",
     "KC_NO\n\n\n\n7\n15"
   ]
 ]
