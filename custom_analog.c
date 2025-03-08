@@ -6,8 +6,8 @@
 #include "custom_matrix.h"
 #include "custom_analog.h"
 
-// Declare the ADC manager instance in core-coupled-memory (ram4)
-__attribute__((section(".ram4")))
+// Declare the ADC manager instance
+__attribute__((section(".ram0")))
 static ADCManager adcManager;
 
 // External definitions

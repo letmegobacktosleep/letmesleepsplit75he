@@ -546,15 +546,38 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 }
 #endif
 
-#if defined(VIA_ENABLE) && !defined(VIAL_ENABLE)
+#if defined(VIA_ENABLE)
 
-enum via_hall_effect {
+enum letmesleep_key_config {
 	id_mode = 1,
 	id_actuation_point,
 	id_deadzone,
 	id_down,
 	id_up,
 };
+
+# if defined(VIAL_ENABLE)
+
+void raw_hid_receive_kb(uint8_t *data, uint8_t length) {
+    uint8_t *command_id = &(data[0]);
+
+    // Vial uses an older version of via.c
+    // whidh does not have "via_custom_value_command_kb"
+    // use "id_unhandled" to invoke "via_custom_value_command_kb"
+    if (*command_id == id_unhandled) {
+        letmesleep_custom_command_kb(&data[1], length - 1);
+    }
+}
+
+void letmesleep_custom_command_kb(uint8_t *data, uint8_t length){
+    
+    /* Return the unhandled state */
+	*command_id = id_unhandled;
+
+	/* DO NOT call raw_hid_send(data,length) here, let caller do this */
+}
+
+# else
 
 void via_custom_value_command_kb(uint8_t *data, uint8_t length){
     /* data = [ command_id, channel_id, value_id, value_data ] */
@@ -660,4 +683,6 @@ void via_config_get_value(uint8_t *data) {
 			break;
 	}
 }
+
+# endif
 #endif
