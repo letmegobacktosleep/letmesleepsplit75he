@@ -37,17 +37,17 @@ static const matrix_row_t custom_matrix_mask[MATRIX_ROWS] = CUSTOM_MATRIX_MASK;
 // External definitions
 extern uint8_t virtual_axes_toggle;
 
-// Declare per-key in core-coupled-memory (ram4)
+// Declare per-key variables
 __attribute__((section(".ram0")))
 analog_key_t analog_key[MATRIX_ROWS][MATRIX_COLS]       = { 0 };
-__attribute__((section(".ram0")))
+__attribute__((section(".ram4")))
 analog_config_t analog_config[MATRIX_ROWS][MATRIX_COLS] = { 0 };
 
 // Declare calibration parameters in slower memory (ram0)
 __attribute__((section(".ram0")))
 calibration_parameters_t calibration_parameters         = { 0 };
 
-// Define lookup tables
+// Declare lookup tables in core-coupled memory (ram4)
 __attribute__((section(".ram4")))
 static uint8_t lut_displacement[ANALOG_CAL_MAX_VALUE+1]    = { 0 };
 __attribute__((section(".ram4")))

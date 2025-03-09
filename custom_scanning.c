@@ -32,7 +32,15 @@ bool select_multiplexer_channel(uint8_t channel){
     return 1;
 }
 
-bool actuation(analog_config_t *config, analog_key_t *key, matrix_row_t *current_row, uint8_t current_col, uint8_t current, uint8_t max_key_displacement){
+bool actuation(
+    const analog_config_t *config, 
+    analog_key_t *key, 
+    matrix_row_t *current_row, 
+    const uint8_t current_col, 
+    const uint8_t current, 
+    const uint8_t max_key_displacement
+)
+{
     switch (key->mode){
         case 0: // normal, moving down, not pressed
             if (

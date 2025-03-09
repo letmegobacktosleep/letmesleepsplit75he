@@ -726,12 +726,12 @@ void letmesleep_set_lut_config(uint8_t *data){
 
 void letmesleep_custom_command_kb(uint8_t *data, uint8_t length){
     /* data = [ command_id, channel_id, custom_data ] */
-    uint8_t *command_id  = &(data[0]);
-    uint8_t *channel_id  = &(data[1]);
-    uint8_t *custom_data = &(data[2]);
+    uint8_t *sub_command_id = &(data[0]);
+    uint8_t *channel_id     = &(data[1]);
+    uint8_t *custom_data    = &(data[2]);
 
     if (*channel_id == id_custom_channel) {
-        switch (*command_id) {
+        switch (*sub_command_id) {
             case id_custom_get_key_config: {
                 letmesleep_get_key_config(custom_data);
                 break;
@@ -750,7 +750,7 @@ void letmesleep_custom_command_kb(uint8_t *data, uint8_t length){
             }
             default: {
                 /* Unhandled message */
-                *command_id = id_unhandled;
+                *sub_command_id = id_unhandled;
                 break;
             }
         }
@@ -758,7 +758,7 @@ void letmesleep_custom_command_kb(uint8_t *data, uint8_t length){
     }
 
     /* Return the unhandled state */
-	*command_id = id_unhandled;
+	*sub_command_id = id_unhandled;
 
 	/* DO NOT call raw_hid_send(data,length) here, let caller do this */
 }
@@ -768,7 +768,7 @@ void raw_hid_receive_kb(uint8_t *data, uint8_t length) {
 
     // Vial uses an older version of via.c
     // whidh does not have "via_custom_value_command_kb"
-    // use "id_unhandled" to invoke "letmesleep_custom_command_kb"
+    // use "id_unhandled" to invoke "via_custom_value_command_kb"
     if (*command_id == id_unhandled) {
         letmesleep_custom_command_kb(&data[1], length - 1);
     }
