@@ -281,6 +281,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             );
             return false;
 #    endif
+#    ifdef DEBUG_REST_DOWN
         case PRINT_REST_DOWN:
             uint8_t offset = 0;
             char str_buf = [8];
@@ -311,7 +312,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
                     }
                 }
             }
-
+#    endif
         default:
             return true;
     }

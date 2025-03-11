@@ -28,7 +28,7 @@ enum custom_keycodes {
     M_MO1,
     M_TG2,
     M_MO2,
-    PRINT_REST_DOWN
+    DEBUG_REST_DOWN
 };
 /* This goes in the vial.json
 "customKeycodes": [

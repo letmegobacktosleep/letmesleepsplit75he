@@ -41,7 +41,7 @@
     {
       "name": "Dump Rest and Down values",
       "title": "Dumps a CSV representing the minimum and maximum values",
-      "shortName": "PRINT_REST_DOWN"
+      "shortName": "DEBUG_REST_DOWN"
     }
   ],
   "menus": [
