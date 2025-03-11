@@ -299,6 +299,10 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
                 if (save_rest_values) {
                     analog_key[this_row][this_col].rest = MIN(raw, ANALOG_MULTIPLIER_LUT_SIZE - 1);
                 }
+#            ifdef DEBUG_SAVE_REST_DOWN
+                // save down values
+                analog_key[this_row][this_col].down = MAX(raw, analog_key[this_row][this_col].down);
+#            endif
             }
         }
     }

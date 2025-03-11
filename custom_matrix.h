@@ -63,13 +63,14 @@ extern analog_config_t analog_config[MATRIX_ROWS][MATRIX_COLS];
 typedef struct {
 
     // Calibration settings
-    uint16_t rest;  // analog value when key is at rest
+    uint16_t rest; // analog value when key is at rest
+    uint16_t down; // analog value when key is fully pressed
 
     // Stuff that changes
     uint8_t mode;   // copy over mode from analog_config in matrix_init
     uint8_t old;    // old displacement, initialize to zero
     
-} analog_key_t; // 4 bytes
+} analog_key_t; // 6 bytes
 extern analog_key_t analog_key[MATRIX_ROWS][MATRIX_COLS];
 
 typedef struct PACKED {

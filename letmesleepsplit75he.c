@@ -19,6 +19,7 @@
 extern analog_key_t analog_key[MATRIX_ROWS][MATRIX_COLS];
 extern analog_config_t analog_config[MATRIX_ROWS][MATRIX_COLS];
 extern calibration_parameters_t calibration_parameters;
+
 // External joystick definitions
 #ifdef ANALOG_KEY_VIRTUAL_AXES
 extern uint8_t virtual_axes_from_self[2][8];
@@ -34,90 +35,15 @@ extern const uint8_t mouse_coordinates_right[2][8];
 # endif
 #endif
 
+#ifdef RGB_MATRIX_ENABLE
+static const pin_t rgb_enable_pin = CUSTOM_RGB_ENABLE_PIN;
+#endif
+
 // bit 0 = should disable virtual axes keys
 // bit 1 = joystick toggle
 // bit 2 = left mouse toggle
 // bit 3 = right mouse toggle
 uint8_t virtual_axes_toggle = 0x00; // 0x01 if should disable virtual axes keys
-
-#ifdef RGB_MATRIX_ENABLE
-static const pin_t rgb_enable_pin = CUSTOM_RGB_ENABLE_PIN;
-#endif
-
-
-
-// EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, displacement);
-// this doesn't seem to be working correctly...
-#if (EECONFIG_KB_DATA_SIZE) > 0
-# define EEPROM_KB_PARTIAL_UPDATE(__struct, __field) eeprom_update_block(               \
-    &(__struct.__field),                                                                \
-    (void *)((void *)(EECONFIG_KB_DATABLOCK) + offsetof(typeof(__struct), __field)),    \
-    sizeof(__struct.__field)                                                            \
-)
-# define EEPROM_KB_PARTIAL_READ(__struct, __field) eeprom_read_block(                   \
-    &(__struct.__field),                                                                \
-    (void *)((void *)(EECONFIG_KB_DATABLOCK) + offsetof(typeof(__struct), __field)),    \
-    sizeof(__struct.__field)                                                            \
-)
-#endif
-// EEPROM_USER_PARTIAL_UPDATE(analog_config, row, col);
-#if (EECONFIG_USER_DATA_SIZE) > 0
-# define EEPROM_USER_PARTIAL_UPDATE(__array, __row, __col) eeprom_update_block(                             \
-    &(__array[__row][__col]),                                                                               \
-    (void *)((void *)(EECONFIG_USER_DATABLOCK) + sizeof(__array[0][0]) * (__row * MATRIX_COLS + __col)),    \
-    sizeof(__array)                                                                                         \
-)
-# define EEPROM_USER_PARTIAL_READ(__array, __row, __col) eeprom_read_block(                                 \
-    &(__array[__row][__col]),                                                                               \
-    (void *)((void *)(EECONFIG_USER_DATABLOCK) + sizeof(__array[0][0]) * (__row * MATRIX_COLS + __col)),    \
-    sizeof(__array)                                                                                         \
-)
-#endif
-// https://discord.com/channels/440868230475677696/440868230475677698/1334525203044106241
-
-#ifdef SPLIT_KEYBOARD
-void kb_sync_a_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
-    // copy virtual_axes_from_self to the outbound buffer
-    memcpy(out_data, virtual_axes_from_self, sizeof(virtual_axes_from_self));
-}
-
-void user_sync_a_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
-    // Cast data to correct type
-    const uint8_t *m2s = (const uint8_t*) in_data;
-
-    // Set config
-    uint8_t row = m2s[0];
-    uint8_t col = m2s[1];
-    analog_config[row][col].mode  = m2s[2];
-    analog_config[row][col].lower = m2s[3];
-    analog_config[row][col].upper = m2s[4];
-    analog_config[row][col].down  = m2s[5];
-    analog_config[row][col].up    = m2s[6];
-    
-    // Update mode in analog_key
-    analog_key[row][col].mode = analog_config[row][col].mode;
-
-    // Save to eeprom
-    EEPROM_USER_PARTIAL_UPDATE(analog_config[row][col]);
-}
-#endif
-
-// Call this when a new value is set - do not call on slave...
-void user_write_new_config(uint8_t row, uint8_t col){
-#ifdef SPLIT_KEYBOARD
-    if (is_keyboard_master()){
-        uint8_t literally_zero = 0;
-        transaction_rpc_exec(
-            USER_SYNC_A,
-            sizeof(analog_config_t),
-            &analog_config[row][col], // NEED TO SET ROW AND COL
-            sizeof(literally_zero),
-            &literally_zero
-        );
-    }
-#endif
-    EEPROM_USER_PARTIAL_UPDATE(analog_config[row][col]);
-}
 
 void handle_virtual_mouse_layer(uint8_t virtual_axes_toggle){
     if (
@@ -140,10 +66,10 @@ void handle_virtual_axes_keys(uint8_t coordinates[8][2], bool should_ignore){
             col = coordinates[i][1];
             if (row != 255 && col != 255){
                 if (should_ignore){
-                    analog_key[row][col] = 255;
+                    analog_key[row][col].mode = 255;
                 }
                 else {
-                    analog_key[row][col] = analog_config[row][col];
+                    analog_key[row][col].mode = analog_config[row][col].mode;
                 }
             }
         }
@@ -251,7 +177,10 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
                 BIT_FLP(virtual_axes_toggle, va_joystick);
             }
             // always set mode of joystick keys to 255
-            handle_virtual_axes_keys(joystick_coordinates, true);
+            handle_virtual_axes_keys(
+                joystick_coordinates,
+                (bool) BIT_GET(virtual_axes_toggle, va_joystick)
+            );
             return false;
 
         case KC_MS_TG:
@@ -352,6 +281,36 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             );
             return false;
 #    endif
+        case PRINT_REST_DOWN:
+            uint8_t offset = 0;
+            char str_buf = [8];
+            const matrix_row_t mask[MATRIX_ROWS] = CUSTOM_MATRIX_MASK;
+
+            if (!is_keyboard_left()){
+                offset = ROWS_PER_HAND
+            }
+            SEND_STRING("row,col,rest,down\n");
+            for (row = offset; row < ROWS_PER_HAND + offset; row++){
+                for (col = 0; col < MATRIX_COLS; col++){
+                    if (
+                        BIT_GET(mask[row], col)
+                    )
+                    {
+                        sprintf(str_buf, "%d", row);
+                        SEND_STRING(str_buf);
+                        SEND_STRING(",")
+                        sprintf(str_buf, "%d", col);
+                        SEND_STRING(str_buf);
+                        SEND_STRING(",")
+                        sprintf(str_buf, "%d", analog_key[row][col].rest);
+                        SEND_STRING(str_buf);
+                        SEND_STRING(",")
+                        sprintf(str_buf, "%d", analog_key[row][col].down);
+                        SEND_STRING(str_buf);
+                        SEND_STRING("\n")
+                    }
+                }
+            }
 
         default:
             return true;
@@ -628,7 +587,8 @@ void letmesleep_set_key_config(uint8_t *data){
     analog_config[*row][*col].down  = *down;
     analog_config[*row][*col].up    = *up;
 
-    EEPROM_USER_PARTIAL_UPDATE(analog_config, *row, *col);
+    eeconfig_update_sync_user(*row, *col)
+    // EEPROM_USER_PARTIAL_UPDATE(analog_config, *row, *col);
     // eeconfig_update_user_datablock(&analog_config);
 }
 

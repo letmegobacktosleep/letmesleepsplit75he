@@ -1,6 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 #pragma once
 
+// enable matrix scan rate debugging
+#define DEBUG_MATRIX_SCAN_RATE
+#define DEBUG_SAVE_REST_DOWN
+
 // enable processing of mouse and joystick
 #define ANALOG_KEY_VIRTUAL_AXES
 // enable processing of DKS

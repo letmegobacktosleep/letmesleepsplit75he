@@ -57,6 +57,11 @@
         "name": "Analog Mouse Momentary Right",
         "title": "Momentarily use Arrow Keys to control your mouse",
         "shortName": "M_MO2"
+      },
+      {
+        "name": "Dump Rest and Down values",
+        "title": "Dumps a CSV representing the minimum and maximum values",
+        "shortName": "PRINT_REST_DOWN"
       }
   ],
   "matrix": {

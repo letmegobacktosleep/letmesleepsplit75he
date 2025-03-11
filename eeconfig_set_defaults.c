@@ -63,7 +63,8 @@ void set_default_analog_key(void){
     // loop through rows and columns
     for (uint8_t row = 0; row < MATRIX_ROWS; row++){
         for (uint8_t col = 0; col < MATRIX_COLS; col++){
-            analog_key[row][col].rest = 10;
+            analog_key[row][col].rest = 0;
+            analog_key[row][col].down = 0;
             analog_key[row][col].mode = analog_config[row][col].mode;
             analog_key[row][col].old  = 0;
         }
