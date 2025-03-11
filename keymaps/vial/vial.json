@@ -11,13 +11,13 @@
           "label": "Key Config"
         },
         {
+          "label": "Calibration"
+        },
+        {
           "label": "Displacement"
         },
         {
           "label": "Joystick"
-        },
-        {
-          "label": "Calibration"
         }
       ]
     }

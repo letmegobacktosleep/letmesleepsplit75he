@@ -80,8 +80,8 @@ typedef struct PACKED {
     double lut_c;        // 8 bytes
     double lut_d;        // 8 bytes
     // Define the maximum values
-    uint16_t max_input;  // 1 byte
-    uint16_t max_output; // 1 byte
+    uint16_t max_input;  // 2 bytes
+    uint16_t max_output; // 2 bytes
 
 } lookup_table_t; // 36 bytes
 
