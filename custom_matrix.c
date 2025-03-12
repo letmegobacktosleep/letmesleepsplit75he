@@ -34,9 +34,6 @@ static uint8_t row_offset = 0;
 // Create array for custom matrix mask
 static const matrix_row_t custom_matrix_mask[MATRIX_ROWS] = CUSTOM_MATRIX_MASK;
 
-// External definitions
-extern uint8_t virtual_axes_toggle;
-
 // Declare per-key variables
 __attribute__((section(".ram0")))
 analog_key_t analog_key[MATRIX_ROWS][MATRIX_COLS]       = { 0 };
@@ -57,10 +54,11 @@ static uint16_t lut_multiplier[ANALOG_MULTIPLIER_LUT_SIZE] = { 0 };
 
 // Create global joystick variables
 #ifdef ANALOG_KEY_VIRTUAL_AXES
+extern uint8_t virtual_axes_toggle;
 uint8_t virtual_axes_from_self[2][8]  = { 0 };
 uint8_t virtual_axes_from_slave[2][8] = { 0 };
 # ifdef JOYSTICK_COORDINATES
-const uint8_t joystick_coordinates[8][2] = JOYSTICK_COORDINATES_LEFT;
+const uint8_t joystick_coordinates[8][2] = JOYSTICK_COORDINATES;
 # endif
 # ifdef MOUSE_COORDINATES
 const uint8_t mouse_coordinates[8][2] = MOUSE_COORDINATES;

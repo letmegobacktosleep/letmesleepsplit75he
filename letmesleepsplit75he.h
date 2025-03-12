@@ -1,15 +1,16 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 #pragma once
 
+#include "config.h"
+
+#ifdef ANALOG_KEY_VIRTUAL_AXES
 extern uint8_t virtual_axes_toggle;
+#endif
 
 #define BIT_SET(byte, nbit) ((byte) |=  (1 << (nbit)))
 #define BIT_CLR(byte, nbit) ((byte) &= ~(1 << (nbit)))
 #define BIT_FLP(byte, nbit) ((byte) ^=  (1 << (nbit)))
 #define BIT_GET(byte, nbit) ((byte) &   (1 << (nbit)))
-
-// Function prototypes
-void user_write_new_config(uint8_t row, uint8_t col);
 
 // Virtual axes toggle bits
 enum virtual_axes_bits {

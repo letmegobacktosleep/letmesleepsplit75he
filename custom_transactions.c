@@ -7,6 +7,12 @@
 #include "transactions.h"
 #include "custom_transactions.h"
 
+// External definitions
+extern analog_key_t analog_key;
+extern analog_config_t analog_config;
+extern uint8_t virtual_axes_from_self[2][8];
+extern uint8_t virtual_axes_from_slave[2][8];
+
 #ifdef SPLIT_KEYBOARD
 void kb_sync_a_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
     // copy virtual_axes_from_self to the outbound buffer
@@ -32,26 +38,3 @@ void user_sync_a_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t o
     EEPROM_USER_PARTIAL_UPDATE(analog_config, row, col);
 }
 #endif
-
-// Call this when a new value is set - do not call on slave...
-void eeconfig_update_sync_user(uint8_t row, uint8_t col){
-#ifdef SPLIT_KEYBOARD
-    user_sync_a_t *new_config = {
-        .row = row,
-        .col = col,
-        .config = analog_config[row][col]
-    }
-    if (is_keyboard_master()){
-        uint8_t literally_zero = 0;
-        transaction_rpc_exec(
-            USER_SYNC_A,
-            sizeof(user_sync_a_t),
-            &new_config,
-            sizeof(literally_zero),
-            &literally_zero
-        );
-    }
-#endif
-    // Save to EEPROM
-    EEPROM_USER_PARTIAL_UPDATE(analog_config, row, col);
-}

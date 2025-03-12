@@ -1,5 +1,9 @@
 SRC += custom_matrix.c custom_analog.c custom_calibration.c custom_scanning.c custom_transactions.c eeconfig_set_defaults.c dummy_pointing_device.c
 
+ifeq ($(strip $(VIA_ENABLE)), yes)
+	SRC += via_vial_communication.c
+endif
+
 MCU_LDSCRIPT = STM32F303xB_tinyuf2
 WEAR_LEVELING_DRIVER = embedded_flash
 
