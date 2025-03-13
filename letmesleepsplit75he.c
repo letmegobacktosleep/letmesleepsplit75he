@@ -462,7 +462,7 @@ void housekeeping_task_kb(void) {
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     static bool value_was_zero = true;
     static uint8_t brightness = 64;
-    static uint8_t caps_brightness = 192;
+    static uint8_t caps_brightness = 128;
 
     // Get current value
     brightness = rgb_matrix_get_val();
@@ -470,8 +470,8 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     // Light up Esc if CapsLock
     if (host_keyboard_led_state().caps_lock){
         // Always make brightness brighter than current brightness
-        caps_brightness = MIN(255, brightness + 128);
-        rgb_matrix_set_color(0, caps_brightness, caps_brightness, caps_brightness);
+        caps_brightness = MIN(255, brightness + 64);
+        RGB_MATRIX_INDICATOR_SET_COLOR(0, caps_brightness, caps_brightness, caps_brightness);
     }
 
     // Cut power to all other LEDs if brightness is zero
@@ -507,6 +507,10 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     mouse right (backlight)
     0b00100100
     0x24 = 36
+
+    caps lock (backlight)
+    0b00010100
+    0x14
 
     joystick + mouse left (backlight)
     0b11000100
