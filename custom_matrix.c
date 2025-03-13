@@ -13,6 +13,10 @@
 #include "eeconfig_set_defaults.h"
 #include "letmesleepsplit75he.h"
 
+#ifdef DEBUG_GREATEST_VALUE
+# include "print.h"
+#endif
+
 // is_keyboard_left()
 // returns a bool of whether it is left or right
 // is_keyboard_master()
@@ -309,7 +313,7 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
                 analog_key[row][col].down = MAX(raw, analog_key[row][col].down);
 #            endif
 #            ifdef DEBUG_GREATEST_VALUE
-                if (raw - analog_key[row][col].rest > greatest_value){
+                if ((raw - analog_key[row][col].rest) > greatest_value){
                     greatest_row = row;
                     greatest_col = col;
                     greatest_value = raw - analog_key[row][col].rest;
@@ -343,7 +347,7 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
 #endif
 
 #ifdef DEBUG_GREATEST_VALUE
-    printf(greatest_value);
+    dprintf("%d", greatest_value);
 #endif
 
     // compare current matrix against previous matrix
