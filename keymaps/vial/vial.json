@@ -41,22 +41,22 @@
       {
         "name": "Analog Mouse Toggle Left",
         "title": "Toggle use of WASD to control your mouse",
-        "shortName": "M_TG1"
+        "shortName": "M_TG_L"
       },
       {
         "name": "Analog Mouse Momentary Left",
         "title": "Momentarily use WASD Keys to control your mouse",
-        "shortName": "M_MO1"
+        "shortName": "M_MO_L"
       },
       {
         "name": "Analog Mouse Toggle Right",
         "title": "Toggle use of Arrow Keys to control your mouse",
-        "shortName": "M_TG2"
+        "shortName": "M_TG_R"
       },
       {
         "name": "Analog Mouse Momentary Right",
         "title": "Momentarily use Arrow Keys to control your mouse",
-        "shortName": "M_MO2"
+        "shortName": "M_MO_R"
       },
       {
         "name": "Dump Rest and Down values",

@@ -25,10 +25,10 @@ enum custom_keycodes {
     J_TG = QK_KB_0,
     M_TG,
     M_MO,
-    M_TG1,
-    M_MO1,
-    M_TG2,
-    M_MO2,
+    M_TG_L,
+    M_MO_L,
+    M_TG_R,
+    M_MO_R,
     DEBUG_REST_DOWN
 };
 /* This goes in the vial.json
