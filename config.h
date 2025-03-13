@@ -4,10 +4,11 @@
 // enable matrix scan rate debugging
 #define DEBUG_MATRIX_SCAN_RATE
 #define DEBUG_SAVE_REST_DOWN
+#define DEBUG_GREATEST_VALUE
 
 // enable processing of mouse and joystick
 #define ANALOG_KEY_VIRTUAL_AXES
-// enable processing of DKS
+// enable processing of DKS - only works for 16 cols
 #define DKS_ENABLE
 
 // number of multiplexer channels (must be 8 or 16 or 32)
@@ -108,10 +109,12 @@ ADC2_IN1 = D */
 
 // Definitions for virtual axes
 #ifdef ANALOG_KEY_VIRTUAL_AXES
+// 0.1mm deadzone due to environmental noise
+# define ANALOG_KEY_VIRTUAL_AXES_DEADZONE 5
 // the layer containing mouse keys
 # define MOUSE_LAYER 3
-// deadzone of around 0.5mm
-# define MOUSE_DEADZONE 15
+// 0.5mm deadzone to prevent accidental scroll
+# define SCROLL_DEADZONE 15
 // qmk requires these
 # define JOYSTICK_BUTTON_COUNT 0
 # define JOYSTICK_AXIS_COUNT 4

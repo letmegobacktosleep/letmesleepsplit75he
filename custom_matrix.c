@@ -136,8 +136,14 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
     static uint8_t virtual_axes_temp[4][4] = { 0 };
 
     // row, col that can be modified - static because maybe it goes faster? I honestly don't know...
-    static uint8_t this_row = 0;
-    static uint8_t this_col = 0;
+    static uint8_t row = 0;
+    static uint8_t col = 0;
+
+#ifdef DEBUG_GREATEST_VALUE
+    uint8_t greatest_row = 0;
+    uint8_t greatest_col = 0;
+    uint16_t greatest_value = 0;
+#endif
 
     // create variables to track time
     static bool save_rest_values = false;
@@ -181,11 +187,11 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
         for (uint8_t current_row = 0; current_row < ROWS_PER_HAND; current_row++){
 
             // update modifable row, col
-            this_row = current_row + row_offset;
-            this_col = current_col;
+            row = current_row + row_offset;
+            col = current_col;
 
             // if the key should be scanned
-            if (BIT_GET(custom_matrix_mask[this_row], this_col)){
+            if (BIT_GET(custom_matrix_mask[row], col)){
                 
                 // get raw adc value
                 uint16_t raw = raw_values[current_row];
@@ -198,7 +204,7 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
                 }
 
                 // run calibration (output 0-1023)
-                uint16_t calibrated = scale_raw_value(raw, analog_key[this_row][this_col].rest, lut_multiplier);
+                uint16_t calibrated = scale_raw_value(raw, analog_key[row][col].rest, lut_multiplier);
 
                 // run lookup table (output 0-200, where 200=4mm)
                 uint8_t displacement = lut_displacement[calibrated];
@@ -206,10 +212,10 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
                 if (
                     // run actuation
                     actuation(
-                        &analog_config[this_row][this_col], 
-                        &analog_key[this_row][this_col], 
-                        &current_matrix[this_row], 
-                        this_col,
+                        &analog_config[row][col], 
+                        &analog_key[row][col], 
+                        &current_matrix[row], 
+                        col,
                         displacement, 
                         calibration_parameters.displacement.max_output
                     )
@@ -221,24 +227,24 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
 
 #            ifdef DKS_ENABLE
                 // handle DKS
-                if (analog_key[this_row][this_col].mode >= 10){
+                if (analog_key[row][col].mode >= 10){
                     // run actuation on four keys
                     for (uint8_t k = 0; k < 4; k++){
-                        this_col = k + (4 * (analog_key[this_row][this_col].mode - 10));
+                        col = k + (4 * (analog_key[row][col].mode - 10));
 #                    ifdef SPLIT_KEYBOARD
-                        this_row = ROWS_PER_HAND * (1 + (this_col / MATRIX_COLS)) - 1; // last row on left, last row on right
+                        row = ROWS_PER_HAND * (1 + (col / MATRIX_COLS)) - 1; // last row on left, last row on right
 #                    else
-                        this_row = ROWS_PER_HAND + (     this_col / MATRIX_COLS ) - 2; // second last row, last row
+                        row = ROWS_PER_HAND + (     col / MATRIX_COLS ) - 2; // second last row, last row
 #                    endif
-                        this_col %= MATRIX_COLS;
+                        col %= MATRIX_COLS;
                         
                         if (
                             // run actuation
                             actuation(
-                                &analog_config[this_row][this_col], 
-                                &analog_key[this_row][this_col], 
-                                &current_matrix[this_row], 
-                                this_col,
+                                &analog_config[row][col], 
+                                &analog_key[row][col], 
+                                &current_matrix[row], 
+                                col,
                                 displacement, 
                                 calibration_parameters.displacement.max_output
                             )
@@ -255,15 +261,16 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
                 if (
                     BIT_GET(virtual_axes_toggle, va_joystick) || 
                     BIT_GET(virtual_axes_toggle, va_mouse)    || 
-                    BIT_GET(virtual_axes_toggle, va_mouse_right)
+                    BIT_GET(virtual_axes_toggle, va_mouse_right) &&
+                    displacement > ANALOG_KEY_VIRTUAL_AXES_DEADZONE
                 )
                 {
                     for (uint8_t k = 0; k < 8; k++){
 #                    ifdef JOYSTICK_COORDINATES     
                         if (
                             BIT_GET(virtual_axes_toggle, va_joystick) && 
-                            this_col == joystick_coordinates[k][1] && 
-                            this_row == joystick_coordinates[k][0]
+                            col == joystick_coordinates[k][1] && 
+                            row == joystick_coordinates[k][0]
                         )
                         {
                             virtual_axes_temp[0][k] += lut_joystick[calibrated];
@@ -272,8 +279,8 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
 #                    ifdef MOUSE_COORDINATES
                         if (
                             BIT_GET(virtual_axes_toggle, va_mouse) && 
-                            this_col == mouse_coordinates[k][1] && 
-                            this_row == mouse_coordinates[k][0]
+                            col == mouse_coordinates[k][1] && 
+                            row == mouse_coordinates[k][0]
                         )
                         {
                             virtual_axes_temp[1][k] += lut_joystick[calibrated];
@@ -282,8 +289,8 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
 #                    ifdef MOUSE_COORDINATES_RIGHT
                         if (
                             BIT_GET(virtual_axes_toggle, va_mouse_right) && 
-                            this_col == mouse_coordinates_right[k][1] && 
-                            this_row == mouse_coordinates_right[k][0]
+                            col == mouse_coordinates_right[k][1] && 
+                            row == mouse_coordinates_right[k][0]
                         )
                         {
                             virtual_axes_temp[1][k] += lut_joystick[calibrated];
@@ -295,11 +302,18 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
 
                 // save rest values
                 if (save_rest_values) {
-                    analog_key[this_row][this_col].rest = MIN(raw, ANALOG_MULTIPLIER_LUT_SIZE - 1);
+                    analog_key[row][col].rest = MIN(raw, ANALOG_MULTIPLIER_LUT_SIZE - 1);
                 }
+                
 #            ifdef DEBUG_SAVE_REST_DOWN
-                // save down values
-                analog_key[this_row][this_col].down = MAX(raw, analog_key[this_row][this_col].down);
+                analog_key[row][col].down = MAX(raw, analog_key[row][col].down);
+#            endif
+#            ifdef DEBUG_GREATEST_VALUE
+                if (raw - analog_key[row][col].rest > greatest_value){
+                    greatest_row = row;
+                    greatest_col = col;
+                    greatest_value = raw - analog_key[row][col].rest;
+                }
 #            endif
             }
         }
@@ -326,6 +340,10 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
     memcpy(virtual_axes_from_self, virtual_axes_temp, sizeof(virtual_axes_temp));
     // clear virtual axes temp
     memset(virtual_axes_temp, 0, sizeof(virtual_axes_temp));
+#endif
+
+#ifdef DEBUG_GREATEST_VALUE
+    printf(greatest_value);
 #endif
 
     // compare current matrix against previous matrix
