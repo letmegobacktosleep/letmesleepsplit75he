@@ -313,10 +313,10 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
                 analog_key[row][col].down = MAX(raw, analog_key[row][col].down);
 #            endif
 #            ifdef DEBUG_GREATEST_VALUE
-                if ((raw - analog_key[row][col].rest) > greatest_value){
+                if (calibrated > greatest_value){
                     greatest_row = row;
                     greatest_col = col;
-                    greatest_value = raw - analog_key[row][col].rest;
+                    greatest_value = calibrated;
                 }
 #            endif
             }
@@ -347,7 +347,7 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
 #endif
 
 #ifdef DEBUG_GREATEST_VALUE
-    dprintf("%d", greatest_value);
+    dprintf("row: %2u, col: %2u, val: %4u\n", greatest_row, greatest_col, greatest_value);
 #endif
 
     // compare current matrix against previous matrix

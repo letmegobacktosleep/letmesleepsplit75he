@@ -3,8 +3,10 @@
 
 // enable matrix scan rate debugging
 #define DEBUG_MATRIX_SCAN_RATE
+// enable saving and printing of rest and down values
 #define DEBUG_SAVE_REST_DOWN
-#define DEBUG_GREATEST_VALUE
+// enable printing of the key with the largest value
+// #define DEBUG_GREATEST_VALUE
 
 // enable processing of mouse and joystick
 #define ANALOG_KEY_VIRTUAL_AXES
