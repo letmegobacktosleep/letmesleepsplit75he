@@ -36,37 +36,37 @@ enum custom_keycodes {
     {
         "name": "Analog Joystick Toggle",
         "title": "Toggle use of WASD & PL;' as a joystick",
-        "shortName": "KC_JS_TG"
+        "shortName": "J_TG"
     },
     {
         "name": "Analog Mouse Toggle All",
         "title": "Toggle use of WASD & Arrow Keys to control your mouse",
-        "shortName": "KC_MS_TG"
+        "shortName": "M_TG"
     },
     {
         "name": "Analog Mouse Momentary All",
         "title": "Momentarily use WASD & Arrow Keys to control your mouse",
-        "shortName": "KC_MS_MO"
+        "shortName": "M_MO"
     },
     {
         "name": "Analog Mouse Toggle Left",
         "title": "Toggle use of WASD to control your mouse",
-        "shortName": "KC_MS_TG1"
+        "shortName": "M_TG_L"
     },
     {
         "name": "Analog Mouse Momentary Left",
         "title": "Momentarily use WASD Keys to control your mouse",
-        "shortName": "KC_MS_MO1"
+        "shortName": "M_MO_L"
     },
     {
         "name": "Analog Mouse Toggle Right",
         "title": "Toggle use of Arrow Keys to control your mouse",
-        "shortName": "KC_MS_TG2"
+        "shortName": "M_TG_R"
     },
     {
         "name": "Analog Mouse Momentary Right",
         "title": "Momentarily use Arrow Keys to control your mouse",
-        "shortName": "KC_MS_MO2"
+        "shortName": "M_MO_R"
     }
 ],
 */

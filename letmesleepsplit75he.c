@@ -140,7 +140,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 # ifdef ANALOG_KEY_VIRTUAL_AXES
 #    if defined(JOYSTICK_COORDINATES)
         // check for keycodes which toggle joystick or mouse
-        case KC_JS_TG:
+        case J_TG:
             if (record->event.pressed){ // only change state on key press
                 BIT_FLP(virtual_axes_toggle, va_joystick);
             }
@@ -152,7 +152,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             return false;
 #    endif
 #    if (defined(MOUSE_COORDINATES) || defined(MOUSE_COORDINATES_RIGHT))
-        case KC_MS_TG:
+        case M_TG:
             if (record->event.pressed){ // only change state on key press
 #        if defined(MOUSE_COORDINATES)
                 BIT_FLP(virtual_axes_toggle, va_mouse);
@@ -174,7 +174,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             );
             return false;
 
-        case KC_MS_MO:
+        case M_MO:
             if (record->event.pressed){
 #        if defined(MOUSE_COORDINATES)
                 BIT_SET(virtual_axes_toggle, va_mouse);
@@ -205,7 +205,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             return false;
 #    endif
 #    if defined(MOUSE_COORDINATES)
-        case KC_MS_TG1:
+        case M_TG_L:
             if (record->event.pressed){ // only change state on key press
                 BIT_FLP(virtual_axes_toggle, va_mouse);
             }
@@ -218,7 +218,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             );
             return false;
             
-        case KC_MS_MO1:
+        case M_MO_L:
             if (record->event.pressed){
                 BIT_SET(virtual_axes_toggle, va_mouse);
             }
@@ -235,7 +235,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             return false;
 #    endif
 #    if defined(MOUSE_COORDINATES_RIGHT)
-        case KC_MS_TG2:
+        case M_TG_R:
             if (record->event.pressed){ // only change state on key press
                 BIT_FLP(virtual_axes_toggle, va_mouse_right);
             }
@@ -248,7 +248,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             );
             return false;
             
-        case KC_MS_MO2:
+        case M_MO_R:
             if (record->event.pressed){
                 BIT_SET(virtual_axes_toggle, va_mouse_right);
             }
