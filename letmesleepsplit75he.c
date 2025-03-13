@@ -86,7 +86,7 @@ void keyboard_post_init_kb(void) {
     transaction_register_rpc(USER_SYNC_A, user_sync_a_slave_handler);
 #endif
     // Set default state - ignore
-    BIT_CLR(virtual_axes_toggle, va_ignore_keypresses);
+    BIT_SET(virtual_axes_toggle, va_ignore_keypresses);
     
     // Call user version of this function
     keyboard_post_init_user();
