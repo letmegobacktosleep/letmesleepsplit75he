@@ -150,9 +150,31 @@
   ],
   [
     {
+      "a": 0,
+      "fa": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        0,
+        1
+      ],
       "w": 1.5
     },
-    "KC_LCTL\n\n\n\n0\n9",
+    "\n\n\n\n0\n9\n0\n0\nKC_LCTL\n\nLeft DKS",
+    {
+      "x": -1.5,
+      "w": 1.5
+    },
+    "\n\n\n\n0\n9\n0\n1\nKC_LCTL",
+    {
+      "a": 1
+    },
     "KC_LGUI\n\n\n\n0\n10",
     {
       "w": 1.5
@@ -165,9 +187,18 @@
     "MO(1)\n\n\n\n1\n12",
     {
       "x": 1,
+      "a": 0,
       "w": 2.75
     },
-    "KC_SPC\n\n\n\n4\n12",
+    "\n\n\n\n4\n12\n1\n0\nKC_SPC\n\nRight DKS",
+    {
+      "x": -2.75,
+      "w": 2.75
+    },
+    "\n\n\n\n4\n12\n1\n1\nKC_SPC",
+    {
+      "a": 1
+    },
     "KC_RALT\n\n\n\n5\n11",
     "KC_RGUI\n\n\n\n5\n12",
     "KC_RCTL\n\n\n\n5\n14",
@@ -177,62 +208,63 @@
   ],
   [
     {
-      "y": 0.5
+      "y": 0.5,
+      "a": 0
     },
-    "KC_NO\n\n\n\n3\n0",
-    "KC_NO\n\n\n\n3\n1",
-    "KC_NO\n\n\n\n3\n2",
-    "KC_NO\n\n\n\n3\n3",
+    "\n\n\n\n3\n0\n0\n1\nKC_NO",
+    "\n\n\n\n3\n1\n0\n1\nKC_NO",
+    "\n\n\n\n3\n2\n0\n1\nKC_NO",
+    "\n\n\n\n3\n3\n0\n1\nKC_NO",
     {
       "x": 0.25
     },
-    "KC_NO\n\n\n\n3\n4",
-    "KC_NO\n\n\n\n3\n5",
-    "KC_NO\n\n\n\n3\n6",
-    "KC_NO\n\n\n\n3\n7",
+    "\n\n\n\n3\n4\n0\n1\nKC_NO",
+    "\n\n\n\n3\n5\n0\n1\nKC_NO",
+    "\n\n\n\n3\n6\n0\n1\nKC_NO",
+    "\n\n\n\n3\n7\n0\n1\nKC_NO",
     {
       "x": 0.5
     },
-    "KC_NO\n\n\n\n7\n0",
-    "KC_NO\n\n\n\n7\n1",
-    "KC_NO\n\n\n\n7\n2",
-    "KC_NO\n\n\n\n7\n3",
+    "\n\n\n\n7\n0\n1\n1\nKC_NO",
+    "\n\n\n\n7\n1\n1\n1\nKC_NO",
+    "\n\n\n\n7\n2\n1\n1\nKC_NO",
+    "\n\n\n\n7\n3\n1\n1\nKC_NO",
     {
       "x": 0.25
     },
-    "KC_NO\n\n\n\n7\n4",
-    "KC_NO\n\n\n\n7\n5",
-    "KC_NO\n\n\n\n7\n6",
-    "KC_NO\n\n\n\n7\n7"
+    "\n\n\n\n7\n4\n1\n1\nKC_NO",
+    "\n\n\n\n7\n5\n1\n1\nKC_NO",
+    "\n\n\n\n7\n6\n1\n1\nKC_NO",
+    "\n\n\n\n7\n7\n1\n1\nKC_NO"
   ],
   [
     {
       "y": 0.25
     },
-    "KC_NO\n\n\n\n3\n8",
-    "KC_NO\n\n\n\n3\n9",
-    "KC_NO\n\n\n\n3\n10",
-    "KC_NO\n\n\n\n3\n11",
+    "\n\n\n\n3\n8\n0\n1\nKC_NO",
+    "\n\n\n\n3\n9\n0\n1\nKC_NO",
+    "\n\n\n\n3\n10\n0\n1\nKC_NO",
+    "\n\n\n\n3\n11\n0\n1\nKC_NO",
     {
       "x": 0.25
     },
-    "KC_NO\n\n\n\n3\n12",
-    "KC_NO\n\n\n\n3\n13",
-    "KC_NO\n\n\n\n3\n14",
-    "KC_NO\n\n\n\n3\n15",
+    "\n\n\n\n3\n12\n0\n1\nKC_NO",
+    "\n\n\n\n3\n13\n0\n1\nKC_NO",
+    "\n\n\n\n3\n14\n0\n1\nKC_NO",
+    "\n\n\n\n3\n15\n0\n1\nKC_NO",
     {
       "x": 0.5
     },
-    "KC_NO\n\n\n\n7\n8",
-    "KC_NO\n\n\n\n7\n9",
-    "KC_NO\n\n\n\n7\n10",
-    "KC_NO\n\n\n\n7\n11",
+    "\n\n\n\n7\n8\n1\n1\nKC_NO",
+    "\n\n\n\n7\n9\n1\n1\nKC_NO",
+    "\n\n\n\n7\n10\n1\n1\nKC_NO",
+    "\n\n\n\n7\n11\n1\n1\nKC_NO",
     {
       "x": 0.25
     },
-    "KC_NO\n\n\n\n7\n12",
-    "KC_NO\n\n\n\n7\n13",
-    "KC_NO\n\n\n\n7\n14",
-    "KC_NO\n\n\n\n7\n15"
+    "\n\n\n\n7\n12\n1\n1\nKC_NO",
+    "\n\n\n\n7\n13\n1\n1\nKC_NO",
+    "\n\n\n\n7\n14\n1\n1\nKC_NO",
+    "\n\n\n\n7\n15\n1\n1\nKC_NO"
   ]
 ]
