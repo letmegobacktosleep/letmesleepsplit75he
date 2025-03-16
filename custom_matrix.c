@@ -347,7 +347,12 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
 #endif
 
 #ifdef DEBUG_GREATEST_VALUE
-    dprintf("row: %2u, col: %2u, val: %4u\n", greatest_row, greatest_col, greatest_value);
+    if (
+        BIT_GET(virtual_axes_toggle, db_print_greatest_value)
+    )
+    {
+        uprintf("row: %2u, col: %2u, val: %4u\n", greatest_row, greatest_col, greatest_value);
+    }
 #endif
 
     // compare current matrix against previous matrix

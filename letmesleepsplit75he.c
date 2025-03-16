@@ -269,7 +269,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             return false;
 #    endif
 # endif
-# ifdef DEBUG_REST_DOWN
+# ifdef DEBUG_SAVE_REST_DOWN
         case PRINT_REST_DOWN:
             uint8_t offset = 0;
             char str_buf = [8];
@@ -300,6 +300,12 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
                     }
                 }
             }
+            return false;
+# endif
+# ifdef DEBUG_GREATEST_VALUE
+        case DEBUG_RAW_VALUE:
+            BIT_FLP(virtual_axes_toggle, db_print_greatest_value);
+            return false;
 # endif
         default:
             return true;
