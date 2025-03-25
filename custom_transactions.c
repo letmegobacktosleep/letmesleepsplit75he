@@ -8,8 +8,8 @@
 #include "custom_transactions.h"
 
 // External definitions
-extern analog_key_t analog_key;
-extern analog_config_t analog_config;
+extern analog_key_t analog_key[MATRIX_ROWS][MATRIX_COLS];
+extern analog_config_t analog_config[MATRIX_ROWS][MATRIX_COLS];
 extern uint8_t virtual_axes_from_self[2][8];
 extern uint8_t virtual_axes_from_slave[2][8];
 
@@ -24,9 +24,9 @@ void user_sync_a_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t o
     const user_sync_a_t *new_config = (const user_sync_a_t*) in_data;
 
     // Extract data
-    uint8_t row = *new_config.row;
-    uint8_t col = *new_config.col;
-    analog_config_t config = *new_config.config;
+    uint8_t row = *new_config->row;
+    uint8_t col = *new_config->col;
+    analog_config_t config = *new_config->config;
 
     // Copy to analog_config
     memcpy(&(analog_config[row][col]), config, sizeof(analog_config_t));
