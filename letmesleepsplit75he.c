@@ -36,13 +36,13 @@ joystick_config_t joystick_axes[JOYSTICK_AXIS_COUNT] = {
 };
 
 # ifdef JOYSTICK_COORDINATES
-extern const uint8_t joystick_coordinates[2][8];
+extern const uint8_t joystick_coordinates[8][2];
 # endif
 # ifdef MOUSE_COORDINATES
-extern const uint8_t mouse_coordinates[2][8];
+extern const uint8_t mouse_coordinates[8][2];
 # endif
 # ifdef MOUSE_COORDINATES_RIGHT
-extern const uint8_t mouse_coordinates_right[2][8];
+extern const uint8_t mouse_coordinates_right[8][2];
 # endif
 #endif
 
@@ -93,6 +93,37 @@ void keyboard_post_init_kb(void) {
 }
 
 
+
+void handle_virtual_mouse_layer(uint8_t virtual_axes_toggle){
+    if (
+        BIT_GET(virtual_axes_toggle, va_mouse) || 
+        BIT_GET(virtual_axes_toggle, va_mouse_right)
+    )
+    {
+        layer_on(MOUSE_LAYER); // turn on mouse layer
+    }
+    else {
+        layer_off(MOUSE_LAYER); // turn off mouse layer
+    }
+    return;
+}
+
+void handle_virtual_axes_keys(uint8_t coordinates[8][2], bool should_ignore){
+    if (BIT_GET(virtual_axes_toggle, va_ignore_keypresses)){
+        for (uint8_t i = 0; i < 8; i++){
+            uint8_t row = coordinates[i][0];
+            uint8_t col = coordinates[i][1];
+            if (row != 255 && col != 255){
+                if (should_ignore){
+                    analog_key[row][col].mode = 255;
+                }
+                else {
+                    analog_key[row][col].mode = analog_config[row][col].mode;
+                }
+            }
+        }
+    }
+}
 
 bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
     switch (keycode){
@@ -232,14 +263,15 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 #    endif
 # endif
 # ifdef DEBUG_SAVE_REST_DOWN
-        case PRINT_REST_DOWN:
+        case DEBUG_REST_DOWN:
             uint8_t offset = 0;
             char str_buf = [8];
             const matrix_row_t mask[MATRIX_ROWS] = CUSTOM_MATRIX_MASK;
 
             if (!is_keyboard_left()){
-                offset = ROWS_PER_HAND
+                offset = ROWS_PER_HAND;
             }
+
             SEND_STRING("row,col,rest,down\n");
             for (row = offset; row < ROWS_PER_HAND + offset; row++){
                 for (col = 0; col < MATRIX_COLS; col++){
@@ -275,37 +307,6 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 }
 
 
-
-void handle_virtual_mouse_layer(uint8_t virtual_axes_toggle){
-    if (
-        BIT_GET(virtual_axes_toggle, va_mouse) || 
-        BIT_GET(virtual_axes_toggle, va_mouse_right)
-    )
-    {
-        layer_on(MOUSE_LAYER); // turn on mouse layer
-    }
-    else {
-        layer_off(MOUSE_LAYER); // turn off mouse layer
-    }
-    return;
-}
-
-void handle_virtual_axes_keys(uint8_t coordinates[8][2], bool should_ignore){
-    if (BIT_GET(virtual_axes_toggle, va_ignore_keypresses)){
-        for (uint8_t i = 0; i < 8, i++){
-            row = coordinates[i][0];
-            col = coordinates[i][1];
-            if (row != 255 && col != 255){
-                if (should_ignore){
-                    analog_key[row][col].mode = 255;
-                }
-                else {
-                    analog_key[row][col].mode = analog_config[row][col].mode;
-                }
-            }
-        }
-    }
-}
 
 void housekeeping_task_kb(void) {
     // Sync virtual axes, if enabled https://docs.qmk.fm/features/split_keyboard#custom-data-sync
