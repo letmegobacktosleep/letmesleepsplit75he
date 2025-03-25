@@ -129,7 +129,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 
 # ifdef DEBUG_SAVE_REST_DOWN
     uint8_t offset = 0;
-    char str_buf = [8];
+    char str_buf[8] = 0;
     const matrix_row_t mask[MATRIX_ROWS] = CUSTOM_MATRIX_MASK;
     if (!is_keyboard_left()){
         offset = ROWS_PER_HAND;
