@@ -7,6 +7,8 @@
 #include "transactions.h"
 #include "custom_transactions.h"
 
+#include "eeconfig_set_defaults.h"
+
 // External definitions
 extern analog_key_t analog_key[MATRIX_ROWS][MATRIX_COLS];
 extern analog_config_t analog_config[MATRIX_ROWS][MATRIX_COLS];
