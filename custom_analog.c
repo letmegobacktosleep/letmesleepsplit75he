@@ -14,6 +14,23 @@ static ADCManager adcManager;
 // External definitions
 extern SPLIT_MUTABLE_ROW pin_t row_pins[ROWS_PER_HAND];
 
+// called whenever an adc conversion is completed
+void adcCompleteCallback(ADCDriver *adcp) {
+    (void)adcp; // Unused parameter
+    osalSysLockFromISR();
+    adcManager.completedConversions++;
+
+    if (
+        ( is_keyboard_left() && adcManager.completedConversions >= N_ADCS_SCANNED) || 
+        (!is_keyboard_left() && adcManager.completedConversions >= N_ADCS_SCANNED_RIGHT)
+    )
+    {
+        chSemSignalI(&adcManager.sem);
+    }
+    
+    osalSysUnlockFromISR();
+}
+
 // initialise adc pins and start the adcs
 void initADCGroups(void) {
     adcManager.completedConversions = 0;

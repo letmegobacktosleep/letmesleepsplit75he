@@ -1,24 +1,9 @@
 #pragma once
 
 #include "config.h"
+#include "custom_analog.h"
+
 #include "hal.h"
-
-// called whenever an adc conversion is completed
-static void adcCompleteCallback(ADCDriver *adcp) {
-    (void)adcp; // Unused parameter
-    osalSysLockFromISR();
-    adcManager.completedConversions++;
-
-    if (
-        ( is_keyboard_left() && adcManager.completedConversions >= N_ADCS_SCANNED) || 
-        (!is_keyboard_left() && adcManager.completedConversions >= N_ADCS_SCANNED_RIGHT)
-    )
-    {
-        chSemSignalI(&adcManager.sem);
-    }
-    
-    osalSysUnlockFromISR();
-}
 
 // print errors to the console
 void adcErrorCallback(ADCDriver *adcp, adcerror_t err) {
