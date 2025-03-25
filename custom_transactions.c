@@ -24,12 +24,12 @@ void user_sync_a_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t o
     const user_sync_a_t *new_config = (const user_sync_a_t*) in_data;
 
     // Extract data
-    uint8_t row = *new_config->row;
-    uint8_t col = *new_config->col;
-    analog_config_t config = *new_config->config;
+    uint8_t row = new_config->row;
+    uint8_t col = new_config->col;
+    analog_config_t config = new_config->config;
 
     // Copy to analog_config
-    memcpy(&(analog_config[row][col]), config, sizeof(analog_config_t));
+    memcpy(&(analog_config[row][col]), &config, sizeof(analog_config_t));
     
     // Update mode in analog_key
     analog_key[row][col].mode = analog_config[row][col].mode;
