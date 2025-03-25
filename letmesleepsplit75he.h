@@ -19,7 +19,7 @@ enum virtual_axes_bits {
     va_mouse,
     va_mouse_right,
     db_print_greatest_value,
-}
+};
 
 // Custom keycodes
 enum custom_keycodes {
