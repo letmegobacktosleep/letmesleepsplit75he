@@ -108,7 +108,7 @@ void handle_virtual_mouse_layer(uint8_t virtual_axes_toggle){
     return;
 }
 
-void handle_virtual_axes_keys(uint8_t coordinates[8][2], bool should_ignore){
+void handle_virtual_axes_keys(uint8_t coordinates[][2], bool should_ignore){
     if (BIT_GET(virtual_axes_toggle, va_ignore_keypresses)){
         for (uint8_t i = 0; i < 8; i++){
             uint8_t row = coordinates[i][0];
@@ -126,6 +126,16 @@ void handle_virtual_axes_keys(uint8_t coordinates[8][2], bool should_ignore){
 }
 
 bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
+
+# ifdef DEBUG_SAVE_REST_DOWN
+    uint8_t offset = 0;
+    char str_buf = [8];
+    const matrix_row_t mask[MATRIX_ROWS] = CUSTOM_MATRIX_MASK;
+    if (!is_keyboard_left()){
+        offset = ROWS_PER_HAND;
+    }
+# endif
+
     switch (keycode){
         case KC_ESC:
             // press caps if caps is on
@@ -264,33 +274,25 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 # endif
 # ifdef DEBUG_SAVE_REST_DOWN
         case DEBUG_REST_DOWN:
-            uint8_t offset = 0;
-            char str_buf = [8];
-            const matrix_row_t mask[MATRIX_ROWS] = CUSTOM_MATRIX_MASK;
-
-            if (!is_keyboard_left()){
-                offset = ROWS_PER_HAND;
-            }
-
             SEND_STRING("row,col,rest,down\n");
-            for (row = offset; row < ROWS_PER_HAND + offset; row++){
-                for (col = 0; col < MATRIX_COLS; col++){
+            for (uint8_t row = offset; row < ROWS_PER_HAND + offset; row++){
+                for (uint8_t col = 0; col < MATRIX_COLS; col++){
                     if (
                         BIT_GET(mask[row], col)
                     )
                     {
                         sprintf(str_buf, "%d", row);
                         SEND_STRING(str_buf);
-                        SEND_STRING(",")
+                        SEND_STRING(",");
                         sprintf(str_buf, "%d", col);
                         SEND_STRING(str_buf);
-                        SEND_STRING(",")
+                        SEND_STRING(",");
                         sprintf(str_buf, "%d", analog_key[row][col].rest);
                         SEND_STRING(str_buf);
-                        SEND_STRING(",")
+                        SEND_STRING(",");
                         sprintf(str_buf, "%d", analog_key[row][col].down);
                         SEND_STRING(str_buf);
-                        SEND_STRING("\n")
+                        SEND_STRING("\n");
                     }
                 }
             }
