@@ -17,7 +17,6 @@ typedef struct {
 
 // Function Prototypes
 void initADCGroups(void);
-void adcErrorCallback(ADCDriver *adcp, adcerror_t err);
 msg_t adcStartAllConversions(uint8_t current_col);
 msg_t adcWaitForConversions(void);
 adcsample_t getADCSample(uint8_t current_row);

@@ -14,23 +14,6 @@ static ADCManager adcManager;
 // External definitions
 extern SPLIT_MUTABLE_ROW pin_t row_pins[ROWS_PER_HAND];
 
-// called whenever an adc conversion is completed
-static void adcCompleteCallback(ADCDriver *adcp) {
-    (void)adcp; // Unused parameter
-    osalSysLockFromISR();
-    adcManager.completedConversions++;
-
-    if (
-        ( is_keyboard_left() && adcManager.completedConversions >= N_ADCS_SCANNED) || 
-        (!is_keyboard_left() && adcManager.completedConversions >= N_ADCS_SCANNED_RIGHT)
-    )
-    {
-        chSemSignalI(&adcManager.sem);
-    }
-    
-    osalSysUnlockFromISR();
-}
-
 // initialise adc pins and start the adcs
 void initADCGroups(void) {
     adcManager.completedConversions = 0;
@@ -147,31 +130,4 @@ adcsample_t getADCSample(uint8_t current_row) {
         default:
             return ANALOG_RAW_MAX_VALUE;
     }
-}
-
-// print errors to the console
-void adcErrorCallback(ADCDriver *adcp, adcerror_t err) {
-    (void)adcp; // Unused parameter
-    osalSysLockFromISR();
-    switch (err) {
-        case ADC_ERR_DMAFAILURE:
-            uprintf("ADC ERROR: DMA failure.\n");
-            break;
-        case ADC_ERR_OVERFLOW:
-            uprintf("ADC ERROR: Overflow.\n");
-            break;
-        case ADC_ERR_AWD1:
-            uprintf("ADC ERROR: Watchdog 1 triggered.\n");
-            break;
-        case ADC_ERR_AWD2:
-            uprintf("ADC ERROR: Watchdog 2 triggered.\n");
-            break;
-        case ADC_ERR_AWD3:
-            uprintf("ADC ERROR: Watchdog 3 triggered.\n");
-            break;
-        default:
-            uprintf("ADC ERROR: Unknown error.\n");
-            break;
-    }
-    osalSysUnlockFromISR();
 }

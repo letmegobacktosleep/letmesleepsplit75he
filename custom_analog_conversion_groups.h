@@ -3,6 +3,50 @@
 #include "config.h"
 #include "hal.h"
 
+// called whenever an adc conversion is completed
+static void adcCompleteCallback(ADCDriver *adcp) {
+    (void)adcp; // Unused parameter
+    osalSysLockFromISR();
+    adcManager.completedConversions++;
+
+    if (
+        ( is_keyboard_left() && adcManager.completedConversions >= N_ADCS_SCANNED) || 
+        (!is_keyboard_left() && adcManager.completedConversions >= N_ADCS_SCANNED_RIGHT)
+    )
+    {
+        chSemSignalI(&adcManager.sem);
+    }
+    
+    osalSysUnlockFromISR();
+}
+
+// print errors to the console
+void adcErrorCallback(ADCDriver *adcp, adcerror_t err) {
+    (void)adcp; // Unused parameter
+    osalSysLockFromISR();
+    switch (err) {
+        case ADC_ERR_DMAFAILURE:
+            uprintf("ADC ERROR: DMA failure.\n");
+            break;
+        case ADC_ERR_OVERFLOW:
+            uprintf("ADC ERROR: Overflow.\n");
+            break;
+        case ADC_ERR_AWD1:
+            uprintf("ADC ERROR: Watchdog 1 triggered.\n");
+            break;
+        case ADC_ERR_AWD2:
+            uprintf("ADC ERROR: Watchdog 2 triggered.\n");
+            break;
+        case ADC_ERR_AWD3:
+            uprintf("ADC ERROR: Watchdog 3 triggered.\n");
+            break;
+        default:
+            uprintf("ADC ERROR: Unknown error.\n");
+            break;
+    }
+    osalSysUnlockFromISR();
+}
+
 static const ADCConversionGroup adcConversionGroup1 = { // Channel 1 only
     .circular     = false,
     .num_channels = 1U,
@@ -79,7 +123,8 @@ static const ADCConversionGroup adcConversionGroup4 = { // Channel 4 only
     }
 };
 
-static const ADCConversionGroup adcConversionGroup4 = { // Channel 5 only
+/* Channel 5, not used in this keyboard
+static const ADCConversionGroup adcConversionGroup5 = { // Channel 5 only
     .circular     = false,
     .num_channels = 1U,
     .end_cb       = adcCompleteCallback,
@@ -97,9 +142,10 @@ static const ADCConversionGroup adcConversionGroup4 = { // Channel 5 only
         ADC_SQR1_SQ1_N(ADC_CHANNEL_IN5),
     }
 };
+*/
 
 /* Example of scanning multiple ADC channels
-static const ADCConversionGroup adcConversionGroup5 = { // Channels 1,2,3,4,5
+static const ADCConversionGroup adcConversionGroup6 = { // Channels 1,2,3,4,5
     .circular     = false,
     .num_channels = 5U,
     .end_cb       = adcCompleteCallback,
