@@ -16,4 +16,11 @@
 // Function prototypes
 void multiplexer_init(void);
 bool select_multiplexer_channel(uint8_t channel);
-bool actuation(analog_config_t *config, analog_key_t *key, matrix_row_t *current_row, uint8_t current_col, uint8_t current, uint8_t max_key_displacement);
+bool actuation(
+    const analog_config_t *config, 
+    analog_key_t *key, 
+    matrix_row_t *current_row, 
+    const uint8_t current_col, 
+    const uint8_t current, 
+    const uint8_t max_key_displacement
+);

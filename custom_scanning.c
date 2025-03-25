@@ -142,7 +142,7 @@ bool actuation(
                 (current < config->upper) // top deadzone
             )
             {
-                mode = 5;
+                key->mode = 5;
                 DEREGISTER_KEY(current_row, current_col);
                 return 0;
             }
