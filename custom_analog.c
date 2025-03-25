@@ -71,7 +71,7 @@ void initADCGroups(void) {
 }
 
 // start converting (non-continuous)
-msg_t adcStartAllConversions(ADCManager *adcManager, uint8_t current_col){
+msg_t adcStartAllConversions(uint8_t current_col){
     osalSysLock();
     adcManager.completedConversions = 0;
 
