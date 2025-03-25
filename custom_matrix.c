@@ -163,9 +163,9 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
     }
 
     // switch multiplexer to first column
-    select_multiplexer_channel(current_col);
+    select_multiplexer_channel(0);
     // start first adc scan
-    adcStartAllConversions(current_col);
+    adcStartAllConversions(0);
 
     // loop through columns
     for (uint8_t current_col = 0; current_col < MATRIX_COLS; current_col++){
@@ -263,9 +263,11 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
 #            ifdef ANALOG_KEY_VIRTUAL_AXES
                 // handle joystick
                 if (
-                    BIT_GET(virtual_axes_toggle, va_joystick) || 
-                    BIT_GET(virtual_axes_toggle, va_mouse)    || 
-                    BIT_GET(virtual_axes_toggle, va_mouse_right) &&
+                    (
+                        BIT_GET(virtual_axes_toggle, va_joystick) || 
+                        BIT_GET(virtual_axes_toggle, va_mouse)    || 
+                        BIT_GET(virtual_axes_toggle, va_mouse_right)
+                    ) &&
                     displacement > ANALOG_KEY_VIRTUAL_AXES_DEADZONE
                 )
                 {
@@ -358,3 +360,41 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
     // compare current matrix against previous matrix
     return memcmp(previous_matrix, current_matrix, sizeof(previous_matrix)) != 0;
 }
+
+
+
+#ifdef BOOTMAGIC_ENABLE
+void bootmagic_scan(void) {
+
+    uint16_t bootmagic_key_value = 0;
+
+# if (defined(BOOTMAGIC_ROW) && defined(BOOTMAGIC_COLUMN))
+    if (is_keyboard_left()){
+        select_multiplexer_channel(BOOTMAGIC_COLUMN);
+        adcStartAllConversions(BOOTMAGIC_COLUMN);
+        adcWaitForConversions();
+        bootmagic_key_value = getADCSample(BOOTMAGIC_ROW);
+    }
+# endif
+# if (defined(BOOTMAGIC_ROW_RIGHT) && defined(BOOTMAGIC_COLUMN_RIGHT))
+    if (!is_keyboard_left()){
+        select_multiplexer_channel(BOOTMAGIC_COLUMN_RIGHT);
+        adcStartAllConversions(BOOTMAGIC_COLUMN_RIGHT);
+        adcWaitForConversions();
+        bootmagic_key_value = getADCSample(BOOTMAGIC_ROW_RIGHT);
+    }
+#endif
+
+    if (bootmagic_key_value <= ANALOG_RAW_MAX_VALUE){
+        bootmagic_key_value = ANALOG_RAW_MAX_VALUE - bootmagic_key_value ;
+    }
+    else { // bootmagic_key_value > 2047
+        bootmagic_key_value = bootmagic_key_value - ANALOG_RAW_MAX_VALUE - 1;
+    }
+
+    // greater than the max rest value
+    if (bootmagic_key_value > ANALOG_MULTIPLIER_LUT_SIZE) {
+        bootloader_jump();
+    }
+}
+#endif

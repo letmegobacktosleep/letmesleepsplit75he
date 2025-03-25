@@ -94,44 +94,6 @@ void keyboard_post_init_kb(void) {
 
 
 
-#ifdef BOOTMAGIC_ENABLE
-void bootmagic_scan(void) {
-
-    uint16_t bootmagic_key_value = 0;
-
-# if (defined(BOOTMAGIC_ROW) && defined(BOOTMAGIC_COLUMN))
-    if (is_keyboard_left()){
-        select_multiplexer_channel(BOOTMAGIC_COLUMN);
-        adcStartAllConversions(BOOTMAGIC_COLUMN);
-        adcWaitForConversions();
-        bootmagic_key_value = getADCSample(BOOTMAGIC_ROW);
-    }
-# endif
-# if (defined(BOOTMAGIC_ROW_RIGHT) && defined(BOOTMAGIC_COLUMN_RIGHT))
-    if (!is_keyboard_left()){
-        select_multiplexer_channel(BOOTMAGIC_COLUMN_RIGHT);
-        adcStartAllConversions(BOOTMAGIC_COLUMN_RIGHT);
-        adcWaitForConversions();
-        bootmagic_key_value = getADCSample(BOOTMAGIC_ROW_RIGHT);
-    }
-#endif
-
-    if (bootmagic_key_value <= ANALOG_RAW_MAX_VALUE){
-        bootmagic_key_value = ANALOG_RAW_MAX_VALUE - bootmagic_key_value ;
-    }
-    else { // bootmagic_key_value > 2047
-        bootmagic_key_value = bootmagic_key_value - ANALOG_RAW_MAX_VALUE - 1;
-    }
-
-    // greater than the max rest value
-    if (bootmagic_key_value > ANALOG_MULTIPLIER_LUT_SIZE) {
-        bootloader_jump();
-    }
-}
-#endif
-
-
-
 bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
     switch (keycode){
         case KC_ESC:
