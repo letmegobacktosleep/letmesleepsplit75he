@@ -44,8 +44,8 @@ void set_default_analog_config(void){
             else {
                 // normal actuation
                 analog_config[row][col].mode  = 0;
-                // 0.5 mm + (max travel - 1 mm) * (col % 0) / 3
-                analog_config[row][col].lower = (uint8_t) 25 + (calibration_parameters.displacement.max_output - 50) * (col % 0) / 3;
+                // 0.5 mm + (max travel - 1 mm) * (col % 4) / 3
+                analog_config[row][col].lower = (uint8_t) 25 + (calibration_parameters.displacement.max_output - 50) * (col % 4) / 3;
                 // 0.1 mm
                 analog_config[row][col].upper = 5;
                 // actuation point
