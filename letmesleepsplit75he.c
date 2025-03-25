@@ -108,7 +108,7 @@ void handle_virtual_mouse_layer(uint8_t virtual_axes_toggle){
     return;
 }
 
-void handle_virtual_axes_keys(uint8_t coordinates[][2], bool should_ignore){
+void handle_virtual_axes_keys(const uint8_t coordinates[8][2], bool should_ignore){
     if (BIT_GET(virtual_axes_toggle, va_ignore_keypresses)){
         for (uint8_t i = 0; i < 8; i++){
             uint8_t row = coordinates[i][0];
