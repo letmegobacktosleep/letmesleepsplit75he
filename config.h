@@ -6,7 +6,7 @@
 // enable saving and printing of rest and down values
 #define DEBUG_SAVE_REST_DOWN
 // enable printing of the key with the largest value
-// #define DEBUG_LAST_PRESSED
+#define DEBUG_LAST_PRESSED
 
 // enable processing of mouse and joystick
 #define ANALOG_KEY_VIRTUAL_AXES

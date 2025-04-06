@@ -50,6 +50,7 @@ extern const uint8_t mouse_coordinates_right[8][2];
 #ifdef DEBUG_LAST_PRESSED
 extern uint8_t last_pressed_row;
 extern uint8_t last_pressed_col;
+extern uint16_t last_pressed_value;
 #endif
 
 typedef struct PACKED { 

@@ -53,6 +53,7 @@ static const pin_t rgb_enable_pin = CUSTOM_RGB_ENABLE_PIN;
 #ifdef DEBUG_LAST_PRESSED
 extern uint8_t last_pressed_row;
 extern uint8_t last_pressed_col;
+extern uint16_t last_pressed_value;
 #endif
 
 void eeconfig_init_user(void) {
@@ -315,8 +316,17 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 
 
 void housekeeping_task_kb(void) {
-    // Sync virtual axes, if enabled https://docs.qmk.fm/features/split_keyboard#custom-data-sync
+# ifdef DEBUG_LAST_PRESSED
+    // Print analog value of the last pressed key
+    static uint32_t last_print;
+    if (timer_elapsed32(last_print) > 100){ // Only print every 100ms
+        dprintf("row: %2u, col: %2u, val: %4u\n", last_pressed_row, last_pressed_col, last_pressed_value);
+        last_print = timer_read32();
+    }
+# endif
+    
 #ifdef ANALOG_KEY_VIRTUAL_AXES
+    // Sync virtual axes, if enabled https://docs.qmk.fm/features/split_keyboard#custom-data-sync
     static uint32_t last_sync = 0;
     if (timer_elapsed32(last_sync) > 10){ // Only update every 10ms
 #    ifdef SPLIT_KEYBOARD

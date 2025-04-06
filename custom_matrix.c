@@ -17,6 +17,7 @@
 # include "print.h"
 uint8_t last_pressed_row = 0;
 uint8_t last_pressed_col = 0;
+uint16_t last_pressed_value = 0;
 #endif
 
 // is_keyboard_left()
@@ -91,6 +92,30 @@ void generate_lookup_tables(void){
 
     return;
 }
+
+// helper moving average filter
+#ifdef DEBUG_LAST_PRESSED
+uint16_t simple_moving_average(uint16_t analog_value){
+    
+    // declare variables
+    static uint16_t buffer[16] = { 0 };
+    static uint8_t index;
+    uint32_t sum = 0;
+
+    // set next buffer index
+    buffer[index] = analog_value;
+    index = (index + 1) % 16;
+    
+    // sum numbers in array
+    for (uint8_t i = 0; i < 16; i++){
+        sum += buffer[i];
+    }
+    
+    // return average
+    return (uint16_t) (sum / 16);
+    
+}
+#endif
 
 // Initialise matrix
 void matrix_init_custom(void){
@@ -314,7 +339,7 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
                     col == last_pressed_col &&
                 )
                 {
-                    dprintf("row: %2u, col: %2u, val: %4u\n", last_pressed_row, last_pressed_col, calibrated);
+                    last_pressed_value = simple_moving_average(calibrated);
                 }
 #            endif
             }
@@ -351,7 +376,7 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
 
 
 #ifdef BOOTMAGIC_ENABLE
-void bootmagic_scan(void) {
+void bootmagic_scan(void){
 
     uint16_t bootmagic_key_value = 0;
 
