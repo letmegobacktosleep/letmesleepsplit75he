@@ -116,7 +116,7 @@ ADC2_IN1 = D */
 // the layer containing mouse keys
 # define MOUSE_LAYER 3
 // 0.5mm deadzone to prevent accidental scroll
-# define SCROLL_DEADZONE 15
+# define SCROLL_DEADZONE 11
 // qmk requires these
 # define JOYSTICK_BUTTON_COUNT 0
 # define JOYSTICK_AXIS_COUNT 4
