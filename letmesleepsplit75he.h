@@ -18,7 +18,6 @@ enum virtual_axes_bits {
     va_joystick,
     va_mouse,
     va_mouse_right,
-    db_print_greatest_value,
 };
 
 // Custom keycodes
@@ -31,7 +30,6 @@ enum custom_keycodes {
     M_TG_R,
     M_MO_R,
     DEBUG_REST_DOWN,
-    DEBUG_RAW_VALUE,
 };
 /* This goes in the vial.json
 "customKeycodes": [

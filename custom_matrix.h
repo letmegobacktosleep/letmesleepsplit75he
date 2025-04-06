@@ -47,6 +47,11 @@ extern const uint8_t mouse_coordinates_right[8][2];
 # endif
 #endif
 
+#ifdef DEBUG_LAST_PRESSED
+extern uint8_t last_pressed_row;
+extern uint8_t last_pressed_col;
+#endif
+
 typedef struct PACKED { 
 
     // All the settings

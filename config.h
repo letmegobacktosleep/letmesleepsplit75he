@@ -6,7 +6,7 @@
 // enable saving and printing of rest and down values
 #define DEBUG_SAVE_REST_DOWN
 // enable printing of the key with the largest value
-// #define DEBUG_GREATEST_VALUE
+// #define DEBUG_LAST_PRESSED
 
 // enable processing of mouse and joystick
 #define ANALOG_KEY_VIRTUAL_AXES
@@ -111,8 +111,8 @@ ADC2_IN1 = D */
 
 // Definitions for virtual axes
 #ifdef ANALOG_KEY_VIRTUAL_AXES
-// 0.1mm deadzone due to environmental noise
-# define ANALOG_KEY_VIRTUAL_AXES_DEADZONE 5
+// 0.2mm deadzone due to environmental noise
+# define ANALOG_KEY_VIRTUAL_AXES_DEADZONE 7
 // the layer containing mouse keys
 # define MOUSE_LAYER 3
 // 0.5mm deadzone to prevent accidental scroll

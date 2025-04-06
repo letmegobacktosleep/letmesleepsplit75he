@@ -86,7 +86,7 @@ void set_default_calibration_parameters(void){
     calibration_parameters.joystick.lut_c =  2.4625727130493122;
     calibration_parameters.joystick.lut_d = -97.2259635251049;
     calibration_parameters.joystick.max_input  = ANALOG_CAL_MAX_VALUE;
-    calibration_parameters.joystick.max_output = 127;
+    calibration_parameters.joystick.max_output = 127 + ANALOG_KEY_VIRTUAL_AXES_DEADZONE;
     
     calibration_parameters.multiplier.lut_a =  0;
     calibration_parameters.multiplier.lut_b =  0;

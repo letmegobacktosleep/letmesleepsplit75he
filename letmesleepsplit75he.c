@@ -50,6 +50,11 @@ extern const uint8_t mouse_coordinates_right[8][2];
 static const pin_t rgb_enable_pin = CUSTOM_RGB_ENABLE_PIN;
 #endif
 
+#ifdef DEBUG_LAST_PRESSED
+extern uint8_t last_pressed_row;
+extern uint8_t last_pressed_col;
+#endif
+
 void eeconfig_init_user(void) {
     // set default values
     set_default_analog_config();
@@ -134,6 +139,10 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
     if (!is_keyboard_left()){
         offset = ROWS_PER_HAND;
     }
+# endif
+# ifdef DEBUG_LAST_PRESSED
+    last_pressed_row = record->event.key.row;
+    last_pressed_col = record->event.key.col;
 # endif
 
     switch (keycode){
@@ -296,11 +305,6 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
                     }
                 }
             }
-            return false;
-# endif
-# ifdef DEBUG_GREATEST_VALUE
-        case DEBUG_RAW_VALUE:
-            BIT_FLP(virtual_axes_toggle, db_print_greatest_value);
             return false;
 # endif
         default:

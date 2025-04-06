@@ -13,8 +13,10 @@
 #include "eeconfig_set_defaults.h"
 #include "letmesleepsplit75he.h"
 
-#ifdef DEBUG_GREATEST_VALUE
+#ifdef DEBUG_LAST_PRESSED
 # include "print.h"
+uint8_t last_pressed_row = 0;
+uint8_t last_pressed_col = 0;
 #endif
 
 // is_keyboard_left()
@@ -143,12 +145,6 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
     static uint8_t row = 0;
     static uint8_t col = 0;
 
-#ifdef DEBUG_GREATEST_VALUE
-    uint8_t greatest_row = 0;
-    uint8_t greatest_col = 0;
-    uint16_t greatest_value = 0;
-#endif
-
     // create variables to track time
     static bool save_rest_values = false;
     static bool time_to_be_updated = false;
@@ -263,14 +259,12 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
 #            ifdef ANALOG_KEY_VIRTUAL_AXES
                 // handle joystick
                 if (
-                    (
-                        BIT_GET(virtual_axes_toggle, va_joystick) || 
-                        BIT_GET(virtual_axes_toggle, va_mouse)    || 
-                        BIT_GET(virtual_axes_toggle, va_mouse_right)
-                    ) &&
-                    displacement > ANALOG_KEY_VIRTUAL_AXES_DEADZONE
+                    BIT_GET(virtual_axes_toggle, va_joystick) || 
+                    BIT_GET(virtual_axes_toggle, va_mouse)    || 
+                    BIT_GET(virtual_axes_toggle, va_mouse_right)
                 )
                 {
+                    uint8_t joystick_value = MIN(0, lut_joystick[calibrated] - ANALOG_KEY_VIRTUAL_AXES_DEADZONE)
                     for (uint8_t k = 0; k < 8; k++){
 #                    ifdef JOYSTICK_COORDINATES     
                         if (
@@ -279,7 +273,7 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
                             row == joystick_coordinates[k][0]
                         )
                         {
-                            virtual_axes_temp[0][k] += lut_joystick[calibrated];
+                            virtual_axes_temp[0][k] += joystick_value;
                         }
 #                    endif
 #                    ifdef MOUSE_COORDINATES
@@ -289,7 +283,7 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
                             row == mouse_coordinates[k][0]
                         )
                         {
-                            virtual_axes_temp[1][k] += lut_joystick[calibrated];
+                            virtual_axes_temp[1][k] += joystick_value;
                         }
 #                    endif
 #                    ifdef MOUSE_COORDINATES_RIGHT
@@ -299,7 +293,7 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
                             row == mouse_coordinates_right[k][0]
                         )
                         {
-                            virtual_axes_temp[1][k] += lut_joystick[calibrated];
+                            virtual_axes_temp[1][k] += joystick_value;
                         }
 #                    endif
                     }
@@ -314,11 +308,13 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
 #            ifdef DEBUG_SAVE_REST_DOWN
                 analog_key[row][col].down = MAX(raw, analog_key[row][col].down);
 #            endif
-#            ifdef DEBUG_GREATEST_VALUE
-                if (calibrated > greatest_value){
-                    greatest_row = row;
-                    greatest_col = col;
-                    greatest_value = calibrated;
+#            ifdef DEBUG_LAST_PRESSED
+                if (
+                    row == last_pressed_row &&
+                    col == last_pressed_col &&
+                )
+                {
+                    dprintf("row: %2u, col: %2u, val: %4u\n", last_pressed_row, last_pressed_col, calibrated);
                 }
 #            endif
             }
@@ -346,15 +342,6 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
     memcpy(virtual_axes_from_self, virtual_axes_temp, sizeof(virtual_axes_temp));
     // clear virtual axes temp
     memset(virtual_axes_temp, 0, sizeof(virtual_axes_temp));
-#endif
-
-#ifdef DEBUG_GREATEST_VALUE
-    if (
-        BIT_GET(virtual_axes_toggle, db_print_greatest_value)
-    )
-    {
-        uprintf("row: %2u, col: %2u, val: %4u\n", greatest_row, greatest_col, greatest_value);
-    }
 #endif
 
     // compare current matrix against previous matrix
