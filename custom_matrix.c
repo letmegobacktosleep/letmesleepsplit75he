@@ -289,7 +289,7 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
                     BIT_GET(virtual_axes_toggle, va_mouse_right)
                 )
                 {
-                    uint8_t joystick_value = MIN(0, lut_joystick[calibrated] - ANALOG_KEY_VIRTUAL_AXES_DEADZONE)
+                    uint8_t joystick_value = MIN(0, lut_joystick[calibrated] - ANALOG_KEY_VIRTUAL_AXES_DEADZONE);
                     for (uint8_t k = 0; k < 8; k++){
 #                    ifdef JOYSTICK_COORDINATES     
                         if (
