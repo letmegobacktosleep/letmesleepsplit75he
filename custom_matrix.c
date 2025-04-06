@@ -96,8 +96,6 @@ void generate_lookup_tables(void){
 // helper moving average filter
 #ifdef DEBUG_LAST_PRESSED
 uint16_t simple_moving_average(uint16_t analog_value){
-    
-    // declare variables
     static uint16_t buffer[16] = { 0 };
     static uint8_t index;
     uint32_t sum = 0;
@@ -113,7 +111,6 @@ uint16_t simple_moving_average(uint16_t analog_value){
     
     // return average
     return (uint16_t) (sum / 16);
-    
 }
 #endif
 
@@ -336,7 +333,7 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
 #            ifdef DEBUG_LAST_PRESSED
                 if (
                     row == last_pressed_row &&
-                    col == last_pressed_col &&
+                    col == last_pressed_col
                 )
                 {
                     last_pressed_value = simple_moving_average(calibrated);
