@@ -249,16 +249,27 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
 
 #            ifdef DKS_ENABLE
                 // handle DKS
-                if (analog_key[row][col].mode >= 10){
+                if (
+                    analog_key[row][col].mode >= 10 && 
+                    analog_key[row][col].mode != 255
+                )
+                {
+                    // find out which key it is assigned to
+                    dks_index = analog_key[row][col].mode - 10; // index, starts at zero
+                    dks_base_col = (dks_index * 4) % MATRIX_COLS; // starting column
+                    dks_base_row = dks_index / (MATRIX_COLS / 4); // how many rows from the end
+
+#                ifdef SPLIT_KEYBOARD
+                    // alternate between rows on the left and the right
+                    dks_base_row = (dks_base_row / 2) + (ROWS_PER_HAND * (1 - (dks_base_row % 2)));
+#                endif
+
                     // run actuation on four keys
                     for (uint8_t k = 0; k < 4; k++){
-                        col = k + (4 * (analog_key[row][col].mode - 10));
-#                    ifdef SPLIT_KEYBOARD
-                        row = ROWS_PER_HAND * (1 + (col / MATRIX_COLS)) - 1; // last row on left, last row on right
-#                    else
-                        row = ROWS_PER_HAND + (     col / MATRIX_COLS ) - 2; // second last row, last row
-#                    endif
-                        col %= MATRIX_COLS;
+
+                        // get actual row and column
+                        row = MATRIX_ROWS - dks_base_row - 1;
+                        col = dks_base_col + k;
                         
                         if (
                             // run actuation
