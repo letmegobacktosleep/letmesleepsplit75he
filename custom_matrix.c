@@ -255,9 +255,9 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
                 )
                 {
                     // find out which key it is assigned to
-                    dks_index = analog_key[row][col].mode - 10; // index, starts at zero
-                    dks_base_col = (dks_index * 4) % MATRIX_COLS; // starting column
-                    dks_base_row = dks_index / (MATRIX_COLS / 4); // how many rows from the end
+                    uint8_t dks_index = analog_key[row][col].mode - 10; // index, starts at zero
+                    uint8_t dks_base_col = (dks_index * 4) % MATRIX_COLS; // starting column
+                    uint8_t dks_base_row = dks_index / (MATRIX_COLS / 4); // how many rows from the end
 
 #                ifdef SPLIT_KEYBOARD
                     // alternate between rows on the left and the right
