@@ -31,9 +31,9 @@ uint16_t rest_to_absolute_change(uint16_t input, lookup_table_t *lut_params) {
 
 uint16_t scale_raw_value(uint16_t raw, uint8_t rest, uint16_t *lut_multiplier){
 
-    // Scale raw value between 0 and 1023
-    float intermediate = MAX(0, raw - rest) * ANALOG_CAL_MAX_VALUE / lut_multiplier[rest];
-
-    // Cast to an unsigned integer and limit value
-    return (uint16_t) MAX(0, MIN(intermediate, ANALOG_CAL_MAX_VALUE));
+    // Limit to be less than ANALOG_CAL_MAX_VALUE
+    return (uint16_t) MIN(ANALOG_CAL_MAX_VALUE, 
+        // Scale raw value between 0 and ANALOG_CAL_MAX_VALUE (cast to uint32_t to prevent overflows)
+        (uint32_t) MAX(0, raw - rest) * ANALOG_CAL_MAX_VALUE / lut_multiplier[rest]
+    );
 }
