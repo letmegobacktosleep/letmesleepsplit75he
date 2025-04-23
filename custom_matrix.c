@@ -94,11 +94,9 @@ void generate_lookup_tables(void){
     for (uint16_t i = 0; i < ANALOG_CAL_MAX_VALUE+1; i++){
         // change in voltage from rest -> distance pressed
         lut_displacement[i] = analog_to_distance(i, &calibration_parameters.displacement);
-
 #    ifdef VIRTUAL_AXES_USE_SEPARATE_LUT
         lut_joystick[i]     = analog_to_distance(i, &calibration_parameters.joystick);
 #    endif
-
     }
 
     return;
