@@ -112,9 +112,6 @@ void letmesleep_get_lut_config(uint8_t *data){
         case id_lut_displacement:
             lut_config = &calibration_parameters.displacement;
             break;
-        case id_lut_joystick:
-            lut_config = &calibration_parameters.joystick;
-            break;
         default:
             break;
     }
@@ -159,9 +156,6 @@ void letmesleep_set_lut_config(uint8_t *data){
         case id_lut_displacement:
             lut_config = &calibration_parameters.displacement;
             break;
-        case id_lut_joystick:
-            lut_config = &calibration_parameters.joystick;
-            break;
         default:
             break;
     }
@@ -201,9 +195,6 @@ void letmesleep_save_lut_config(uint8_t *data){
             break;
         case id_lut_displacement:
             EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, displacement);
-            break;
-        case id_lut_joystick:
-            EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, joystick);
             break;
         default:
             break;

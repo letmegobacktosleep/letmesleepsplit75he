@@ -113,8 +113,6 @@ ADC2_IN1 = D */
 #ifdef ANALOG_KEY_VIRTUAL_AXES
 // 0.1mm deadzone due to environmental noise
 # define VIRTUAL_AXES_DEADZONE 5
-// whether to scale the value or use another lut for higher accuracy
-// # define VIRTUAL_AXES_USE_SEPARATE_LUT
 // the layer containing mouse keys
 # define MOUSE_LAYER 3
 // 0.5mm deadzone to prevent accidental scroll
@@ -195,7 +193,7 @@ ADC2_IN1 = D */
 // Set size of EECONFIG for analog_config (per key)
 #define EECONFIG_USER_DATA_SIZE (5 * MATRIX_ROWS * MATRIX_COLS)
 // Set size of EECONFIG for calibration (global)
-#define EECONFIG_KB_DATA_SIZE (36 * 3)
+#define EECONFIG_KB_DATA_SIZE (36 * 2)
 
 
 
