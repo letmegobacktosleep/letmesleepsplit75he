@@ -81,13 +81,22 @@ void set_default_calibration_parameters(void){
     calibration_parameters.displacement.max_input  = ANALOG_CAL_MAX_VALUE;
     calibration_parameters.displacement.max_output = 200; // travel distance in mm * 50
 
+#ifdef VIRTUAL_AXES_USE_SEPARATE_LUT
     calibration_parameters.joystick.lut_a =  8.332998834719378;
     calibration_parameters.joystick.lut_b =  0.019195172497926963;
     calibration_parameters.joystick.lut_c =  2.4625727130493122;
     calibration_parameters.joystick.lut_d = -97.2259635251049;
     calibration_parameters.joystick.max_input  = ANALOG_CAL_MAX_VALUE;
-    calibration_parameters.joystick.max_output = 127 + ANALOG_KEY_VIRTUAL_AXES_DEADZONE;
-    
+    calibration_parameters.joystick.max_output = 127 + VIRTUAL_AXES_DEADZONE;
+#else
+    calibration_parameters.joystick.lut_a =  0;
+    calibration_parameters.joystick.lut_b =  0;
+    calibration_parameters.joystick.lut_c =  0;
+    calibration_parameters.joystick.lut_d =  0;
+    calibration_parameters.joystick.max_input  = ANALOG_CAL_MAX_VALUE;
+    calibration_parameters.joystick.max_output = 127;
+#endif
+
     calibration_parameters.multiplier.lut_a =  0;
     calibration_parameters.multiplier.lut_b =  0;
     calibration_parameters.multiplier.lut_c =  0;

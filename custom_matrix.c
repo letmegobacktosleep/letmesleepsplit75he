@@ -55,15 +55,20 @@ calibration_parameters_t calibration_parameters         = { 0 };
 __attribute__((section(".ram4")))
 static uint8_t lut_displacement[ANALOG_CAL_MAX_VALUE+1]    = { 0 };
 __attribute__((section(".ram4")))
-static uint8_t lut_joystick[ANALOG_CAL_MAX_VALUE+1]        = { 0 };
-__attribute__((section(".ram4")))
 static uint16_t lut_multiplier[ANALOG_MULTIPLIER_LUT_SIZE] = { 0 };
 
 // Create global joystick variables
 #ifdef ANALOG_KEY_VIRTUAL_AXES
+
 extern uint8_t virtual_axes_toggle;
 uint8_t virtual_axes_from_self[2][8]  = { 0 };
 uint8_t virtual_axes_from_slave[2][8] = { 0 };
+
+# ifdef VIRTUAL_AXES_USE_SEPARATE_LUT
+__attribute__((section(".ram4")))
+static uint8_t lut_joystick[ANALOG_CAL_MAX_VALUE+1]        = { 0 };
+# endif
+
 # ifdef JOYSTICK_COORDINATES
 const uint8_t joystick_coordinates[8][2] = JOYSTICK_COORDINATES;
 # endif
@@ -73,6 +78,7 @@ const uint8_t mouse_coordinates[8][2] = MOUSE_COORDINATES;
 # ifdef MOUSE_COORDINATES_RIGHT
 const uint8_t mouse_coordinates_right[8][2] = MOUSE_COORDINATES_RIGHT;
 # endif
+
 #endif
 
 
@@ -80,14 +86,19 @@ const uint8_t mouse_coordinates_right[8][2] = MOUSE_COORDINATES_RIGHT;
 // Generate lookup tables
 void generate_lookup_tables(void){
 
-    for (uint16_t i = 0; i < ANALOG_CAL_MAX_VALUE+1; i++){
-        // change in voltage from rest -> distance pressed
-        lut_displacement[i] = analog_to_distance(i, &calibration_parameters.displacement);
-        lut_joystick[i]     = analog_to_distance(i, &calibration_parameters.joystick);
-    }
     for (uint16_t i = 0; i < ANALOG_MULTIPLIER_LUT_SIZE; i++){
         // rest -> fully pressed value
         lut_multiplier[i] = rest_to_absolute_change(i, &calibration_parameters.multiplier);
+    }
+
+    for (uint16_t i = 0; i < ANALOG_CAL_MAX_VALUE+1; i++){
+        // change in voltage from rest -> distance pressed
+        lut_displacement[i] = analog_to_distance(i, &calibration_parameters.displacement);
+
+#    ifdef VIRTUAL_AXES_USE_SEPARATE_LUT
+        lut_joystick[i]     = analog_to_distance(i, &calibration_parameters.joystick);
+#    endif
+
     }
 
     return;
@@ -297,7 +308,13 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
                     BIT_GET(virtual_axes_toggle, va_mouse_right)
                 )
                 {
-                    uint8_t joystick_value = MIN(0, lut_joystick[calibrated] - ANALOG_KEY_VIRTUAL_AXES_DEADZONE);
+                    // get value from 0 to 127
+#                ifdef VIRTUAL_AXES_USE_SEPARATE_LUT
+                    uint8_t joystick_value = MIN(0, lut_joystick[calibrated] - VIRTUAL_AXES_DEADZONE);
+#                else
+                    uint8_t joystick_value = (uint16_t) MIN(0, displacement - VIRTUAL_AXES_DEADZONE) * 127 / (calibration_parameters.displacement.max_output - VIRTUAL_AXES_DEADZONE);
+#                endif
+
                     for (uint8_t k = 0; k < 8; k++){
 #                    ifdef JOYSTICK_COORDINATES     
                         if (

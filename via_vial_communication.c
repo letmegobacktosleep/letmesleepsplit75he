@@ -193,24 +193,24 @@ void letmesleep_set_lut_config(uint8_t *data){
 }
 
 void letmesleep_save_lut_config(uint8_t *data){
-    /*
-        uint8_t *lut_id = &(data[0]);
-        switch (*lut_id) {
-            case id_lut_multiplier:
-                EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, multiplier);
-                break;
-            case id_lut_displacement:
-                EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, displacement);
-                break;
-            case id_lut_joystick:
-                EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, joystick);
-                break;
-            default:
-                break;
-        }
-    */
-        eeconfig_update_kb_datablock(&calibration_parameters);
+    /* for some reason the partial update doesn't work
+    uint8_t *lut_id = &(data[0]);
+    switch (*lut_id) {
+        case id_lut_multiplier:
+            EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, multiplier);
+            break;
+        case id_lut_displacement:
+            EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, displacement);
+            break;
+        case id_lut_joystick:
+            EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, joystick);
+            break;
+        default:
+            break;
     }
+    */
+    eeconfig_update_kb_datablock(&calibration_parameters);
+}
 
 void letmesleep_custom_command_kb(uint8_t *data, uint8_t length){
     /* data = [ command_id, channel_id, custom_data ] */

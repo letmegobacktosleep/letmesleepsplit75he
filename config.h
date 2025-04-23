@@ -111,8 +111,10 @@ ADC2_IN1 = D */
 
 // Definitions for virtual axes
 #ifdef ANALOG_KEY_VIRTUAL_AXES
-// 0.2mm deadzone due to environmental noise
-# define ANALOG_KEY_VIRTUAL_AXES_DEADZONE 7
+// 0.1mm deadzone due to environmental noise
+# define VIRTUAL_AXES_DEADZONE 5
+// whether to scale the value or use another lut for higher accuracy
+// # define VIRTUAL_AXES_USE_SEPARATE_LUT
 // the layer containing mouse keys
 # define MOUSE_LAYER 3
 // 0.5mm deadzone to prevent accidental scroll
