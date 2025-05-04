@@ -299,7 +299,7 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
                 )
                 {
                     // get value from 0 to 127 (scaled, close enough is good enough)
-                    uint8_t joystick_value = (uint16_t) MIN(0, displacement - VIRTUAL_AXES_DEADZONE) * 127 / (calibration_parameters.displacement.max_output - VIRTUAL_AXES_DEADZONE);
+                    uint8_t joystick_value = (uint16_t) ((displacement < VIRTUAL_AXES_DEADZONE) ? 0 : (displacement - VIRTUAL_AXES_DEADZONE)) * 127 / (calibration_parameters.displacement.max_output - VIRTUAL_AXES_DEADZONE);
 
                     // check if it is supposed to be a joystick key
                     for (uint8_t k = 0; k < 8; k++){

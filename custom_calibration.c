@@ -34,6 +34,6 @@ uint16_t scale_raw_value(uint16_t raw, uint8_t rest, uint16_t *lut_multiplier){
     // Limit to be less than ANALOG_CAL_MAX_VALUE
     return (uint16_t) MIN(ANALOG_CAL_MAX_VALUE, 
         // Scale raw value between 0 and ANALOG_CAL_MAX_VALUE (cast to uint32_t to prevent overflows)
-        (uint32_t) MAX(0, raw - rest) * ANALOG_CAL_MAX_VALUE / lut_multiplier[rest]
+        (uint32_t) ((raw < rest) ? 0 : (raw - rest)) * ANALOG_CAL_MAX_VALUE / lut_multiplier[rest]
     );
 }
