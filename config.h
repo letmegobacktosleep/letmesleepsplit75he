@@ -28,8 +28,6 @@
 #define N_ADCS_SCANNED       3
 #define N_ADCS_SCANNED_RIGHT 3
 
-
-
 // Channel select pins
 #define MATRIX_COL_PINS { \
     A8,     B15,    B14,    B13,    \
@@ -107,7 +105,8 @@ ADC2_IN1 = D */
     0b0000000000000000  \
 }
 
-
+// Size of the simple moving average filter
+#define SMA_FILTER_SIZE 10
 
 // Definitions for virtual axes
 #ifdef ANALOG_KEY_VIRTUAL_AXES

@@ -44,10 +44,8 @@ static const matrix_row_t custom_matrix_mask[MATRIX_ROWS] = CUSTOM_MATRIX_MASK;
 // Declare per-key variables
 __attribute__((section(".ram0")))
 analog_key_t analog_key[MATRIX_ROWS][MATRIX_COLS]       = { 0 };
-__attribute__((section(".ram4")))
+__attribute__((section(".ram0")))
 analog_config_t analog_config[MATRIX_ROWS][MATRIX_COLS] = { 0 };
-
-// Declare calibration parameters in slower memory (ram0)
 __attribute__((section(".ram0")))
 calibration_parameters_t calibration_parameters         = { 0 };
 
@@ -93,27 +91,6 @@ void generate_lookup_tables(void){
 
     return;
 }
-
-// helper moving average filter
-#ifdef DEBUG_LAST_PRESSED
-uint16_t simple_moving_average(uint16_t analog_value){
-    static uint16_t buffer[16] = { 0 };
-    static uint8_t index;
-    uint32_t sum = 0;
-
-    // set next buffer index
-    buffer[index] = analog_value;
-    index = (index + 1) % 16;
-    
-    // sum numbers in array
-    for (uint8_t i = 0; i < 16; i++){
-        sum += buffer[i];
-    }
-    
-    // return average
-    return (uint16_t) (sum / 16);
-}
-#endif
 
 // Initialise matrix
 void matrix_init_custom(void){
@@ -218,6 +195,8 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
                 
                 // get raw adc value
                 uint16_t raw = raw_values[current_row];
+                // run analog filter
+                raw = sma_filter_set(raw, current_row, col);
                 // account for magnet polarity (bipolar sensor, 12-bit reading)
                 if (raw <= ANALOG_RAW_MAX_VALUE){
                     raw = ANALOG_RAW_MAX_VALUE - raw;
@@ -351,7 +330,7 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
                     col == last_pressed_col
                 )
                 {
-                    last_pressed_value = simple_moving_average(calibrated);
+                    last_pressed_value = raw;
                 }
 #            endif
             }

@@ -37,3 +37,33 @@ uint16_t scale_raw_value(uint16_t raw, uint8_t rest, uint16_t *lut_multiplier){
         (uint32_t) ((raw < rest) ? 0 : (raw - rest)) * ANALOG_CAL_MAX_VALUE / lut_multiplier[rest]
     );
 }
+
+// analog filter variables
+static uint8_t counter = 0;
+static uint16_t buffer[ROWS_PER_HAND][MATRIX_COLS][SMA_FILTER_SIZE] = { 0 };
+
+uint16_t sma_filter_set(uint16_t value, uint8_t row, uint8_t col){
+
+    buffer[row][col][counter] = value;
+
+    return sma_filter_get(row, col);
+
+}
+
+uint16_t sma_filter_get(uint8_t row, uint8_t col){
+
+    uint32_t sum = 0;
+
+    for (uint8_t i = 0; i < SMA_FILTER_SIZE; i++){
+        sum += buffer[row][col][i];
+    }
+
+    return (uint16_t) MIN(ANALOG_CAL_MAX_VALUE, (sum / SMA_FILTER_SIZE));
+}
+
+void sma_filter_pointer(void){
+    
+    // increments by one
+    counter = (counter + 1) % SMA_FILTER_SIZE;
+
+}
