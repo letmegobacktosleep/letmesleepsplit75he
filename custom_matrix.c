@@ -353,6 +353,8 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
         save_rest_values = false;
     }
 
+    sma_filter_increment_pointer();
+
 #ifdef ANALOG_KEY_VIRTUAL_AXES
     // copy over virtual axes
     memcpy(virtual_axes_from_self, virtual_axes_temp, sizeof(virtual_axes_temp));
