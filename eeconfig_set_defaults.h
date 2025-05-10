@@ -5,8 +5,9 @@
 void set_default_analog_config(void);
 void set_default_analog_key(void);
 void set_default_calibration_parameters(void);
+void set_default_virtual_axes(void);
 
-// EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, displacement);
+// EEPROM_KB_PARTIAL_UPDATE(static_config, displacement);
 #if (EECONFIG_KB_DATA_SIZE) > 0
 # define EEPROM_KB_PARTIAL_UPDATE(__struct, __field) eeprom_update_block(               \
     &(__struct.__field),                                                                \

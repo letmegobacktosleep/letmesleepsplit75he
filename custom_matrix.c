@@ -43,11 +43,11 @@ static const matrix_row_t custom_matrix_mask[MATRIX_ROWS] = CUSTOM_MATRIX_MASK;
 
 // Declare per-key variables
 __attribute__((section(".ram0")))
-analog_key_t analog_key[MATRIX_ROWS][MATRIX_COLS]       = { 0 };
+analog_key_t analog_key[MATRIX_ROWS][MATRIX_COLS] = { 0 };
 __attribute__((section(".ram0")))
 analog_config_t analog_config[MATRIX_ROWS][MATRIX_COLS] = { 0 };
 __attribute__((section(".ram0")))
-calibration_parameters_t calibration_parameters         = { 0 };
+static_config_t static_config = { 0 };
 
 // Declare lookup tables in core-coupled memory (ram4)
 __attribute__((section(".ram4")))
@@ -57,21 +57,9 @@ static uint16_t lut_multiplier[ANALOG_MULTIPLIER_LUT_SIZE] = { 0 };
 
 // Create global joystick variables
 #ifdef ANALOG_KEY_VIRTUAL_AXES
-
 extern uint8_t virtual_axes_toggle;
-uint8_t virtual_axes_from_self[2][8]  = { 0 };
-uint8_t virtual_axes_from_slave[2][8] = { 0 };
-
-# ifdef JOYSTICK_COORDINATES
-const uint8_t joystick_coordinates[8][2] = JOYSTICK_COORDINATES;
-# endif
-# ifdef MOUSE_COORDINATES
-const uint8_t mouse_coordinates[8][2] = MOUSE_COORDINATES;
-# endif
-# ifdef MOUSE_COORDINATES_RIGHT
-const uint8_t mouse_coordinates_right[8][2] = MOUSE_COORDINATES_RIGHT;
-# endif
-
+uint8_t virtual_axes_from_self[4][4]  = { 0 };
+uint8_t virtual_axes_from_slave[4][4] = { 0 };
 #endif
 
 
@@ -81,12 +69,12 @@ void generate_lookup_tables(void){
 
     for (uint16_t i = 0; i < ANALOG_MULTIPLIER_LUT_SIZE; i++){
         // rest -> fully pressed value
-        lut_multiplier[i] = rest_to_absolute_change(i, &calibration_parameters.multiplier);
+        lut_multiplier[i] = rest_to_absolute_change(i, &static_config.multiplier);
     }
 
     for (uint16_t i = 0; i < ANALOG_CAL_MAX_VALUE+1; i++){
         // change in voltage from rest -> distance pressed
-        lut_displacement[i] = analog_to_distance(i, &calibration_parameters.displacement);
+        lut_displacement[i] = analog_to_distance(i, &static_config.displacement);
     }
 
     return;
@@ -219,7 +207,7 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
                         &current_matrix[row], 
                         col,
                         displacement, 
-                        calibration_parameters.displacement.max_output
+                        static_config.displacement.max_output
                     )
                 )
                 {
@@ -259,7 +247,7 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
                                 &current_matrix[row], 
                                 col,
                                 displacement, 
-                                calibration_parameters.displacement.max_output
+                                static_config.displacement.max_output
                             )
                         )
                         {
@@ -273,43 +261,54 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
                 // handle joystick
                 if (
                     BIT_GET(virtual_axes_toggle, va_joystick) || 
-                    BIT_GET(virtual_axes_toggle, va_mouse)    || 
-                    BIT_GET(virtual_axes_toggle, va_mouse_right)
+                    BIT_GET(virtual_axes_toggle, va_mouse)
                 )
                 {
                     // get value from 0 to 127 (scaled, close enough is good enough)
-                    uint8_t joystick_value = (uint16_t) ((displacement < VIRTUAL_AXES_DEADZONE) ? 0 : (displacement - VIRTUAL_AXES_DEADZONE)) * 127 / (calibration_parameters.displacement.max_output - VIRTUAL_AXES_DEADZONE);
+                    uint8_t joystick_value = (uint16_t) ((displacement < VIRTUAL_AXES_DEADZONE) ? 0 : (displacement - VIRTUAL_AXES_DEADZONE)) * 127 / (static_config.displacement.max_output - VIRTUAL_AXES_DEADZONE);
 
                     // check if it is supposed to be a joystick key
-                    for (uint8_t k = 0; k < 8; k++){
+                    for (uint8_t k = 0; k < 4; k++){
 #                    ifdef JOYSTICK_COORDINATES     
                         if (
-                            BIT_GET(virtual_axes_toggle, va_joystick) && 
-                            col == joystick_coordinates[k][1] && 
-                            row == joystick_coordinates[k][0]
+                            BIT_GET(virtual_axes_toggle, va_joystick)
                         )
                         {
-                            virtual_axes_temp[0][k] += joystick_value;
+                            if (
+                                col == static_config.joystick_left.col[k] && 
+                                row == static_config.joystick_left.col[k]
+                            )
+                            {
+                                virtual_axes_temp[0][k] += joystick_value;
+                            }
+                            if (
+                                col == static_config.joystick_right.col[k] && 
+                                row == static_config.joystick_right.col[k]
+                            )
+                            {
+                                virtual_axes_temp[1][k] += joystick_value;
+                            }
                         }
 #                    endif
 #                    ifdef MOUSE_COORDINATES
                         if (
-                            BIT_GET(virtual_axes_toggle, va_mouse) && 
-                            col == mouse_coordinates[k][1] && 
-                            row == mouse_coordinates[k][0]
+                            BIT_GET(virtual_axes_toggle, va_mouse)
                         )
                         {
-                            virtual_axes_temp[1][k] += joystick_value;
-                        }
-#                    endif
-#                    ifdef MOUSE_COORDINATES_RIGHT
-                        if (
-                            BIT_GET(virtual_axes_toggle, va_mouse_right) && 
-                            col == mouse_coordinates_right[k][1] && 
-                            row == mouse_coordinates_right[k][0]
-                        )
-                        {
-                            virtual_axes_temp[1][k] += joystick_value;
+                            if (
+                                col == static_config.mouse_movement.col[k] && 
+                                row == static_config.mouse_movement.row[k]
+                            )
+                            {
+                                virtual_axes_temp[2][k] += joystick_value;
+                            }
+                            if (
+                                col == static_config.mouse_scroll.col[k] && 
+                                row == static_config.mouse_scroll.row[k]
+                            )
+                            {
+                                virtual_axes_temp[3][k] += joystick_value;
+                            }
                         }
 #                    endif
                     }

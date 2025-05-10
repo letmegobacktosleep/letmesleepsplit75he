@@ -19,26 +19,6 @@
       "shortName": "M_MO"
     },
     {
-      "name": "Analog Mouse Toggle Left",
-      "title": "Toggle use of WASD to control your mouse",
-      "shortName": "M_TG_L"
-    },
-    {
-      "name": "Analog Mouse Momentary Left",
-      "title": "Momentarily use WASD Keys to control your mouse",
-      "shortName": "M_MO_L"
-    },
-    {
-      "name": "Analog Mouse Toggle Right",
-      "title": "Toggle use of Arrow Keys to control your mouse",
-      "shortName": "M_TG_R"
-    },
-    {
-      "name": "Analog Mouse Momentary Right",
-      "title": "Momentarily use Arrow Keys to control your mouse",
-      "shortName": "M_MO_R"
-    },
-    {
       "name": "Dump Rest and Down values",
       "title": "Dumps a CSV representing the minimum and maximum values",
       "shortName": "DEBUG_REST_DOWN"

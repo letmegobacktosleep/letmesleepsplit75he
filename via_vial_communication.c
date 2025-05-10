@@ -10,7 +10,7 @@
 // External definitions
 extern analog_key_t analog_key[MATRIX_ROWS][MATRIX_COLS];
 extern analog_config_t analog_config[MATRIX_ROWS][MATRIX_COLS];
-extern calibration_parameters_t calibration_parameters;
+extern static_config_t static_config;
 
 // Call this when a new value is set
 void eeconfig_update_sync_user(uint8_t row, uint8_t col){
@@ -107,10 +107,10 @@ void letmesleep_get_lut_config(uint8_t *data){
     lookup_table_t *lut_config = NULL;
     switch (*lut_id) {
         case id_lut_multiplier:
-            lut_config = &calibration_parameters.multiplier;
+            lut_config = &static_config.multiplier;
             break;
         case id_lut_displacement:
-            lut_config = &calibration_parameters.displacement;
+            lut_config = &static_config.displacement;
             break;
         default:
             break;
@@ -151,10 +151,10 @@ void letmesleep_set_lut_config(uint8_t *data){
     lookup_table_t *lut_config = NULL;
     switch (*lut_id) {
         case id_lut_multiplier:
-            lut_config = &calibration_parameters.multiplier;
+            lut_config = &static_config.multiplier;
             break;
         case id_lut_displacement:
-            lut_config = &calibration_parameters.displacement;
+            lut_config = &static_config.displacement;
             break;
         default:
             break;
@@ -191,16 +191,16 @@ void letmesleep_save_lut_config(uint8_t *data){
     uint8_t *lut_id = &(data[0]);
     switch (*lut_id) {
         case id_lut_multiplier:
-            EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, multiplier);
+            EEPROM_KB_PARTIAL_UPDATE(static_config, multiplier);
             break;
         case id_lut_displacement:
-            EEPROM_KB_PARTIAL_UPDATE(calibration_parameters, displacement);
+            EEPROM_KB_PARTIAL_UPDATE(static_config, displacement);
             break;
         default:
             break;
     }
     */
-    eeconfig_update_kb_datablock(&calibration_parameters);
+    eeconfig_update_kb_datablock(&static_config);
 }
 
 void letmesleep_custom_command_kb(uint8_t *data, uint8_t length){

@@ -19,14 +19,14 @@
 // External definitions
 extern analog_key_t analog_key[MATRIX_ROWS][MATRIX_COLS];
 extern analog_config_t analog_config[MATRIX_ROWS][MATRIX_COLS];
-extern calibration_parameters_t calibration_parameters;
+extern static_config_t static_config;
 
 // External joystick definitions
 #ifdef ANALOG_KEY_VIRTUAL_AXES
 
 uint8_t virtual_axes_toggle = 0;
-extern uint8_t virtual_axes_from_self[2][8];
-extern uint8_t virtual_axes_from_slave[2][8];
+extern uint8_t virtual_axes_from_self[4][4];
+extern uint8_t virtual_axes_from_slave[4][4];
 
 joystick_config_t joystick_axes[JOYSTICK_AXIS_COUNT] = {
     JOYSTICK_AXIS_VIRTUAL, // x
@@ -66,8 +66,9 @@ void eeconfig_init_user(void) {
 void eeconfig_init_kb(void) {
     // set default values
     set_default_calibration_parameters();
+    set_default_virtual_axes();
     // write it to eeprom
-    eeconfig_update_kb_datablock(&calibration_parameters);
+    eeconfig_update_kb_datablock(&static_config);
     // call user
     eeconfig_init_user();
 }
@@ -84,7 +85,7 @@ void keyboard_post_init_user(void) {
 
 void keyboard_post_init_kb(void) {
 #if (EECONFIG_KB_DATA_SIZE) > 0
-    eeconfig_read_kb_datablock(&calibration_parameters);
+    eeconfig_read_kb_datablock(&static_config);
     generate_lookup_tables();
 #endif
 #ifdef SPLIT_KEYBOARD
@@ -114,11 +115,12 @@ void handle_virtual_mouse_layer(uint8_t virtual_axes_toggle){
     return;
 }
 
-void handle_virtual_axes_keys(const uint8_t coordinates[8][2], bool should_ignore){
+#if (defined(JOYSTICK_LEFT) || defined(JOYSTICK_RIGHT) || defined(MOUSE_MOVEMENT) || defined(MOUSE_SCROLL))
+void handle_virtual_axes_keys(virtual_axes_coordinate_t* coordinates, bool should_ignore){
     if (BIT_GET(virtual_axes_toggle, va_ignore_keypresses)){
-        for (uint8_t i = 0; i < 8; i++){
-            uint8_t row = coordinates[i][0];
-            uint8_t col = coordinates[i][1];
+        for (uint8_t i = 0; i < 4; i++){
+            uint8_t row = coordinates->row[i];
+            uint8_t col = coordinates->col[i];
             if (row != 255 && col != 255){
                 if (should_ignore){
                     analog_key[row][col].mode = 255;
@@ -155,88 +157,51 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             return false;
 
 # ifdef ANALOG_KEY_VIRTUAL_AXES
-#    if defined(JOYSTICK_COORDINATES)
+#    if (defined(JOYSTICK_LEFT) || defined(JOYSTICK_RIGHT))
         // check for keycodes which toggle joystick or mouse
         case J_TG:
             if (record->event.pressed){ // only change state on key press
                 BIT_FLP(virtual_axes_toggle, va_joystick);
             }
             // always set mode of joystick keys to 255
+#        if defined(JOYSTICK_LEFT)
             handle_virtual_axes_keys(
-                joystick_coordinates,
+                &static_config.joystick_left, 
                 (bool) BIT_GET(virtual_axes_toggle, va_joystick)
             );
+#        endif
+#        if defined(JOYSTICK_RIGHT)
+            handle_virtual_axes_keys(
+                &static_config.joystick_right, 
+                (bool) BIT_GET(virtual_axes_toggle, va_joystick)
+            );
+#        endif
             return false;
 #    endif
-#    if (defined(MOUSE_COORDINATES) || defined(MOUSE_COORDINATES_RIGHT))
+#    if (defined(MOUSE_MOVEMENT) || defined(MOUSE_SCROLL))
         case M_TG:
             if (record->event.pressed){ // only change state on key press
-#        if defined(MOUSE_COORDINATES)
                 BIT_FLP(virtual_axes_toggle, va_mouse);
-#        endif
-#        if defined(MOUSE_COORDINATES_RIGHT)
-                BIT_FLP(virtual_axes_toggle, va_mouse_right);
-#        endif
             }
             // switch mouse layer
             handle_virtual_mouse_layer(virtual_axes_toggle);
             // set mode of mouse keys to 255
+#        if defined(MOUSE_MOVEMENT)
             handle_virtual_axes_keys(
-                mouse_coordinates, 
+                &static_config.mouse_movement, 
                 (bool) BIT_GET(virtual_axes_toggle, va_mouse)
             );
+#        endif
+#        if defined(MOUSE_SCROLL)
             handle_virtual_axes_keys(
-                mouse_coordinates_right, 
-                (bool) BIT_GET(virtual_axes_toggle, va_mouse_right)
+                &static_config.mouse_scroll, 
+                (bool) BIT_GET(virtual_axes_toggle, va_mouse)
             );
+#        endif
             return false;
 
         case M_MO:
             if (record->event.pressed){
-#        if defined(MOUSE_COORDINATES)
-                BIT_SET(virtual_axes_toggle, va_mouse);
-#        endif
-#        if defined(MOUSE_COORDINATES_RIGHT)
-                BIT_SET(virtual_axes_toggle, va_mouse_right);
-#        endif
-            }
-            else {
-#        if defined(MOUSE_COORDINATES)
-                BIT_CLR(virtual_axes_toggle, va_mouse);
-#        endif
-#        if defined(MOUSE_COORDINATES_RIGHT)
-                BIT_CLR(virtual_axes_toggle, va_mouse_right);
-#        endif
-            }
-            // switch mouse layer
-            handle_virtual_mouse_layer(virtual_axes_toggle);
-            // set mode of mouse keys to 255
-            handle_virtual_axes_keys(
-                mouse_coordinates, 
-                (bool) BIT_GET(virtual_axes_toggle, va_mouse)
-            );
-            handle_virtual_axes_keys(
-                mouse_coordinates_right, 
-                (bool) BIT_GET(virtual_axes_toggle, va_mouse_right)
-            );
-            return false;
-#    endif
-#    if defined(MOUSE_COORDINATES)
-        case M_TG_L:
-            if (record->event.pressed){ // only change state on key press
-                BIT_FLP(virtual_axes_toggle, va_mouse);
-            }
-            // switch mouse layer
-            handle_virtual_mouse_layer(virtual_axes_toggle);
-            // set mode of mouse keys to 255
-            handle_virtual_axes_keys(
-                mouse_coordinates, 
-                (bool) BIT_GET(virtual_axes_toggle, va_mouse)
-            );
-            return false;
-            
-        case M_MO_L:
-            if (record->event.pressed){
                 BIT_SET(virtual_axes_toggle, va_mouse);
             }
             else {
@@ -245,40 +210,18 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             // switch mouse layer
             handle_virtual_mouse_layer(virtual_axes_toggle);
             // set mode of mouse keys to 255
+#        if defined(MOUSE_MOVEMENT)
             handle_virtual_axes_keys(
-                mouse_coordinates, 
+                &static_config.mouse_movement, 
                 (bool) BIT_GET(virtual_axes_toggle, va_mouse)
             );
-            return false;
-#    endif
-#    if defined(MOUSE_COORDINATES_RIGHT)
-        case M_TG_R:
-            if (record->event.pressed){ // only change state on key press
-                BIT_FLP(virtual_axes_toggle, va_mouse_right);
-            }
-            // switch mouse layer
-            handle_virtual_mouse_layer(virtual_axes_toggle);
-            // set mode of mouse keys to 255
+#        endif
+#        if defined(MOUSE_SCROLL)
             handle_virtual_axes_keys(
-                mouse_coordinates_right, 
-                (bool) BIT_GET(virtual_axes_toggle, va_mouse_right)
+                &static_config.mouse_scroll, 
+                (bool) BIT_GET(virtual_axes_toggle, va_mouse)
             );
-            return false;
-            
-        case M_MO_R:
-            if (record->event.pressed){
-                BIT_SET(virtual_axes_toggle, va_mouse_right);
-            }
-            else {
-                BIT_CLR(virtual_axes_toggle, va_mouse_right);
-            }
-            // switch mouse layer
-            handle_virtual_mouse_layer(virtual_axes_toggle);
-            // set mode of mouse keys to 255
-            handle_virtual_axes_keys(
-                mouse_coordinates_right, 
-                (bool) BIT_GET(virtual_axes_toggle, va_mouse_right)
-            );
+#        endif
             return false;
 #    endif
 # endif
@@ -353,14 +296,14 @@ void housekeeping_task_kb(void) {
             }
         }
 #    endif
-        static int8_t virtual_axes_combined[2][4];
-        for (uint8_t i = 0; i < 2; i++){
-            for (uint8_t j = 0; j < 8; j += 2){
-                virtual_axes_combined[i][j/2] = MAX(-127, MIN(127, 
-                    virtual_axes_from_self [i][j+1] + 
-                    virtual_axes_from_slave[i][j+1] - 
-                    virtual_axes_from_self [i][j] - 
-                    virtual_axes_from_slave[i][j]
+        static int8_t virtual_axes_combined[4][2];
+        for (uint8_t i = 0; i < 4; i++){
+            for (uint8_t j = 0; j < 4; j += 2){
+                virtual_axes_combined[i][j/2] = MAX(-127, MIN(127,
+                    virtual_axes_from_self [i][j+1] + // right or down
+                    virtual_axes_from_slave[i][j+1] - // right or down
+                    virtual_axes_from_self [i][j] -   // left or up
+                    virtual_axes_from_slave[i][j]     // left or up
                 ));
             }
         }
@@ -377,8 +320,8 @@ void housekeeping_task_kb(void) {
             joystick_set_axis(1, virtual_axes_combined[0][1]);
 
             // Right joystick
-            joystick_set_axis(2, virtual_axes_combined[0][2]);
-            joystick_set_axis(3, virtual_axes_combined[0][3]);
+            joystick_set_axis(2, virtual_axes_combined[1][0]);
+            joystick_set_axis(3, virtual_axes_combined[1][1]);
 
             // Send joystick report
             joystick_flush();
@@ -395,15 +338,13 @@ void housekeeping_task_kb(void) {
             // Get current report
             report_mouse_t currentReport = pointing_device_get_report();
 
-            // Horizontal mouse
-            currentReport.x = virtual_axes_combined[1][0];
+            // Mouse movement
+            currentReport.x = virtual_axes_combined[2][0];
+            currentReport.y = virtual_axes_combined[2][1];
 
-            // Vertical mouse
-            currentReport.y = virtual_axes_combined[1][1];
-
-            // Get current scroll speed
-            int8_t mouse_h = virtual_axes_combined[1][2];
-            int8_t mouse_v = virtual_axes_combined[1][3];
+            // Scroll speed
+            int8_t mouse_h = virtual_axes_combined[3][0];
+            int8_t mouse_v = virtual_axes_combined[3][1];
 
             // How much time until next scroll report
             static uint8_t next_scroll[2] = { 0 };

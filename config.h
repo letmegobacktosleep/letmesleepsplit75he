@@ -121,38 +121,22 @@ ADC2_IN1 = D */
 # define JOYSTICK_AXIS_COUNT 4
 # define JOYSTICK_AXIS_RESOLUTION 8
 // rows and cols which make up the virtual axes
-// order: left right up down, left right up down
-# define JOYSTICK_COORDINATES { \
-    {2, 1},     \
-    {2, 3},     \
-    {2, 0},     \
-    {2, 2},     \
-    {4, 9},     \
-    {4, 15},    \
-    {4, 7},     \
-    {4, 8}      \
+// order: left right up down
+# define JOYSTICK_LEFT {    \
+    .row = {2,  2,  2,  2}, \
+    .col = {1,  3,  0,  2}  \
 }
-// order: left right up down, left right up down
-# define MOUSE_COORDINATES { \
-    {2, 1},     \
-    {2, 3},     \
-    {2, 0},     \
-    {2, 2},     \
-    {0, 0},     \
-    {1, 9},     \
-    {1, 10},    \
-    {1, 8}      \
+# define JOYSTICK_RIGHT {   \
+    .row = {4,  4,  4,  4}, \
+    .col = {9,  15, 7,  8}  \
 }
-// order: left right up down, left right up down
-# define MOUSE_COORDINATES_RIGHT { \
-    {5, 10},    \
-    {5, 13},    \
-    {5, 11},    \
-    {5, 12},    \
-    {255, 255}, \
-    {255, 255}, \
-    {6, 15},    \
-    {6, 14}     \
+# define MOUSE_MOVEMENT {   \
+    .row = {2,  2,  2,  2}, \
+    .col = {1,  3,  0,  2}  \
+}
+# define MOUSE_SCROLL {     \
+    .row = {0,  1,  1,  1}, \
+    .col = {0,  9, 10,  8}  \
 }
 #endif
 
@@ -192,7 +176,7 @@ ADC2_IN1 = D */
 // Set size of EECONFIG for analog_config (per key)
 #define EECONFIG_USER_DATA_SIZE (5 * MATRIX_ROWS * MATRIX_COLS)
 // Set size of EECONFIG for calibration (global)
-#define EECONFIG_KB_DATA_SIZE (36 * 2)
+#define EECONFIG_KB_DATA_SIZE ((36 * 2) + (8 * 4))
 
 
 

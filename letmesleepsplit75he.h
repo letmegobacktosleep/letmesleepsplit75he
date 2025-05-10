@@ -17,7 +17,6 @@ enum virtual_axes_bits {
     va_ignore_keypresses = 0,
     va_joystick,
     va_mouse,
-    va_mouse_right,
 };
 
 // Custom keycodes

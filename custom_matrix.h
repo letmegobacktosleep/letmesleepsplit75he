@@ -34,17 +34,8 @@ extern SPLIT_MUTABLE_ROW pin_t row_pins[ROWS_PER_HAND];
 extern SPLIT_MUTABLE_COL pin_t col_pins[MATRIX_COLS];
 // Extern joystick definitions
 #ifdef ANALOG_KEY_VIRTUAL_AXES
-extern uint8_t virtual_axes_from_self[2][8];
-extern uint8_t virtual_axes_from_slave[2][8];
-# ifdef JOYSTICK_COORDINATES
-extern const uint8_t joystick_coordinates[8][2];
-# endif
-# ifdef MOUSE_COORDINATES
-extern const uint8_t mouse_coordinates[8][2];
-# endif
-# ifdef MOUSE_COORDINATES_RIGHT
-extern const uint8_t mouse_coordinates_right[8][2];
-# endif
+extern uint8_t virtual_axes_from_self[4][4];
+extern uint8_t virtual_axes_from_slave[4][4];
 #endif
 
 #ifdef DEBUG_LAST_PRESSED
@@ -92,14 +83,27 @@ typedef struct PACKED {
 
 } lookup_table_t; // 36 bytes
 
+typedef struct {
+
+    // order: left right up down
+    uint8_t row[4];
+    uint8_t col[4];
+
+} virtual_axes_coordinate_t;
+
 typedef struct PACKED {
 
     lookup_table_t displacement; // 36 bytes
     lookup_table_t multiplier;   // 36 bytes
 
-} calibration_parameters_t; // 72 bytes
-_Static_assert(sizeof(calibration_parameters_t) == EECONFIG_KB_DATA_SIZE, "Mismatch in keyboard EECONFIG stored data size");
-extern calibration_parameters_t calibration_parameters;
+    virtual_axes_coordinate_t joystick_left;  // 8 bytes
+    virtual_axes_coordinate_t joystick_right; // 8 bytes
+    virtual_axes_coordinate_t mouse_movement; // 8 bytes
+    virtual_axes_coordinate_t mouse_scroll;   // 8 bytes
+
+} static_config_t; // 104 bytes
+_Static_assert(sizeof(static_config_t) == EECONFIG_KB_DATA_SIZE, "Mismatch in keyboard EECONFIG stored data size");
+extern static_config_t static_config;
 
 // Function prototypes
 void generate_lookup_tables(void);

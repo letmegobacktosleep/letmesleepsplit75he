@@ -12,8 +12,8 @@
 // External definitions
 extern analog_key_t analog_key[MATRIX_ROWS][MATRIX_COLS];
 extern analog_config_t analog_config[MATRIX_ROWS][MATRIX_COLS];
-extern uint8_t virtual_axes_from_self[2][8];
-extern uint8_t virtual_axes_from_slave[2][8];
+extern uint8_t virtual_axes_from_self[4][4];
+extern uint8_t virtual_axes_from_slave[4][4];
 
 #ifdef SPLIT_KEYBOARD
 void kb_sync_a_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
