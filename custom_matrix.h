@@ -100,8 +100,9 @@ typedef struct PACKED {
     virtual_axes_coordinate_t joystick_right; // 8 bytes
     virtual_axes_coordinate_t mouse_movement; // 8 bytes
     virtual_axes_coordinate_t mouse_scroll;   // 8 bytes
+    uint8_t virtual_axes_deadzone; // 1 byte
 
-} static_config_t; // 104 bytes
+} static_config_t; // 105 bytes
 _Static_assert(sizeof(static_config_t) == EECONFIG_KB_DATA_SIZE, "Mismatch in keyboard EECONFIG stored data size");
 extern static_config_t static_config;
 

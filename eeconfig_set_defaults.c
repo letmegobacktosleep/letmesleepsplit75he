@@ -92,11 +92,17 @@ void set_default_calibration_parameters(void){
 }
 
 void set_default_virtual_axes(void){
-
+#ifdef JOYSTICK_LEFT
     static_config.joystick_left  = JOYSTICK_LEFT;
+#endif
+#ifdef JOYSTICK_RIGHT
     static_config.joystick_right = JOYSTICK_RIGHT;
+#endif
+#ifdef MOUSE_MOVEMENT
     static_config.mouse_movement = MOUSE_MOVEMENT;
+#endif
+#ifdef MOUSE_SCROLL
     static_config.mouse_scroll   = MOUSE_SCROLL;
-
+#endif
     return;
 }

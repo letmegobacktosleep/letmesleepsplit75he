@@ -45,6 +45,9 @@ enum letmesleep_cmd {
     id_custom_get_lut_config,
     id_custom_set_lut_config,
     id_custom_save_lut_config,
+    id_custom_get_virtual_axes,
+    id_custom_set_virtual_axes,
+    id_custom_save_virtual_axes,
 };
 
 enum letmesleep_lut_id {
@@ -60,6 +63,12 @@ enum letmesleep_lut_config {
     id_lut_d,
     id_lut_max_input,
     id_lut_max_output,
+};
+
+enum letmesleep_axes_id {
+    id_axes_deadzone = 1,
+    id_axes_joystick,
+    id_axes_mouse,
 };
 
 void letmesleep_get_key_config(uint8_t *data){
@@ -199,7 +208,66 @@ void letmesleep_save_lut_config(uint8_t *data){
         default:
             break;
     }
-    */
+    */n
+    eeconfig_update_kb_datablock(&static_config);
+}
+
+void letmesleep_get_virtual_axes(uint8_t *data){
+    uint8_t *axes_id   = &(data[0]);
+    uint8_t *axes_data = &(data[2]);
+
+    uint8_t temp_data[16] = { 0 };
+    switch (*axes_id){
+        case id_axes_deadzone:
+            temp_data[0] = static_config.virtual_axes_deadzone;
+            break;
+        case id_axes_joystick:
+            memcpy(&temp_data[0],  &static_config.joystick_left.row,  4 * sizeof(uint8_t));
+            memcpy(&temp_data[4],  &static_config.joystick_left.col,  4 * sizeof(uint8_t));
+            memcpy(&temp_data[8],  &static_config.joystick_right.row, 4 * sizeof(uint8_t));
+            memcpy(&temp_data[12], &static_config.joystick_right.col, 4 * sizeof(uint8_t));
+            break;
+        case id_axes_mouse:
+            memcpy(&temp_data[0],  &static_config.mouse_movement.row, 4 * sizeof(uint8_t));
+            memcpy(&temp_data[4],  &static_config.mouse_movement.col, 4 * sizeof(uint8_t));
+            memcpy(&temp_data[8],  &static_config.mouse_scroll.row,   4 * sizeof(uint8_t));
+            memcpy(&temp_data[12], &static_config.mouse_scroll.col,   4 * sizeof(uint8_t));
+            break;
+        default:
+            break;
+    }
+    
+    memcpy(axes_data, temp_data, 16 * sizeof(uint8_t));
+}
+
+void letmesleep_set_virtual_axes(uint8_t *data){
+    uint8_t *axes_id   = &(data[0]);
+    uint8_t *axes_data = &(data[2]);
+
+    uint8_t temp_data[16] = { 0 };
+    memcpy(temp_data, axes_data, 16 * sizeof(uint8_t));
+    switch (*axes_id){
+        case id_axes_deadzone:
+            static_config.virtual_axes_deadzone = temp_data[0];
+            break;
+        case id_axes_joystick:
+            memcpy(&static_config.joystick_left.row,  &temp_data[0],  4 * sizeof(uint8_t));
+            memcpy(&static_config.joystick_left.col,  &temp_data[4],  4 * sizeof(uint8_t));
+            memcpy(&static_config.joystick_right.row, &temp_data[8],  4 * sizeof(uint8_t));
+            memcpy(&static_config.joystick_right.col, &temp_data[12], 4 * sizeof(uint8_t));
+            break;
+        case id_axes_mouse:
+            memcpy(&static_config.mouse_movement.row, &temp_data[0],  4 * sizeof(uint8_t));
+            memcpy(&static_config.mouse_movement.col, &temp_data[4],  4 * sizeof(uint8_t));
+            memcpy(&static_config.mouse_scroll.row,   &temp_data[8],  4 * sizeof(uint8_t));
+            memcpy(&static_config.mouse_scroll.col,   &temp_data[12], 4 * sizeof(uint8_t));
+            break;
+        case default:
+            break;
+    }
+}
+
+void letmesleep_save_virtual_axes(uint8_t *data){
     eeconfig_update_kb_datablock(&static_config);
 }
 
@@ -231,6 +299,12 @@ void letmesleep_custom_command_kb(uint8_t *data, uint8_t length){
                 letmesleep_save_lut_config(custom_data);
                 break;
             }
+            case id_custom_get_virtual_axes:
+                break;
+            case id_custom_set_virtual_axes:
+                break;
+            case id_custom_save_virtual_axes:
+                break;
             default: {
                 /* Unhandled message */
                 *sub_command_id = id_unhandled;

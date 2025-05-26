@@ -265,7 +265,10 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
                 )
                 {
                     // get value from 0 to 127 (scaled, close enough is good enough)
-                    uint8_t joystick_value = (uint16_t) ((displacement < VIRTUAL_AXES_DEADZONE) ? 0 : (displacement - VIRTUAL_AXES_DEADZONE)) * 127 / (static_config.displacement.max_output - VIRTUAL_AXES_DEADZONE);
+                    uint8_t joystick_value = (uint16_t) (
+                        (displacement < static_config.virtual_axes_deadzone) ? 0 : 
+                        (displacement - static_config.virtual_axes_deadzone)
+                    ) * 127 / (static_config.displacement.max_output - static_config.virtual_axes_deadzone);
 
                     // check if it is supposed to be a joystick key
                     for (uint8_t k = 0; k < 4; k++){
