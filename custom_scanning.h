@@ -15,6 +15,7 @@
 
 // Function prototypes
 void multiplexer_init(void);
+uint8_t graycode_col(uint8_t col);
 bool select_multiplexer_channel(uint8_t channel);
 bool actuation(
     const analog_config_t *config, 

@@ -132,6 +132,7 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
     // row, col that can be modified - static because maybe it goes faster? I honestly don't know...
     static uint8_t row = 0;
     static uint8_t col = 0;
+    static uint8_t next_col = 0;
 
     // create variables to track time
     static bool save_rest_values = false;
@@ -165,10 +166,12 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
 
         // start next adc read
         if (current_col < MATRIX_COLS - 1){
+            // graycode the col
+            next_col = graycode_col(current_col + 1);
             // switch multiplexer to next column
-            select_multiplexer_channel(current_col + 1);
+            select_multiplexer_channel(graycoded_col);
             // start next adc scan
-            adcStartAllConversions(current_col + 1);
+            adcStartAllConversions(graycoded_col);
         }
 
         // iterate through rows
@@ -176,7 +179,7 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
 
             // update modifable row, col
             row = current_row + row_offset;
-            col = current_col;
+            col = graycode_col(current_col);
 
             // if the key should be scanned
             if (BIT_GET(custom_matrix_mask[row], col)){
@@ -235,17 +238,17 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]){
                     // run actuation on four keys
                     for (uint8_t k = 0; k < 4; k++){
 
-                        // get actual row and column
-                        row = MATRIX_ROWS - dks_base_row - 1;
-                        col = dks_base_col + k;
+                        // get dks row and column
+                        static uint8_t dks_row = MATRIX_ROWS - dks_base_row - 1;
+                        static uint8_t dks_col = dks_base_col + k;
                         
                         if (
                             // run actuation
                             actuation(
-                                &analog_config[row][col], 
-                                &analog_key[row][col], 
-                                &current_matrix[row], 
-                                col,
+                                &analog_config[dks_row][dks_col], 
+                                &analog_key[dks_row][dks_col], 
+                                &current_matrix[dks_row], 
+                                dks_col,
                                 displacement, 
                                 static_config.displacement.max_output
                             )

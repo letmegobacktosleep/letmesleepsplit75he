@@ -22,6 +22,10 @@ void multiplexer_init(void){
     }
 }
 
+uint8_t graycode_col(uint8_t col){
+    return col ^ (col >> 1);
+}
+
 bool select_multiplexer_channel(uint8_t channel){
     if (channel > MATRIX_COLS){
         return 0;
