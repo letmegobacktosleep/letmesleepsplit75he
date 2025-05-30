@@ -7,18 +7,6 @@
 extern uint8_t virtual_axes_toggle;
 #endif
 
-#define BIT_SET(byte, nbit) ((byte) |=  (1 << (nbit)))
-#define BIT_CLR(byte, nbit) ((byte) &= ~(1 << (nbit)))
-#define BIT_FLP(byte, nbit) ((byte) ^=  (1 << (nbit)))
-#define BIT_GET(byte, nbit) ((byte) &   (1 << (nbit)))
-
-// Virtual axes toggle bits
-enum virtual_axes_bits {
-    va_ignore_keypresses = 0,
-    va_joystick,
-    va_mouse,
-};
-
 // Custom keycodes
 enum custom_keycodes {
     J_TG = QK_KB_0,

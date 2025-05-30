@@ -57,7 +57,7 @@ static uint16_t lut_multiplier[ANALOG_MULTIPLIER_LUT_SIZE] = { 0 };
 
 // Create global joystick variables
 #ifdef ANALOG_KEY_VIRTUAL_AXES
-extern uint8_t virtual_axes_toggle;
+uint8_t virtual_axes_toggle = 0;
 uint8_t virtual_axes_from_self[4][4]  = { 0 };
 uint8_t virtual_axes_from_slave[4][4] = { 0 };
 #endif

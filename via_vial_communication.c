@@ -11,6 +11,7 @@
 extern analog_key_t analog_key[MATRIX_ROWS][MATRIX_COLS];
 extern analog_config_t analog_config[MATRIX_ROWS][MATRIX_COLS];
 extern static_config_t static_config;
+extern uint8_t virtual_axes_toggle;
 
 // Call this when a new value is set
 void eeconfig_update_sync_user(uint8_t row, uint8_t col){
@@ -212,14 +213,25 @@ void letmesleep_save_lut_config(uint8_t *data){
     eeconfig_update_kb_datablock(&static_config);
 }
 
+#ifdef ANALOG_KEY_VIRTUAL_AXES
+
 void letmesleep_get_virtual_axes(uint8_t *data){
     uint8_t *axes_id   = &(data[0]);
-    uint8_t *axes_data = &(data[2]);
+    uint8_t *axes_data = &(data[1]);
 
     uint8_t temp_data[16] = { 0 };
     switch (*axes_id){
         case id_axes_deadzone:
             temp_data[0] = static_config.virtual_axes_deadzone;
+            if (
+                BIT_GET(virtual_axes_toggle, va_ignore_keypresses)
+            )
+            {
+                temp_data[1] = 1;
+            }
+            else {
+                temp_data[1] = 0;
+            }
             break;
         case id_axes_joystick:
             memcpy(&temp_data[0],  &static_config.joystick_left.row,  4 * sizeof(uint8_t));
@@ -242,13 +254,22 @@ void letmesleep_get_virtual_axes(uint8_t *data){
 
 void letmesleep_set_virtual_axes(uint8_t *data){
     uint8_t *axes_id   = &(data[0]);
-    uint8_t *axes_data = &(data[2]);
+    uint8_t *axes_data = &(data[1]);
 
     uint8_t temp_data[16] = { 0 };
     memcpy(temp_data, axes_data, 16 * sizeof(uint8_t));
     switch (*axes_id){
         case id_axes_deadzone:
             static_config.virtual_axes_deadzone = temp_data[0];
+            if (
+                temp_data[1] > 0
+            )
+            {
+                BIT_SET(virtual_axes_toggle, va_ignore_keypresses);
+            }
+            else {
+                BIT_CLR(virtual_axes_toggle, va_ignore_keypresses);
+            }
             break;
         case id_axes_joystick:
             memcpy(&static_config.joystick_left.row,  &temp_data[0],  4 * sizeof(uint8_t));
@@ -270,6 +291,8 @@ void letmesleep_set_virtual_axes(uint8_t *data){
 void letmesleep_save_virtual_axes(uint8_t *data){
     eeconfig_update_kb_datablock(&static_config);
 }
+
+#endif
 
 void letmesleep_custom_command_kb(uint8_t *data, uint8_t length){
     /* data = [ command_id, channel_id, custom_data ] */
@@ -299,12 +322,20 @@ void letmesleep_custom_command_kb(uint8_t *data, uint8_t length){
                 letmesleep_save_lut_config(custom_data);
                 break;
             }
-            case id_custom_get_virtual_axes:
+#        ifdef ANALOG_KEY_VIRTUAL_AXES
+            case id_custom_get_virtual_axes: {
+                letmesleep_get_virtual_axes(custom_data);
                 break;
-            case id_custom_set_virtual_axes:
+            }
+            case id_custom_set_virtual_axes: {
+                letmesleep_set_virtual_axes(custom_data);
                 break;
-            case id_custom_save_virtual_axes:
+            }
+            case id_custom_save_virtual_axes: {
+                letmesleep_save_virtual_axes(custom_data);
                 break;
+            }
+#        endif
             default: {
                 /* Unhandled message */
                 *sub_command_id = id_unhandled;

@@ -32,11 +32,24 @@
 // Extern global variables
 extern SPLIT_MUTABLE_ROW pin_t row_pins[ROWS_PER_HAND];
 extern SPLIT_MUTABLE_COL pin_t col_pins[MATRIX_COLS];
+
 // Extern joystick definitions
 #ifdef ANALOG_KEY_VIRTUAL_AXES
 extern uint8_t virtual_axes_from_self[4][4];
 extern uint8_t virtual_axes_from_slave[4][4];
+// Virtual axes toggle bits
+enum virtual_axes_bits {
+    va_ignore_keypresses = 0,
+    va_joystick,
+    va_mouse,
+};
 #endif
+
+// Macros to get a specific bit
+#define BIT_SET(byte, nbit) ((byte) |=  (1 << (nbit)))
+#define BIT_CLR(byte, nbit) ((byte) &= ~(1 << (nbit)))
+#define BIT_FLP(byte, nbit) ((byte) ^=  (1 << (nbit)))
+#define BIT_GET(byte, nbit) ((byte) &   (1 << (nbit)))
 
 #ifdef DEBUG_LAST_PRESSED
 extern uint8_t last_pressed_row;

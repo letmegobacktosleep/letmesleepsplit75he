@@ -53,10 +53,10 @@ bool actuation(
             )
             {
                 key->mode = 1;
-                REGISTER_KEY(current_row, current_col);
+                BIT_SET(*current_row, current_col);
                 return 1;
             }
-            DEREGISTER_KEY(current_row, current_col);
+            BIT_CLR(*current_row, current_col);
             return 0;
 
         case 1: // normal, moving up, pressed
@@ -66,10 +66,10 @@ bool actuation(
             )
             {
                 key->mode = 0;
-                DEREGISTER_KEY(current_row, current_col);
+                BIT_CLR(*current_row, current_col);
                 return 0;
             }
-            REGISTER_KEY(current_row, current_col);
+            BIT_SET(*current_row, current_col);
             return 1;
 
         case 2: // rapid trigger, moving down, at top
@@ -80,16 +80,16 @@ bool actuation(
             {
                 key->old = current;
                 key->mode = 3;
-                REGISTER_KEY(current_row, current_col);
+                BIT_SET(*current_row, current_col);
                 return 1;
             }
-            DEREGISTER_KEY(current_row, current_col);
+            BIT_CLR(*current_row, current_col);
             return 0;
 
         case 3: // rapid trigger, moving up, pressed
             if (current < config->upper){ // top deadzone
                 key->mode = 2;
-                DEREGISTER_KEY(current_row, current_col);
+                BIT_CLR(*current_row, current_col);
                 return 0;
             }
             else if (current > key->old){ // update lowest position
@@ -98,10 +98,10 @@ bool actuation(
             else if (current < key->old - config->up){ // rapid untrigger
                 key->old = current;
                 key->mode = 4;
-                DEREGISTER_KEY(current_row, current_col);
+                BIT_CLR(*current_row, current_col);
                 return 0;
             }
-            REGISTER_KEY(current_row, current_col);
+            BIT_SET(*current_row, current_col);
             return 1;
 
         case 4: // rapid trigger, moving down, not pressed
@@ -118,26 +118,26 @@ bool actuation(
             {
                 key->old = current;
                 key->mode = 3;
-                REGISTER_KEY(current_row, current_col);
+                BIT_SET(*current_row, current_col);
                 return 1;
             }
-            DEREGISTER_KEY(current_row, current_col);
+            BIT_CLR(*current_row, current_col);
             return 0;
 
         case 5: // inverted, moving down, not pressed
             if (current > config->lower){ // critical point
                 key->mode = 6;
             }
-            DEREGISTER_KEY(current_row, current_col);
+            BIT_CLR(*current_row, current_col);
             return 0;
 
         case 6: // inverted, moving up, not pressed
             if (current < config->lower - config->upper){ // went back above critical point
                 key->mode = 7;
-                REGISTER_KEY(current_row, current_col);
+                BIT_SET(*current_row, current_col);
                 return 1;
             }
-            DEREGISTER_KEY(current_row, current_col);
+            BIT_CLR(*current_row, current_col);
             return 0;
 
         case 7: // inverted, moving up, pressed
@@ -147,10 +147,10 @@ bool actuation(
             )
             {
                 key->mode = 5;
-                DEREGISTER_KEY(current_row, current_col);
+                BIT_CLR(*current_row, current_col);
                 return 0;
             }
-            REGISTER_KEY(current_row, current_col);
+            BIT_SET(*current_row, current_col);
             return 1;
 
         case 8: // inv rapid trigger, moving down, not pressed
@@ -164,10 +164,10 @@ bool actuation(
             else if (current < key->old - config->up){ // rapid un-untrigger
                 key->old = current;
                 key->mode = 9;
-                REGISTER_KEY(current_row, current_col);
+                BIT_SET(*current_row, current_col);
                 return 1;
             }
-            DEREGISTER_KEY(current_row, current_col);
+            BIT_CLR(*current_row, current_col);
             return 0;
 
         case 9: // inv rapid trigger, moving up, pressed
@@ -179,17 +179,17 @@ bool actuation(
             {
                 key->old = current;
                 key->mode = 8;
-                DEREGISTER_KEY(current_row, current_col);
+                BIT_CLR(*current_row, current_col);
                 return 0;
             }
             else if (current < key->old){ // update highest position
                 key->old = current;
             }
-            REGISTER_KEY(current_row, current_col);
+            BIT_SET(*current_row, current_col);
             return 1;
 
         default: // invalid mode
-            DEREGISTER_KEY(current_row, current_col);
+            BIT_CLR(*current_row, current_col);
             return 0;
     }
 }

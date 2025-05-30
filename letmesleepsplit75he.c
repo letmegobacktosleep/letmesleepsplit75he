@@ -24,7 +24,7 @@ extern static_config_t static_config;
 // External joystick definitions
 #ifdef ANALOG_KEY_VIRTUAL_AXES
 
-uint8_t virtual_axes_toggle = 0;
+extern uint8_t virtual_axes_toggle = 0;
 extern uint8_t virtual_axes_from_self[4][4];
 extern uint8_t virtual_axes_from_slave[4][4];
 
