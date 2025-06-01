@@ -69,3 +69,34 @@ const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][2] = {
 	[3] = { ENCODER_CCW_CW(KC_TRNS, KC_TRNS), ENCODER_CCW_CW(KC_TRNS, KC_TRNS) },
 };
 #endif
+
+bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max){
+    // Declare variables as static
+    static uint8_t brightness = 64;
+    static uint8_t caps_brightness = 128;
+
+# ifdef CUSTOM_RGB_ENABLE_PIN
+	// Declare pin for mosfet
+	static const pin_t rgb_enable_pin = CUSTOM_RGB_ENABLE_PIN;
+
+    // Cut power to all other LEDs if brightness is zero
+    if (brightness == 0){
+        gpio_write_pin_low(rgb_enable_pin); // palClearLine(rgb_enable_pin);
+    }
+    else {
+        gpio_write_pin_high(rgb_enable_pin); // palSetLine(rgb_enable_pin);
+    }
+# endif
+
+    // Get current value
+    brightness = rgb_matrix_get_val();
+
+    // Light up Esc if CapsLock
+    if (host_keyboard_led_state().caps_lock && 0 >= led_min){
+        // Always make brightness brighter than current brightness
+        caps_brightness = MIN(255, brightness + 64);
+        RGB_MATRIX_INDICATOR_SET_COLOR(0, caps_brightness, caps_brightness, caps_brightness);
+    }
+
+    return false;
+}

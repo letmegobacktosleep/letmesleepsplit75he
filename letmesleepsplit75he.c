@@ -24,7 +24,7 @@ extern static_config_t static_config;
 // External joystick definitions
 #ifdef ANALOG_KEY_VIRTUAL_AXES
 
-extern uint8_t virtual_axes_toggle = 0;
+extern uint8_t virtual_axes_toggle;
 extern uint8_t virtual_axes_from_self[4][4];
 extern uint8_t virtual_axes_from_slave[4][4];
 
@@ -34,21 +34,6 @@ joystick_config_t joystick_axes[JOYSTICK_AXIS_COUNT] = {
     JOYSTICK_AXIS_VIRTUAL, // Rx
     JOYSTICK_AXIS_VIRTUAL  // Ry
 };
-
-# ifdef JOYSTICK_COORDINATES
-extern const uint8_t joystick_coordinates[8][2];
-# endif
-# ifdef MOUSE_COORDINATES
-extern const uint8_t mouse_coordinates[8][2];
-# endif
-# ifdef MOUSE_COORDINATES_RIGHT
-extern const uint8_t mouse_coordinates_right[8][2];
-# endif
-#endif
-
-#ifdef RGB_MATRIX_ENABLE
-static const pin_t rgb_enable_pin = CUSTOM_RGB_ENABLE_PIN;
-#endif
 
 #ifdef DEBUG_LAST_PRESSED
 extern uint8_t last_pressed_row;
@@ -384,85 +369,3 @@ void housekeeping_task_kb(void) {
     }
 #endif
 }
-
-#ifdef RGB_MATRIX_ENABLE
-void set_virtual_axes_rgb_white(virtual_axes_coordinate_t* virtual_axes, uint8_t index, uint8_t brightness){
-
-    // fetch the LED index
-    uint8_t row = virtual_axes->row[index]
-    uint8_t col = virtual_axes->col[index]
-    uint8_t led_index = g_led_config.matrix_co[row][col];
-
-    // if there is an LED on that key
-    if (
-        led_index >= led_min && 
-        led_index < led_max && 
-        led_index != NO_LED
-    )
-    {
-        rgb_matrix_set_color(led_index, brightness, brightness, brightness);
-    }
-
-    return;
-}
-
-bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
-    static bool value_was_zero = true;
-    static uint8_t brightness = 64;
-    static uint8_t caps_brightness = 128;
-
-    // Get current value
-    brightness = rgb_matrix_get_val();
-
-    // Light up Esc if CapsLock
-    if (host_keyboard_led_state().caps_lock){
-        // Always make brightness brighter than current brightness
-        caps_brightness = MIN(255, brightness + 64);
-        RGB_MATRIX_INDICATOR_SET_COLOR(0, caps_brightness, caps_brightness, caps_brightness);
-    }
-
-    // Cut power to all other LEDs if brightness is zero
-    if (!value_was_zero && brightness == 0){
-        palClearLine(rgb_enable_pin); // gpio_write_pin_low(rgb_enable_pin);
-        value_was_zero = true;
-    }
-    else if (value_was_zero && brightness != 0){
-        palSetLine(rgb_enable_pin); // gpio_write_pin_high(rgb_enable_pin);
-        value_was_zero = false;
-    }
-
-#ifdef ANALOG_KEY_VIRTUAL_AXES
-    for (uint8_t i = 0; i < 4; i++){
-# if (defined(JOYSTICK_LEFT) || defined(JOYSTICK_RIGHT))
-        if (
-            BIT_GET(virtual_axes_toggle, va_joystick)
-        )
-        {
-#    ifdef JOYSTICK_LEFT
-            set_virtual_axes_rgb_white(&static_config.joystick_left, i, brightness);
-#    endif
-#    ifdef JOYSTICK_RIGHT
-            set_virtual_axes_rgb_white(&static_config.joystick_right, i, brightness);
-#    endif
-        }
-# endif
-# if (defined(JOYSTICK_LEFT) || defined(JOYSTICK_RIGHT))
-        if (
-            BIT_GET(virtual_axes_toggle, va_mouse)
-        )
-        {
-#    ifdef MOUSE_MOVEMENT
-            set_virtual_axes_rgb_white(&static_config.mouse_movement, i, brightness);
-#    endif
-#    ifdef MOUSE_SCROLL
-            set_virtual_axes_rgb_white(&static_config.mouse_scroll, i, brightness);
-#    endif
-        }
-# endif
-    }
-#endif
-
-    // Always return false
-    return false;
-}
-#endif
