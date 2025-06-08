@@ -3,6 +3,7 @@
 
 #include "util.h"
 #include "quantum.h"
+#include "config.h"
 
 // Use const if the same pins are used for left and right
 #ifdef MATRIX_ROW_PINS_RIGHT

@@ -183,12 +183,12 @@ ADC2_IN1 = D */
 // Custom sync
 #ifdef SPLIT_KEYBOARD
 // Master to slave:
-# define RPC_M2S_BUFFER_SIZE 16
+# define RPC_M2S_BUFFER_SIZE 32
 // Slave to master:
-# define RPC_S2M_BUFFER_SIZE 16
+# define RPC_S2M_BUFFER_SIZE 32
 // Keyboard level data sync:
-# define SPLIT_TRANSACTION_IDS_KB KEYBOARD_SYNC_A
-# define SPLIT_TRANSACTION_IDS_USER USER_SYNC_A
+# define SPLIT_TRANSACTION_IDS_KB KEYBOARD_SYNC_CONFIG
+# define SPLIT_TRANSACTION_IDS_USER USER_SYNC_JOYSTICK
 #endif
 
 

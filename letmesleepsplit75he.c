@@ -14,6 +14,7 @@
 #include "custom_scanning.h"
 #include "custom_transactions.h"
 #include "eeconfig_set_defaults.h"
+#include "via_vial_communication.h"
 #include "letmesleepsplit75he.h"
 
 // External definitions
@@ -74,8 +75,8 @@ void keyboard_post_init_kb(void) {
     generate_lookup_tables();
 #endif
 #ifdef SPLIT_KEYBOARD
-    transaction_register_rpc(KEYBOARD_SYNC_A, kb_sync_a_slave_handler);
-    transaction_register_rpc(USER_SYNC_A, user_sync_a_slave_handler);
+    transaction_register_rpc(KEYBOARD_SYNC_CONFIG, kb_sync_a_slave_handler);
+    transaction_register_rpc(USER_SYNC_JOYSTICK, user_sync_a_slave_handler);
 #endif
     // Set default state - ignore
     BIT_SET(virtual_axes_toggle, va_ignore_keypresses);
@@ -257,7 +258,7 @@ void housekeeping_task_kb(void) {
     static uint32_t last_sync = 0;
     if (timer_elapsed32(last_sync) > 10){ // Only update every 10ms
 #    ifdef SPLIT_KEYBOARD
-        if (is_keyboard_master()) {
+        if (is_keyboard_master()){
             if (
                 BIT_GET(virtual_axes_toggle, va_joystick) || // joystick
                 BIT_GET(virtual_axes_toggle, va_mouse)       // mouse
@@ -266,7 +267,7 @@ void housekeeping_task_kb(void) {
                 // send the virtual axes toggle to the slave, receive its virtual axes
                 if (
                     transaction_rpc_exec(
-                        KEYBOARD_SYNC_A, 
+                        USER_SYNC_JOYSTICK, 
                         sizeof(virtual_axes_toggle),
                         &virtual_axes_toggle, 
                         sizeof(virtual_axes_from_slave),

@@ -6,35 +6,13 @@
 #include "quantum.h"
 #include "custom_matrix.h"
 #include "custom_transactions.h"
+#include "via_vial_communication.h"
 
 // External definitions
 extern analog_key_t analog_key[MATRIX_ROWS][MATRIX_COLS];
 extern analog_config_t analog_config[MATRIX_ROWS][MATRIX_COLS];
 extern static_config_t static_config;
 extern uint8_t virtual_axes_toggle;
-
-// Call this when a new value is set
-void eeconfig_update_sync_user(uint8_t row, uint8_t col){
-#ifdef SPLIT_KEYBOARD
-    user_sync_a_t *new_config = {
-        .row = row,
-        .col = col,
-        .config = analog_config[row][col]
-    }
-    if (is_keyboard_master()){
-        uint8_t literally_zero = 0;
-        transaction_rpc_exec(
-            USER_SYNC_A,
-            sizeof(user_sync_a_t),
-            &new_config,
-            sizeof(literally_zero),
-            &literally_zero
-        );
-    }
-#endif
-    // Save to EEPROM
-    EEPROM_USER_PARTIAL_UPDATE(analog_config, row, col);
-}
 
 #if defined(VIA_ENABLE)
 
@@ -104,8 +82,7 @@ void letmesleep_set_key_config(uint8_t *data){
     analog_config[*row][*col].down  = *down;
     analog_config[*row][*col].up    = *up;
 
-    eeconfig_update_sync_user(*row, *col)
-    // EEPROM_USER_PARTIAL_UPDATE(analog_config, *row, *col);
+    EEPROM_USER_PARTIAL_UPDATE(analog_config, *row, *col);
     // eeconfig_update_user_datablock(&analog_config);
 }
 
@@ -355,10 +332,25 @@ void raw_hid_receive_kb(uint8_t *data, uint8_t length) {
     uint8_t *command_id = &(data[0]);
 
     // Vial uses an older version of via.c
-    // whidh does not have "via_custom_value_command_kb"
+    // which does not have "via_custom_value_command_kb"
     // use "id_unhandled" to invoke "letmesleep_custom_command_kb"
     if (*command_id == id_unhandled) {
+        // Process the data which was received
         letmesleep_custom_command_kb(&data[1], length - 1);
+        
+#    ifdef SPLIT_KEYBOARD
+        if (is_keyboard_master()){
+            // Send the data over to the other side
+            uint8_t literally_zero = 0;
+            transaction_rpc_exec(
+                KEYBOARD_SYNC_CONFIG, 
+                length,
+                data,
+                sizeof(literally_zero),
+                &literally_zero
+            )
+        }
+#    endif
     }
 }
 
